@@ -1,7 +1,7 @@
 import test from'node:test';import assert from'node:assert/strict';import{readFileSync,writeFileSync}from'node:fs';import{performance}from'node:perf_hooks';import{setup}from'./support.mjs';
 const c=JSON.parse(readFileSync('balance_constants.json'));
 test('production build exposes version and compressed assets with same executable content',async t=>{
- const{base}=await setup(t);const version=await(await fetch(base+'/version')).json();assert.equal(version.version,'0.1.6');assert.equal(version.configVersion,c._version);
+ const{base}=await setup(t);const version=await(await fetch(base+'/version')).json();assert.equal(version.version,'0.1.7');assert.equal(version.configVersion,c._version);
  const response=await fetch(base+'/main.js',{headers:{'accept-encoding':'br'}});assert.equal(response.headers.get('content-encoding'),'br');const script=await response.text();assert.ok(script.includes('SPOUT'));assert.ok(Number(response.headers.get('content-length'))<Buffer.byteLength(script));
 });
 test('jump is debug-host-only, accepts listed percentages and updates both clients; real CPU/snapshot metrics are available',async t=>{
@@ -17,3 +17,4 @@ test('rooms with zero connected humans suspend simulation, retain reservations, 
  a.ws.terminate();await new Promise(r=>setTimeout(r,40));const pausedTick=sim.tick,start=sim.startServerTime;await new Promise(r=>setTimeout(r,150));assert.equal(sim.tick,pausedTick);
  const back=await client();back.send({type:'resume',code:owner.code,name:'Ana',token:owner.token});await back.wait(m=>m.type==='joined');await new Promise(r=>setTimeout(r,50));assert.ok(sim.tick>pausedTick);assert.ok(sim.startServerTime-start>=150);
 });
+

@@ -6,6 +6,25 @@ import {setup}from'./support.mjs';
 const c=JSON.parse(readFileSync('balance_constants.json'));
 const create=(mode='2v2')=>{const sim=new Simulation(c,mode);sim.tick=sim.countdownTicks;return sim;};
 const advance=(sim,seconds,inputs=[])=>{for(let i=0;i<Math.round(seconds*c.network.sim_hz);i++){for(const[seat,input]of inputs){if(i%Math.round(c.network.sim_hz/c.network.input_resend_hz)===0)sim.input(seat,{walk:0,fire:false,whackCount:0,...input,seq:sim.tick});}sim.step();}};
+test('angled bank impacts at bends correct only penetration and preserve tangential position/velocity',()=>{
+ const sim=create(),r=sim.rafts[0],limit=c.course.half_width-c.raft.radius;
+ let samples=0;
+ for(const s of sim.course.segments)for(const along of [-30,-5,0,5,s.length/2,s.length-5,s.length+5,s.length+30])for(const side of [-1,1])for(const depth of [1,10,34]){
+  sim.spikeLatch.clear();Object.assign(r,{x:s.x+s.tx*along+s.ty*side*(limit+depth),y:s.y+s.ty*along-s.tx*side*(limit+depth),stun:0});
+  const p=sim.course.project(r.x,r.y),penetration=Math.max(0,Math.abs(p.lateral)-limit);if(!penetration)continue;
+  const sign=Math.sign(p.lateral),nx=p.ty*sign,ny=-p.tx*sign;
+  r.vx=100*nx+75*p.tx;r.vy=100*ny+75*p.ty;
+  const x=r.x,y=r.y;sim.collideBanks(r);
+  assert.ok(Math.hypot(r.x-x,r.y-y)<=penetration+c.simulation.epsilon,`correction exceeds ${penetration} at bend ${s.start}/${along}`);
+  assert.ok(Math.abs((r.x-x)*p.tx+(r.y-y)*p.ty)<c.simulation.epsilon);
+  // Spike contacts intentionally halve velocity; restitution is measured away from those zones.
+  const spike=c.course.spike_zones.some(([f,len,bank])=>bank===sign&&Math.abs(p.progress-f*c.course.length)<=len/2);
+  const factor=spike?c.course.spike_speed_factor:1;
+  assert.ok(Math.abs((r.vx*nx+r.vy*ny)-(-100*c.course.bank_restitution*factor))<c.simulation.epsilon);
+  assert.ok(Math.abs(r.vx*p.tx+r.vy*p.ty-75*factor)<c.simulation.epsilon);samples++;
+ }
+ assert.ok(samples>100);
+});
 test('corrected P1-5 directions in ONE 2v2 simulation: Red Left stern=>forward, left=>right; Red Right right=>left',()=>{
  const sim=create();sim.animals[0].phi=-165;advance(sim,.16,[[0,{fire:true}]]);assert.ok(sim.rafts[0].vy>40);
  // Reset only motion and shot cooldown between the one-player-at-a-time checks, retaining the same 2v2 room model.
@@ -43,3 +62,4 @@ test('real WS input is seat-bound and epoch-bound; reconnect starts a safe fresh
 test('a short press/release arriving between ticks still fires exactly one Hippo shot',()=>{
  const sim=create('1v1');sim.input(0,{seq:1,walk:0,fire:true,whackCount:0});sim.input(0,{seq:2,walk:0,fire:false,whackCount:0});sim.step();assert.equal(sim.shots.length,1);advance(sim,.2);assert.ok(sim.rafts[0].vy>50);assert.equal(sim.shots.length,0);
 });
+

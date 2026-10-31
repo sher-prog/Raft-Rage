@@ -188,7 +188,10 @@ export class Simulation {
   collideBanks(r:RaftState){
     const c=this.config,p=this.course.project(r.x,r.y),limit=c.course.half_width-c.raft.radius;
     if(Math.abs(p.lateral)<=limit)return;
-    const sign=Math.sign(p.lateral),lateral=sign*limit;r.x=p.x+p.ty*lateral;r.y=p.y-p.tx*lateral;
+    // Translate only along the bank normal. Reconstructing from p.x/p.y
+    // erased tangential distance whenever the projection hit a segment endpoint.
+    const sign=Math.sign(p.lateral),penetration=Math.abs(p.lateral)-limit;
+    r.x-=p.ty*sign*penetration;r.y+=p.tx*sign*penetration;
     const outward=(r.vx*p.ty-r.vy*p.tx)*sign;
     if(outward>0){r.vx-=(1+c.course.bank_restitution)*outward*p.ty*sign;r.vy+=(1+c.course.bank_restitution)*outward*p.tx*sign;}
     if(!this.spikeLatch.has(r)&&c.course.spike_zones.some(([fraction,length,bank])=>bank===sign&&Math.abs(p.progress-fraction*c.course.length)<=length/2)){
@@ -210,3 +213,4 @@ export class Simulation {
       animals:this.animals.map(({input,seenTick,pendingFire,whackStartTick,whackUntilTick,...a})=>({...a,phi:q(a.phi,n.angle_quantum_deg)}))};
   }
 }
+
