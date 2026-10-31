@@ -1,0 +1,23 @@
+✔ actual npm start honors PORT and two real process boots produce distinct identifiers (436.699079ms)
+✔ health route and bundled assets use production HTTP server (32.208173ms)
+✔ two independent clients create and join by lowercase spaced code; state and tokens stay separate (43.530739ms)
+✔ name validation gives plain reasons, collapses spaces, and refuses active-name/token takeover (58.703884ms)
+✔ solo uses 1v1 and auto-Ready; mode authority and >2-human refusal are server enforced (70.550433ms)
+✔ explicit host Leave promotes earliest joined connected human and preserves room (67.158672ms)
+✔ real 3s disconnect grace migrates host; old host reclaims seat as ordinary player (3124.806169ms)
+✔ reconnect before grace retains seat and host with matching per-tab token (53.74781ms)
+✔ unclean heartbeat loss becomes bot and migrates host about 3s after last traffic (3205.928001ms)
+✔ same-name reclaim works only after grace, rotates token and keeps player identity (135.066726ms)
+✔ restart boot mismatch has exact message; ordinary missing room has a different error (27.962092ms)
+✔ room survives zero connected humans until configured idle expiry (811.426568ms)
+✔ capacity is 4 seated humans plus 8 spectators; seats reject occupied and invalid indices (221.151198ms)
+✔ WebSocket refuses foreign origins; malformed messages are contained (24.092019ms)
+✔ all config additions are declared assumed and no existing gameplay values changed (0.758706ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7968.649211

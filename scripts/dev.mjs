@@ -1,0 +1,10 @@
+import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+const result=spawnSync(process.execPath,['scripts/build.mjs'],{stdio:'inherit'});
+if(result.status!==0)process.exit(result.status??1);
+const args=process.argv.slice(2),portIndex=args.indexOf('--port');
+const { createGameServer }=await import('../dist/server/index.js');
+const game=createGameServer(JSON.parse(readFileSync('balance_constants.json')));
+await game.listen(Number(portIndex>=0?args[portIndex+1]:process.env.PORT??3000));
+const stop=()=>void game.close().then(()=>process.exit(0));
+process.on('SIGTERM',stop);process.on('SIGINT',stop);

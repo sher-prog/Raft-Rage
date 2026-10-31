@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-10-31T20:53:02.470Z",
+  "environment": "Local Work container, NOT Render Free",
+  "runtime": "v24.22.1",
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "cpuCount": 8,
+  "scope": "Lobby baseline only. CPU includes server AND load clients in one process. WebSocket framing/TLS/TCP overhead is not included in application byte counters. No physics or snapshots exist yet: this is NOT a 60Hz room-capacity result.",
+  "configuredRates": {
+    "simHz": 60,
+    "snapshotHz": 20,
+    "inputHz": 10
+  },
+  "results": [
+    {
+      "rooms": 1,
+      "clients": 4,
+      "elapsedMs": 6000.3470959999995,
+      "cpuMs": 34.03,
+      "cpuPercentOneCore": 0.5671338583510503,
+      "eventLoopMeanMs": 10.099049411764705,
+      "eventLoopMaxMs": 10.878975,
+      "applicationBytesOutPerSecond": 91.9946781691977,
+      "applicationBytesInPerSecond": 55.996760624729035,
+      "messagesOut": 8,
+      "snapshotHzActual": 0,
+      "simHzActual": 0,
+      "rssBytes": 45285376
+    },
+    {
+      "rooms": 8,
+      "clients": 32,
+      "elapsedMs": 6000.7635279999995,
+      "cpuMs": 46.215,
+      "cpuPercentOneCore": 0.7701519945646491,
+      "eventLoopMeanMs": 10.108199516778523,
+      "eventLoopMaxMs": 13.107199,
+      "applicationBytesOutPerSecond": 735.906352482417,
+      "applicationBytesInPerSecond": 447.94299716321035,
+      "messagesOut": 64,
+      "snapshotHzActual": 0,
+      "simHzActual": 0,
+      "rssBytes": 50520064
+    },
+    {
+      "rooms": 16,
+      "clients": 64,
+      "elapsedMs": 6000.557406999998,
+      "cpuMs": 43.671,
+      "cpuPercentOneCore": 0.72778238816706,
+      "eventLoopMeanMs": 10.107941672240804,
+      "eventLoopMaxMs": 11.583487,
+      "applicationBytesOutPerSecond": 1471.8632621857694,
+      "applicationBytesInPerSecond": 895.9167682869901,
+      "messagesOut": 128,
+      "snapshotHzActual": 0,
+      "simHzActual": 0,
+      "rssBytes": 55107584
+    }
+  ]
+}

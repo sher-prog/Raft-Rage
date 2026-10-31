@@ -1,0 +1,24 @@
+{
+  "environment": "Cloud Chrome controlling internal Work preview; not physical iPhone/Android/cellular",
+  "preview": "http://terminal.local:4173/",
+  "observedAt": "2026-10-31T20:53:26.210Z",
+  "checks": {
+    "homeAndWebSocketConnected": true,
+    "createRoom": true,
+    "lowercaseShareLinkPrefillAndNameFocus": true,
+    "visibleInvalidNameError": true,
+    "twoIndependentTabsWithDifferentNamesAndOwnMarkers": true,
+    "readyBroadcast": true,
+    "reloadReclaimsOriginalIdentityAfterAnotherTabChangedNamePrefill": true,
+    "explicitHostLeavePromotesOtherTabWithExactBanner": true,
+    "realProcessRestartReturnsHomeWithExactMessage": true,
+    "desktopNoHorizontalOverflow": true,
+    "visibleLobbyTouchTargetsAtLeast44px": true
+  },
+  "timingsMs": {
+    "createFromHomeIncludingAutomationClicksAndNameFill": 1949,
+    "joinSubmitToOwnLobbyIncludingAutomationOverhead": 1007
+  },
+  "geometry": {"desktopViewportWidth":1363,"documentScrollWidth":1348,"visibleLobbyButtonHeightsPx":[50,50,66,66,66,66,50,48,48,44,44]},
+  "limits": ["Browser tab creation is not two physical devices or literal native browser-window testing.","No mobile viewport emulation or physical browser testing was performed.","Measurements include automation latency, not isolated network latency.","Extension-origin metadata errors were observed; no app-origin error was identified in the sampled error log.","Race mechanics, 3D rendering and mobile game FPS do not exist in this checkpoint."]
+}

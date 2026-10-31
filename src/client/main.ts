@@ -1,0 +1,90 @@
+import type { Config, RoomView, ServerMessage } from '../shared.ts';
+type Session={code:string;name:string;playerId:string;token:string;bootId:string};
+const main=document.querySelector<HTMLElement>('#main')!;
+const connection=document.querySelector<HTMLElement>('#connection')!;
+const how=document.querySelector<HTMLDialogElement>('#how')!;
+document.querySelector('#close-how')!.addEventListener('click',()=>how.close());
+const params=new URLSearchParams(location.search),debug=params.get('debug')==='1';
+const config:Config=await fetch('/balance_constants.json').then(r=>{if(!r.ok)throw new Error('Config unavailable');return r.json();});
+let session:Session|undefined;
+try{session=JSON.parse(sessionStorage.getItem('raft-rage-session')??'null')??undefined;}catch{}
+let socket:WebSocket|undefined,online=false,bootId=session?.bootId??'',room:RoomView|undefined;
+let reconnectDelay=config.network.reconnect_initial_ms,reconnectTimer:ReturnType<typeof setTimeout>|undefined;
+let screen:'home'|'create'|'join'|'solo'|'lobby'=params.has(config.rooms.share_link_param)?'join':'home';
+let ping=0,notice='',currentName='',prefillCode=params.get(config.rooms.share_link_param)??'';
+try{currentName=localStorage.getItem('raft-rage-name')??'';}catch{}
+const esc=(v:string)=>v.replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]!));
+const send=(message:object)=>{if(online&&socket?.readyState===WebSocket.OPEN){socket.send(JSON.stringify(message));return true;}showError('Reconnecting… Please wait for the river connection.');return false;};
+const saveSession=()=>{try{if(session)sessionStorage.setItem('raft-rage-session',JSON.stringify(session));else sessionStorage.removeItem('raft-rage-session');}catch{}};
+const showError=(text:string)=>{notice=text;const target=document.querySelector<HTMLElement>('#error');if(target)target.textContent=text;};
+const art=`<div class="art" aria-hidden="true"><svg viewBox="0 0 520 530" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="#0b8587" d="M0 0h520v530H0z"/><path d="M-100 65C80-30 10 180 200 140S400 20 620 100M-80 440c160-150 220 60 390-30s170-90 280-20" stroke="#41a7a0" stroke-width="90"/><g class="wave" stroke="#96d5bd" stroke-width="3" stroke-linecap="round"><path d="m70 135 36-18m216 15 36-18M420 265l28-14M52 365l40-22m265 110 40-22M126 479l21-10m38-418 25-12M445 69l22-10"/></g><g class="bob" transform="rotate(-20 260 280)"><ellipse cx="267" cy="350" rx="137" ry="51" fill="#075457"/><ellipse cx="260" cy="316" rx="137" ry="74" fill="#c2542d" stroke="#123e40" stroke-width="6"/><ellipse cx="260" cy="297" rx="137" ry="78" fill="#ffb646" stroke="#123e40" stroke-width="6"/><ellipse cx="260" cy="297" rx="91" ry="45" fill="#e69338" stroke="#123e40" stroke-width="5"/><path d="m138 271 31 17m63-67 5 35m94-24-17 31m65 30-31 10m-97 41 3 29m-73-42-22 24" stroke="#c56a29" stroke-width="6"/><path d="M148 308c53 45 167 61 234-2" stroke="#fff1b0" stroke-width="5" stroke-dasharray="8 7"/><path d="m212 283 102 7-2 23-103-7z" fill="#ffe1a3" stroke="#123e40" stroke-width="4"/><path d="M242 233v-38l37-10 20 46" fill="#dd512f" stroke="#123e40" stroke-width="5"/><path d="m244 191-4-26 46-9 6 27z" fill="#f45a34" stroke="#123e40" stroke-width="5"/><ellipse cx="263" cy="160" rx="25" ry="9" fill="#123e40"/><path d="M181 270c-13-6-20-31-12-54 7-17 41-21 62-6 16 12 21 52 8 68" fill="#ff8f35" stroke="#123e40" stroke-width="5"/><path d="m192 222 8 49m20-48-2 52" stroke="#ffe7a5" stroke-width="6"/><ellipse cx="201" cy="202" rx="44" ry="38" fill="#ababbc" stroke="#123e40" stroke-width="5"/><circle cx="168" cy="172" r="11" fill="#ababbc" stroke="#123e40" stroke-width="4"/><circle cx="231" cy="173" r="11" fill="#ababbc" stroke="#123e40" stroke-width="4"/><path d="M158 180c-1-25 14-42 42-42 24 0 39 15 42 39" fill="#f35d35" stroke="#123e40" stroke-width="5"/><path d="m175 148 8 26" stroke="#ffca5e" stroke-width="8"/><ellipse cx="191" cy="209" rx="35" ry="22" fill="#c5c2d1" stroke="#123e40" stroke-width="4"/><circle cx="177" cy="204" r="3" fill="#123e40"/><circle cx="205" cy="204" r="3" fill="#123e40"/><path d="M181 216q12 13 24 0" fill="#123e40"/><path d="m188 218 4 6 5-6" fill="#fff9e9"/><ellipse cx="183" cy="186" rx="8" ry="11" fill="white" stroke="#123e40" stroke-width="3"/><ellipse cx="214" cy="186" rx="8" ry="11" fill="white" stroke="#123e40" stroke-width="3"/><circle cx="186" cy="188" r="3" fill="#123e40"/><circle cx="217" cy="188" r="3" fill="#123e40"/><path d="m247 131-7-24m35 19 10-24m-25 15-2-26" stroke="#d0f5e5" stroke-width="7" stroke-linecap="round"/></g><g fill="#e8f2c8" stroke="#123e40" stroke-width="3"><path d="m67 220 9 10 14 1-10 10-2 15-10-10-14-2 10-10z"/><path d="m407 383 7 8 12 1-8 8-2 12-8-8-11-1 8-8z"/></g></svg><span class="river-caption">GOOD FRIENDS. QUESTIONABLE STEERING.</span><div class="art-tag">1–4 FRIENDS. <span>ONE WILD RIVER.</span></div></div>`;
+function pips(){
+  const p=config.characters.hippo.pips;
+  return Object.entries(p).map(([key,value])=>`${key[0].toUpperCase()+key.slice(1)} ${'●'.repeat(value)}${'○'.repeat(config.characters.card_pips_max-value)} ${value}`).join(' · ');
+}
+function render(){
+  if(screen==='home')main.innerHTML=`<section class="hero"><div class="hero-copy"><span class="eyebrow">A LITTLE FRIENDLY RIVER RIVALRY</span><h1>MAKE<br><span>WAVES.</span></h1><p class="intro">A river. Two rafts. Your very competitive friends. Stand to steer, spout to sprint, and try to stay friends at the finish.</p><div class="actions"><button class="primary" id="create">Create room <span aria-hidden="true">↗</span></button><div class="subactions"><button id="join">Join room</button><button id="solo">Solo vs bots</button></div><button class="text-button" id="how-button">How to play →</button></div><p class="edition">RAFT RAGE / FIRST SPLASH · LOBBY CHECKPOINT</p><p class="error" id="error" role="alert">${esc(notice)}</p></div>${art}</section>`;
+  else if(screen!=='lobby'){
+    const joining=screen==='join';
+    main.innerHTML=`<section class="form-screen"><button class="text-button back" id="back">← Back to river</button><div class="card"><span class="eyebrow">${joining?'YOUR CREW IS WAITING':'START A LITTLE TROUBLE'}</span><h2>${joining?'Hop aboard.':screen==='solo'?'Your river.<br>Your rules.':'Round up<br>your crew.'}</h2><p class="muted">${joining?'Enter the room code and a name your friends know.':'Pick a display name. Share the room link with your friends.'}</p><form id="room-form">${joining?`<label for="code">Room code</label><input id="code" class="code" name="code" value="${esc(prefillCode)}" autocomplete="off" autocapitalize="characters" spellcheck="false" required aria-describedby="error">`:''}<label for="name">Display name</label><input id="name" name="name" value="${esc(currentName)}" placeholder="e.g. Ana" autocomplete="off" autocapitalize="words" spellcheck="false" required aria-describedby="name-help error"><p class="muted" id="name-help">1–${config.names.max_chars} letters, numbers or spaces.</p><p class="error" id="error" role="alert">${esc(notice)}</p><button class="primary submit" type="submit">${joining?'Join room →':'Create room →'}</button></form><p class="privacy">Your name stays in this room until the room closes. No accounts, analytics, trackers, ads or payments. Your browser remembers your name; hosting handles connection metadata.</p></div></section>`;
+    document.querySelector<HTMLFormElement>('#room-form')!.onsubmit=e=>{
+      e.preventDefault();currentName=document.querySelector<HTMLInputElement>('#name')!.value;
+      prefillCode=document.querySelector<HTMLInputElement>('#code')?.value??prefillCode;
+      try{localStorage.setItem('raft-rage-name',currentName);}catch{}
+      showError('');send({type:joining?'join':'create',name:currentName,code:prefillCode,solo:screen==='solo'});
+    };
+    if(joining && params.has(config.rooms.share_link_param))document.querySelector<HTMLInputElement>('#name')!.focus();
+  } else if(room){
+    const own=room.players.find(p=>p.id===session?.playerId),host=room.hostId===session?.playerId;
+    const seats=room.mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2;
+    const team=(index:number)=>`<section class="team ${index===0?'red':'blue'}"><h3>${index===0?'▲ RED RAFT':'● BLUE RAFT'}</h3>${Array.from({length:seats/2},(_,i)=>{
+      const seat=index*(seats/2)+i,p=room!.players.find(x=>x.seat===seat);
+      return `<button class="seat ${p?.id===own?.id?'own':''}" data-seat="${seat}"><span>${esc(p?.name??'Bot (Chill)')}${p?.id===room!.hostId?' · HOST':''}${p?.id===own?.id?' · YOU':''}<small>${room!.mode==='1v1'?'Solo seat':i===0?'Left seat':'Right seat'} · Hippo</small></span><span class="seat-status">${p?(p.connected?(p.ready?'✓ READY':'Not ready'):'Reconnecting…'):'Tap to sit'}</span></button>`;
+    }).join('')}</section>`;
+    main.innerHTML=`<section class="lobby"><div class="lobby-top"><div><span class="eyebrow">THE CREW ASSEMBLES</span><h2 class="room-code">${esc(room.code)}</h2><p class="muted">Players join at this link with no login.</p></div><div class="share-actions"><button id="copy">Copy link</button><button id="share">Share ↗</button></div></div><div id="banner" class="banner" role="status">${esc(room.banner||'Your raft is waiting. Bring a friend aboard.')}</div><div class="seat-grid">${team(0)}${team(1)}</div><div class="lobby-controls">${own?.seat!==null?`<button class="${own?.ready?'':'primary'}" id="ready">${own?.ready?'✓ READY':'Ready up'}</button>`:'<p class="muted">Spectating · Tap an open seat to sit.</p>'}<button class="text-button" id="how-button">How to play</button><button class="text-button" id="leave">Leave</button>${host?`<div class="host-controls"><span class="muted">Mode</span><button id="mode-1" class="${room.mode==='1v1'?'selected':''}" aria-pressed="${room.mode==='1v1'}">1v1</button><button id="mode-2" class="${room.mode==='2v2'?'selected':''}" aria-pressed="${room.mode==='2v2'}">2v2</button></div>`:''}</div><p class="hippo-choice">✓ HIPPO SELECTED · SPOUT<br><span class="muted">${pips()}</span></p><p class="notice">First checkpoint: the lobby is connected. Racing arrives in the next build.</p><p class="error" id="error" role="alert">${esc(notice)}</p><div class="how-strip"><article class="how-card"><b>01 / Stand to steer</b><p>Walk the rim. Fire at the back to go forward, or from a side to slide.</p></article><article class="how-card"><b>02 / Pick an animal</b><p>Meet Hippo. Big heart, big cannon. Hold SPOUT to keep the kicks coming.</p></article><article class="how-card"><b>03 / Whack and block</b><p>Whack a nearby rival to stun. Whack during their windup to block.</p></article></div><p class="muted status-toast" id="share-status" role="status"></p>${debug?`<pre class="debug">LOBBY CHECKPOINT 0.1.0
+phase: ${room.phase} · revision: ${room.revision} · ping: ${ping.toFixed(0)} ms
+player: ${esc(session?.playerId??'')} · boot: ${esc(bootId.slice(0,8))}
+Simulation: not running in this checkpoint
+Configured: ${config.network.sim_hz} Hz sim / ${config.network.snapshot_hz} Hz snapshots / ${config.network.input_resend_hz} Hz input</pre>`:''}</section>`;
+    document.querySelectorAll<HTMLButtonElement>('[data-seat]').forEach(b=>b.onclick=()=>send({type:'seat',seat:Number(b.dataset.seat)}));
+    document.querySelector('#ready')?.addEventListener('click',()=>send({type:'ready',ready:!own?.ready}));
+    document.querySelector('#mode-1')?.addEventListener('click',()=>send({type:'mode',mode:'1v1'}));
+    document.querySelector('#mode-2')?.addEventListener('click',()=>send({type:'mode',mode:'2v2'}));
+    document.querySelector('#leave')!.addEventListener('click',()=>{send({type:'leave'});clearRoom();});
+    const link=new URL(location.origin);link.searchParams.set(config.rooms.share_link_param,room.code);
+    document.querySelector('#copy')!.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(link.href);document.querySelector('#share-status')!.textContent='Link copied. Send it to your crew.';}catch{document.querySelector('#share-status')!.textContent=link.href;}});
+    document.querySelector('#share')!.addEventListener('click',async()=>{try{if(navigator.share)await navigator.share({title:'Raft Rage',text:`Hop aboard room ${room!.code}`,url:link.href});else{await navigator.clipboard.writeText(link.href);document.querySelector('#share-status')!.textContent='Link copied.';}}catch{document.querySelector('#share-status')!.textContent=link.href;}});
+  }
+  for(const id of ['create','join','solo'])document.querySelector(`#${id}`)?.addEventListener('click',()=>{screen=id as typeof screen;notice='';render();});
+  document.querySelector('#back')?.addEventListener('click',()=>{screen='home';notice='';render();});
+  document.querySelector('#how-button')?.addEventListener('click',()=>how.showModal());
+}
+function clearRoom(){session=undefined;room=undefined;bootId='';saveSession();screen='home';const url=new URL(location.href);url.searchParams.delete(config.rooms.share_link_param);history.replaceState(null,'',url);render();}
+function connect(){
+  const ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws`);socket=ws;
+  ws.onmessage=e=>{
+    const m=JSON.parse(e.data) as ServerMessage;
+    if(m.type==='hello'){
+      if(bootId&&bootId!==m.bootId){online=false;clearRoom();notice='The server restarted. Start a new room.';render();}
+      bootId=m.bootId;ws.send(JSON.stringify({type:'hello',bootId,protocol:config.network.protocol_version}));
+    }else if(m.type==='connected'){
+      online=true;reconnectDelay=config.network.reconnect_initial_ms;connection.textContent='River connected';connection.classList.add('online');
+      if(session){currentName=session.name;send({type:'resume',...session});}
+    }else if(m.type==='joined'){
+      session={code:m.code,name:currentName||session?.name||'',playerId:m.playerId,token:m.token,bootId:m.bootId};saveSession();screen='lobby';notice='';
+    }else if(m.type==='room'){room=m.room;if(session){screen='lobby';render();}}
+    else if(m.type==='error'){
+      if(m.code==='SERVER_RESTART'||m.code==='ROOM_MISSING'||m.code==='SESSION_MISSING'){
+        if(session || m.code==='SERVER_RESTART')clearRoom();
+      }showError(m.message);
+    }else if(m.type==='pong'){ping=Date.now()-m.clientTime;}
+  };
+  ws.onclose=()=>{
+    if(socket!==ws)return;online=false;connection.textContent='Reconnecting…';connection.classList.remove('online');
+    clearTimeout(reconnectTimer);reconnectTimer=setTimeout(connect,reconnectDelay*(1+Math.random()*config.network.reconnect_jitter_frac));
+    reconnectDelay=Math.min(config.network.reconnect_max_ms,reconnectDelay*config.network.reconnect_factor);
+  };
+  ws.onerror=()=>{connection.textContent='Reconnecting…';};
+}
+setInterval(()=>{if(online)send({type:'ping',clientTime:Date.now()});},config.network.clock_sync_interval_s*1000);
+render();connect();

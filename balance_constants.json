@@ -1,0 +1,532 @@
+{
+  "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
+  "_version": "1.1-skeleton (2026-10-31)",
+  "_units": {
+    "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
+    "time": "seconds (s) unless the key ends in _ms or _min",
+    "angle": "degrees (deg) unless the key ends in _rad",
+    "speed": "u/s",
+    "dv": "instant change in raft velocity in u/s (raft mass is 1, so impulse = dv)",
+    "fraction": "0..1 (0.16 = 16%)",
+    "angle_convention": "Angles increase clockwise when viewed from above. phi = 0 is the bow (front of the raft), +90 is the raft's right side, +/-180 is the stern (back)."
+  },
+  "network": {
+    "sim_hz": 60,
+    "snapshot_hz": 20,
+    "snapshot_hz_min": 15,
+    "snapshot_hz_max": 20,
+    "interp_buffer_ms": 100,
+    "sync_tolerance_ms": 150,
+    "input_resend_hz": 10,
+    "event_repeat_s": 1,
+    "clock_sync_interval_s": 2,
+    "disconnect_to_bot_s": 3,
+    "_assumed": [
+      "snapshot_hz",
+      "input_resend_hz",
+      "event_repeat_s",
+      "clock_sync_interval_s",
+      "protocol_version",
+      "reconnect_initial_ms",
+      "reconnect_max_ms",
+      "reconnect_factor",
+      "reconnect_jitter_frac",
+      "heartbeat_interval_s",
+      "heartbeat_timeout_s",
+      "handshake_timeout_s",
+      "stale_input_s",
+      "max_message_bytes",
+      "max_buffered_bytes",
+      "message_burst",
+      "message_rate_per_s"
+    ],
+    "protocol_version": 1,
+    "reconnect_initial_ms": 500,
+    "reconnect_max_ms": 8000,
+    "reconnect_factor": 1.7,
+    "reconnect_jitter_frac": 0.2,
+    "heartbeat_interval_s": 2,
+    "heartbeat_timeout_s": 3,
+    "handshake_timeout_s": 10,
+    "stale_input_s": 0.5,
+    "max_message_bytes": 4096,
+    "max_buffered_bytes": 65536,
+    "message_burst": 60,
+    "message_rate_per_s": 30
+  },
+  "rooms": {
+    "code_length": 4,
+    "code_alphabet": "ABCDEFGHJKLMNPQRSTUVWXYZ",
+    "_code_alphabet_note": "Letters only, no I or O (digits are never used, so 0 and 1 are excluded too).",
+    "share_link_param": "room",
+    "human_seats_min": 1,
+    "human_seats_max": 4,
+    "seats_1v1": 2,
+    "seats_2v2": 4,
+    "max_spectators": 8,
+    "idle_close_min": 20,
+    "countdown_s": 3,
+    "default_mode_multiplayer": "2v2",
+    "default_mode_solo": "1v1",
+    "_assumed": [
+      "max_spectators",
+      "idle_close_min",
+      "countdown_s",
+      "default_mode_multiplayer",
+      "default_mode_solo",
+      "maintenance_interval_ms",
+      "code_attempts_max",
+      "token_bytes",
+      "max_rooms",
+      "max_connections",
+      "code_blocklist",
+      "reclaim_by_name_after_grace"
+    ],
+    "maintenance_interval_ms": 100,
+    "code_attempts_max": 1000,
+    "token_bytes": 32,
+    "max_rooms": 64,
+    "max_connections": 256,
+    "code_blocklist": [
+      "FUCK",
+      "SHIT",
+      "CUNT",
+      "DICK",
+      "PISS",
+      "COCK"
+    ],
+    "reclaim_by_name_after_grace": true
+  },
+  "names": {
+    "max_chars": 12,
+    "allowed_pattern": "^[A-Za-z0-9 ]{1,12}$",
+    "unique_per_room": true,
+    "_assumed": [
+      "unique_per_room",
+      "blocklist"
+    ],
+    "blocklist": [
+      "fuck",
+      "shit",
+      "cunt",
+      "nigger",
+      "faggot",
+      "cock",
+      "dick",
+      "pussy"
+    ]
+  },
+  "raft": {
+    "radius": 34,
+    "mass": 1,
+    "inertia_factor": 0.5,
+    "_inertia_formula": "I = inertia_factor * radius^2 = 578",
+    "rim_radius": 26
+  },
+  "walking": {
+    "speed_1v1_deg_s": 180,
+    "speed_2v2_deg_s": 120,
+    "zone_2v2_left_deg": [
+      -180,
+      -20
+    ],
+    "zone_2v2_right_deg": [
+      20,
+      180
+    ],
+    "min_stern_gap_2v2_deg": 30,
+    "_note": "1v1: the single animal walks the whole ring and wraps. 2v2: the bow (-20..+20) is empty. Left/right input is the animal's own left/right as it faces the raft centre: left input = phi increases (clockwise from above)."
+  },
+  "firing": {
+    "general_cant_amplitude_deg": 20,
+    "_cant_formula": "cant(phi) = -general_cant_amplitude_deg * sin(2 * phi); aim = phi + cant(phi). Capybara replaces this with its own fixed cant (see characters.capybara).",
+    "impulse_spread_s": 0.16,
+    "sync_window_s": 0.15,
+    "bear_sync_bonus_window_s": 0.16,
+    "_assumed": [
+      "bear_sync_bonus_window_s"
+    ]
+  },
+  "multipliers": {
+    "_note": "All multipliers stack by multiplying. 'thrust' scales dv from firing; 'current' scales the river current speed.",
+    "thrust_slow": 0.5,
+    "thrust_boost": 1.5,
+    "thrust_slipstream": 1.3,
+    "thrust_sync_bonus": 0.35,
+    "_thrust_sync_note": "SYNC adds +35%, i.e. multiply by (1 + 0.35).",
+    "thrust_turbo": 1.5,
+    "impulse_1v1": 1.6,
+    "_impulse_1v1_note": "Applied on top of the 1v1 character overrides.",
+    "current_slipstream": 1.25,
+    "current_turbo": 1.3,
+    "current_shortcut": 2.2
+  },
+  "water": {
+    "current_speed": 55,
+    "current_relax_rate": 1.05,
+    "_relax_formula": "v += (current_vec - v) * (1 - exp(-current_relax_rate * dt))",
+    "angular_damping": 3,
+    "angular_damping_stunned": 1,
+    "_damping_formula": "omega *= exp(-angular_damping * dt)",
+    "speed_cap": 430,
+    "keel_gain": 2.2,
+    "_keel_formula": "unless stunned or airborne: omega += keel_gain * heading_error_rad * dt"
+  },
+  "heat": {
+    "_note": "Heat is 0..1. Hippo/Capybara: heat rises while FIRE is held. Frog: heat rises only while held at full charge. Heat cools only while FIRE is not held, including during lockout.",
+    "hippo_overheat_hold_s": 3,
+    "capybara_overheat_hold_s": 3,
+    "frog_overheat_full_charge_hold_s": 1.5,
+    "warn_at": 0.7,
+    "overheat_lockout_s": 1,
+    "cool_rate_per_s": 0.8
+  },
+  "characters": {
+    "hippo": {
+      "propulsion": "spout",
+      "fire_label": "SPOUT",
+      "input": "tap_or_hold",
+      "dv_2v2": 50,
+      "dv_1v1": 48,
+      "recharge_s_2v2": 0.5,
+      "recharge_s_1v1": 0.5,
+      "pips": {
+        "push": 3,
+        "turn": 2,
+        "ease": 4
+      }
+    },
+    "frog": {
+      "propulsion": "slingshot",
+      "fire_label": "CHARGE",
+      "input": "hold_to_charge_release_to_fire",
+      "dv_min": 50,
+      "dv_max_2v2": 180,
+      "dv_max_1v1": 170,
+      "charge_time_s": 0.8,
+      "_charge_formula": "dv = dv_min + (dv_max - dv_min) * min(1, held_s / charge_time_s)",
+      "recharge_s_2v2": 0.65,
+      "recharge_s_1v1": 0.64,
+      "walk_factor_while_charging": 0.5,
+      "hit_cancels_charge": true,
+      "pips": {
+        "push": 5,
+        "turn": 2,
+        "ease": 2
+      }
+    },
+    "bear": {
+      "propulsion": "heavy_push",
+      "fire_label": "PUSH",
+      "input": "hold",
+      "dv_per_s_2v2": 104,
+      "dv_per_s_1v1": 107,
+      "stamina_s": 2.2,
+      "stamina_refill_per_s": 1.83,
+      "empty_lockout_s": 1.2,
+      "thrust_stat_every_s": 0.5,
+      "_note": "Stamina drains 1 s per second of pushing and refills whenever not pushing, including during lockout.",
+      "_assumed": [
+        "thrust_stat_every_s"
+      ],
+      "pips": {
+        "push": 3,
+        "turn": 1,
+        "ease": 5
+      }
+    },
+    "capybara": {
+      "propulsion": "whirl",
+      "fire_label": "WHIRL",
+      "input": "tap_or_hold",
+      "dv_2v2": 44,
+      "dv_1v1": 52,
+      "recharge_s_2v2": 0.55,
+      "recharge_s_1v1": 0.55,
+      "cant_deg_2v2": 40,
+      "cant_deg_1v1": 30,
+      "_cant_note": "Fixed cant replaces the general cant: aim = phi + sign(phi) * cant_deg (sign(+/-180) = +1). Result: right half spins the raft left, left half spins it right.",
+      "pips": {
+        "push": 2,
+        "turn": 5,
+        "ease": 3
+      }
+    },
+    "card_pips_max": 5,
+    "_assumed": [
+      "card_pips_max"
+    ]
+  },
+  "combat": {
+    "whack_arc_half_deg": 80,
+    "_whack_arc_note": "A whack can land if the angle between the animal's world rim direction and the direction to the rival raft's centre is <= 80 deg.",
+    "whack_windup_s": 0.28,
+    "whack_reach": 120,
+    "_whack_reach_note": "Max centre-to-centre distance between rafts for a whack to land (rafts touch at 68).",
+    "whack_cooldown_s": 0.6,
+    "hit_stun_s": 1.5,
+    "stun_max_s": 3,
+    "hit_slow_s": 3,
+    "immunity_s": 2,
+    "_immunity_note": "Immunity to whacks and thrown logs starts when the stun ends.",
+    "_assumed": [
+      "whack_reach",
+      "whack_cooldown_s"
+    ]
+  },
+  "course": {
+    "length": 18000,
+    "half_width": 200,
+    "start_lateral_offset": 70,
+    "sharp_turns_with_spikes": 5,
+    "spike_stun_s": 0.6,
+    "spike_speed_factor": 0.5,
+    "rocks": 13,
+    "rock_radius_min": 20,
+    "rock_radius_max": 40,
+    "floating_logs": 4,
+    "floating_log_length": 120,
+    "floating_log_width": 24,
+    "whirlpools": 3,
+    "whirlpool_radius": 70,
+    "whirlpool_spin_rad_s2": 3,
+    "whirlpool_drag_per_s": 1.2,
+    "bank_restitution": 0.4,
+    "raft_raft_restitution": 0.5,
+    "_assumed": [
+      "length",
+      "half_width",
+      "start_lateral_offset",
+      "sharp_turns_with_spikes",
+      "rock_radius_min",
+      "rock_radius_max",
+      "floating_log_length",
+      "floating_log_width",
+      "whirlpool_radius",
+      "whirlpool_spin_rad_s2",
+      "whirlpool_drag_per_s",
+      "bank_restitution",
+      "raft_raft_restitution"
+    ],
+    "_tuning_note": "Tune course.length until a 2v2 race of Normal bots finishes in validation.finish_s_min..finish_s_max."
+  },
+  "pickups": {
+    "crates": 10,
+    "respawn_s": 8,
+    "crate_radius": 22,
+    "speed_boost_s": 3,
+    "catchup_behind_distance": 150,
+    "odds_trailing_far": {
+      "speed": 0.5,
+      "log": 0.35,
+      "bubble": 0.15
+    },
+    "odds_leader": {
+      "bubble": 0.5,
+      "log": 0.25,
+      "speed": 0.25
+    },
+    "odds_neutral": {
+      "speed": 0.34,
+      "log": 0.33,
+      "bubble": 0.33
+    },
+    "_odds_note": "trailing_far = more than catchup_behind_distance behind the leader; neutral = trailing by catchup_behind_distance or less.",
+    "log_throw_speed": 500,
+    "log_throw_range": 400,
+    "_assumed": [
+      "crate_radius",
+      "odds_neutral",
+      "log_throw_speed",
+      "log_throw_range"
+    ]
+  },
+  "slipstream": {
+    "min_behind": 80,
+    "max_behind": 900,
+    "_note": "Distance measured along the course centreline behind the leader. Effects: multipliers.thrust_slipstream and multipliers.current_slipstream."
+  },
+  "shortcut": {
+    "time_saved_s_approx": 5,
+    "gate_open_s": 6,
+    "gate_hint_interval_s": 1.5,
+    "gate_give_way_s": 4,
+    "start_frac": 0.76,
+    "end_frac": 0.84,
+    "_assumed": [
+      "start_frac",
+      "end_frac"
+    ],
+    "_note": "Current inside the shortcut uses multipliers.current_shortcut."
+  },
+  "crocodiles": {
+    "count": 3,
+    "positions_frac": [
+      0.235,
+      0.545,
+      0.69
+    ],
+    "sweep_frac_of_half_width": 0.72,
+    "periods_s": [
+      4.6,
+      5.4,
+      5
+    ],
+    "_position_formula": "lateral_offset_i(t) = sweep_frac_of_half_width * half_width * sin(2*pi*t / periods_s[i]), t = authoritative race time. Pure function of race time.",
+    "chomp_stun_s": 1,
+    "chomp_slow_s": 1.5,
+    "knockback_speed": 160,
+    "cooldown_per_raft_s": 1.6,
+    "jaw_fast_distance": 140,
+    "collision_radius": 28,
+    "_assumed": [
+      "collision_radius"
+    ]
+  },
+  "ramp": {
+    "position_frac": 0.43,
+    "length": 80,
+    "width": 112,
+    "launch_min_speed": 160,
+    "launch_vz_base": 110,
+    "launch_vz_per_speed": 0.5,
+    "_launch_formula": "s = speed along the river; vz = launch_vz_base + launch_vz_per_speed * s; horizontal velocity *= launch_speed_mult",
+    "gravity": 520,
+    "launch_speed_mult": 1.12,
+    "too_slow_speed_mult": 0.6
+  },
+  "race": {
+    "finish_grace_s": 15,
+    "max_race_s": 240
+  },
+  "turbo": {
+    "fill_per_sync_pair_2v2": 0.16,
+    "fill_dv_divisor_1v1": 2000,
+    "_fill_1v1_formula": "meter += shot_dv / fill_dv_divisor_1v1",
+    "decay_per_s": 0.02,
+    "pause_decay_when_full": true,
+    "trigger_window_s": 0.3,
+    "duration_s": 2.5,
+    "_note": "Turbo effects: multipliers.thrust_turbo and multipliers.current_turbo.",
+    "_assumed": [
+      "pause_decay_when_full"
+    ]
+  },
+  "bots": {
+    "default_difficulty": "chill",
+    "levels": {
+      "chill": {
+        "decision_tick_s": 0.32,
+        "fumble": 0.22,
+        "target_speed": 240,
+        "whack_block_label": "rarely",
+        "whack_block_chance": 0.1
+      },
+      "normal": {
+        "decision_tick_s": 0.2,
+        "fumble": 0.06,
+        "target_speed": 270,
+        "whack_block_label": "sometimes",
+        "whack_block_chance": 0.35
+      },
+      "spicy": {
+        "decision_tick_s": 0.15,
+        "fumble": 0.02,
+        "target_speed": 300,
+        "whack_block_label": "often",
+        "whack_block_chance": 0.7
+      }
+    },
+    "_desired_change_formula": "desired = unit(aim - position) * target_speed - velocity",
+    "_score_formula": "score = cos(angle between recoil and desired) - w * (predicted |omega| after shot - |omega| now)",
+    "score_turn_weight": 0.25,
+    "score_turn_weight_high_spin": 0.8,
+    "high_spin_threshold_rad_s": 0.8,
+    "fire_threshold_hippo": 0.4,
+    "fire_threshold_capybara": 0.4,
+    "frog_charge_threshold": 0.4,
+    "frog_release_min_s": 0.5,
+    "frog_release_max_s": 0.8,
+    "bear_hold_threshold": 0.3,
+    "bear_min_stamina_s": 0.3,
+    "stern_avoid_2v2_deg": 20,
+    "shortcut_chance": 0.4,
+    "lookahead": 220,
+    "candidate_step_deg": 15,
+    "obstacle_clearance": 30,
+    "stuck_window_s": 2,
+    "stuck_min_progress": 30,
+    "_assumed": [
+      "levels.*.whack_block_chance",
+      "lookahead",
+      "candidate_step_deg",
+      "obstacle_clearance",
+      "stuck_window_s",
+      "stuck_min_progress"
+    ]
+  },
+  "stats": {
+    "close_call_margin": 14,
+    "close_call_credit_s": 1.5,
+    "awards": {
+      "thrusts": "Engine Room",
+      "hits": "Sharpshooter",
+      "blocks": "The Wall",
+      "close_calls": "Daredevil",
+      "overheats": "Hothead"
+    }
+  },
+  "views": {
+    "phone_race_view_frac": 0.55,
+    "phone_pad_frac": 0.45,
+    "big_screen_split_distance": 500,
+    "_assumed": [
+      "big_screen_split_distance"
+    ]
+  },
+  "visuals": {
+    "toon_light_steps": 3,
+    "max_particles": 300,
+    "max_triangles_in_view": 150000,
+    "target_fps_min": 30,
+    "max_pixel_ratio": 2,
+    "auto_low_effects_below_fps": 30,
+    "auto_low_effects_after_s": 3,
+    "hitbox_radius_visual_limit": 34,
+    "_assumed": [
+      "auto_low_effects_below_fps",
+      "auto_low_effects_after_s"
+    ]
+  },
+  "audio": {
+    "music_tempo_start": 1,
+    "music_tempo_end": 1.25,
+    "_assumed": [
+      "music_tempo_start",
+      "music_tempo_end"
+    ]
+  },
+  "accessibility": {
+    "min_touch_target_px": 44,
+    "min_text_contrast": 4.5
+  },
+  "teaching": {
+    "lobby_cards": [
+      "Stand to steer",
+      "Pick an animal",
+      "Whack and block"
+    ],
+    "first_race_hints": [
+      "Walk with ◀ ▶",
+      "Fire pushes you away from where you stand",
+      "Fire together for TURBO"
+    ]
+  },
+  "validation": {
+    "_note": "Results from the single-device prototype. Targets for tuning, not gameplay values.",
+    "finish_s_min": 75,
+    "finish_s_max": 85,
+    "backwards_time_frac_with_keel_max": 0.02,
+    "backwards_time_frac_without_keel": 0.4
+  }
+}
