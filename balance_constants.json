@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "1.5-results (2026-10-31)",
+  "_version": "1.6-combat (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -300,8 +300,10 @@
     "_immunity_note": "Immunity to whacks and thrown logs starts when the stun ends.",
     "_assumed": [
       "whack_reach",
-      "whack_cooldown_s"
-    ]
+      "whack_cooldown_s",
+      "block_consumes_defender_swing"
+    ],
+    "block_consumes_defender_swing": true
   },
   "course": {
     "length": 18000,
@@ -713,7 +715,10 @@
       "finish_arch_height",
       "finish_arch_width",
       "finish_arch_post",
-      "hippo_parts"
+      "hippo_parts",
+      "comic_banner_s",
+      "whack_arc_radius",
+      "whack_arc_tube"
     ],
     "camera_height": 240,
     "camera_behind": 320,
@@ -909,7 +914,10 @@
         ],
         "ink"
       ]
-    ]
+    ],
+    "comic_banner_s": 0.8,
+    "whack_arc_radius": 6.5,
+    "whack_arc_tube": 0.7
   },
   "audio": {
     "music_tempo_start": 1,

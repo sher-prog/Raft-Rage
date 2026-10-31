@@ -11,3 +11,5 @@
 @media(max-width:780px) and (pointer:coarse){#game-stage{bottom:var(--pad-frac)}.pad{display:grid;top:calc(var(--race-view-frac) + 16px);bottom:max(22px,env(safe-area-inset-bottom));height:auto;left:14px;right:14px;gap:10px}.race-screen{background:#cfe4d3}.key-legend,#pad-toggle{display:none}.race-top{padding:8px 10px}.race-top b{font-size:11px}.race-top strong{font-size:22px}#race-progress{top:68px}#countdown{bottom:var(--pad-frac);font-size:75px}#race-debug{font-size:9px;top:104px}.race-banner{top:18%;font-size:18px;left:5%;right:5%}}
 
 .results{max-width:850px;margin:45px auto}.results>h2{font-size:56px}.results .team p{font-size:14px}.results .team h2{font-variant-numeric:tabular-nums}
+
+.pad{grid-template-rows:1fr 2fr}.pad [data-control="left"]{grid-column:1;grid-row:1/3}.pad [data-control="right"]{grid-column:2;grid-row:1/3}.pad [data-control="whack"]{grid-column:3;grid-row:1;font-size:18px}.pad [data-control="fire"]{grid-column:3;grid-row:2}

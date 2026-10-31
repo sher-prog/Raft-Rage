@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-10-31T22:12:10.262Z",
+  "timestamp": "2026-10-31T22:16:17.487Z",
   "runtime": "v24.22.1",
   "startCommand": "npm start",
   "binding": "0.0.0.0; ephemeral PORT honored",
-  "firstReadyHttpAndWebSocketMs": 359.666359,
-  "secondReadyHttpAndWebSocketMs": 314.84300099999996,
+  "firstReadyHttpAndWebSocketMs": 333.44616599999995,
+  "secondReadyHttpAndWebSocketMs": 255.450088,
   "bootChanged": true,
   "restartMessageExact": true,
   "environment": "Local Work container, not Render"

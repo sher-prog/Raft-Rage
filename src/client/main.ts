@@ -1,3 +1,4 @@
+import { EventDeduper } from '../game/event-deduper.ts';
 import { RaceView,interpolate } from './race-view.ts';
 import type { Config, RoomView, ServerMessage, Snapshot } from '../shared.ts';
 type Session={code:string;name:string;playerId:string;token:string;bootId:string;inputEpoch:string;seq:number;whackCount:number};
@@ -16,7 +17,8 @@ let reconnectDelay=config.network.reconnect_initial_ms,reconnectTimer:ReturnType
 let screen:'home'|'create'|'join'|'solo'|'lobby'=params.has(config.rooms.share_link_param)?'join':'home';
 let clockOffset=0,snapshot:Snapshot|undefined;
 let raceView:RaceView|undefined,frames:Snapshot[]=[],lastFrame=performance.now();
-let seenEvents=new Set<number>(),eventRaceId='';
+const eventDeduper=new EventDeduper(config.network.event_seen_max);
+let eventRaceId='',comicText='',comicUntil=0;
 const held=new Set<string>(),pointers=new Map<number,string>();
 let ping=0,notice='',currentName='',prefillCode=params.get(config.rooms.share_link_param)??'';
 try{currentName=localStorage.getItem('raft-rage-name')??'';}catch{}
@@ -74,12 +76,12 @@ function renderRace(){
   if(raceView)return;
   document.body.classList.add('in-race');
   const own=room?.players.find(p=>p.id===session?.playerId);
-  main.innerHTML=`<section class="race-screen"><div class="race-top"><b>▲ RED <span>vs</span> ● BLUE</b><strong id="race-clock">0:00.0</strong><button id="pad-toggle">Show controls</button><button id="race-leave">Leave</button></div><div id="game-stage"></div><div id="countdown" role="status"></div><div id="race-banner" class="race-banner" role="status">${own?.seat===null?"You'll join next race":''}</div><div id="race-progress"><label>▲ RED <progress id="red-progress" max="1" value="0"></progress></label><label>● BLUE <progress id="blue-progress" max="1" value="0"></progress></label></div>${own?.seat!==null?`<div id="pad" class="pad"><button data-control="left" aria-label="Walk left">◀<small>WALK LEFT</small></button><button data-control="right" aria-label="Walk right">▶<small>WALK RIGHT</small></button><button data-control="fire" class="primary">SPOUT</button></div><div class="key-legend">A / D walk · W spout</div>`:''}<p id="error" class="error" role="alert"></p>${debug?'<pre id="race-debug" class="debug"></pre>':''}</section>`;
+  main.innerHTML=`<section class="race-screen"><div class="race-top"><b>▲ RED <span>vs</span> ● BLUE</b><strong id="race-clock">0:00.0</strong><button id="pad-toggle">Show controls</button><button id="race-leave">Leave</button></div><div id="game-stage"></div><div id="countdown" role="status"></div><div id="race-banner" class="race-banner" role="status">${own?.seat===null?"You'll join next race":''}</div><div id="race-progress"><label>▲ RED <progress id="red-progress" max="1" value="0"></progress></label><label>● BLUE <progress id="blue-progress" max="1" value="0"></progress></label></div>${own?.seat!==null?`<div id="pad" class="pad"><button data-control="left" aria-label="Walk left">◀<small>WALK LEFT</small></button><button data-control="right" aria-label="Walk right">▶<small>WALK RIGHT</small></button><button data-control="whack">WHACK</button><button data-control="fire" class="primary">SPOUT</button></div><div class="key-legend">A / D walk · W spout · S whack</div>`:''}<p id="error" class="error" role="alert"></p>${debug?'<pre id="race-debug" class="debug"></pre>':''}</section>`;
   try{raceView=new RaceView(document.querySelector<HTMLElement>('#game-stage')!,config);}catch{showError('This browser could not start 3D. Try refreshing the page.');}
   document.querySelector('#race-leave')!.addEventListener('click',()=>{releaseAll();send({type:'leave'});clearRoom();});
   document.querySelector('#pad-toggle')!.addEventListener('click',()=>document.querySelector('#pad')?.classList.toggle('show-pad'));
   document.querySelectorAll<HTMLButtonElement>('[data-control]').forEach(button=>{
-    button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);pointers.set(e.pointerId,button.dataset.control!);button.classList.add('held');sendInput();});
+    button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);pointers.set(e.pointerId,button.dataset.control!);if(button.dataset.control==='whack'&&session)session.whackCount++;button.classList.add('held');sendInput();});
     const release=(e:PointerEvent)=>{pointers.delete(e.pointerId);button.classList.remove('held');sendInput();};
     button.addEventListener('pointerup',release);button.addEventListener('pointercancel',release);button.addEventListener('lostpointercapture',release);
     button.addEventListener('contextmenu',e=>e.preventDefault());
@@ -93,7 +95,14 @@ function renderResults(){
   main.innerHTML=`<section class="results card"><span class="eyebrow">THAT WAS A SPLASH</span><h2>${title}</h2><div class="seat-grid">${state.rafts.map((r,index)=>`<article class="team ${index===0?'red':'blue'}"><h3>${index===0?'▲ RED':'● BLUE'}</h3><h2>${r.finishTime===null?`DNF`:`${r.finishTime.toFixed(2)}s`}</h2><p>${r.finishTime===null?`${Math.max(0,config.course.length-r.progress).toFixed(0)}u to go`:''}</p>${Array.from({length:seats/2},(_,i)=>{const seat=index*seats/2+i,p=room!.players.find(p=>p.seat===seat);return `<p>${esc(p?.name??'Bot')} · Hippo${p&&!p.connected?' (bot driving)':''}</p>`;}).join('')}</article>`).join('')}</div><div class="lobby-controls">${host?'<button id="rematch" class="primary">Rematch</button>':'<p>Waiting for host…</p>'}<button id="results-leave">Leave</button></div><p id="error" class="error" role="alert"></p></section>`;
   document.querySelector('#rematch')?.addEventListener('click',()=>send({type:'rematch'}));document.querySelector('#results-leave')!.addEventListener('click',()=>{send({type:'leave'});clearRoom();});
 }
-function acceptSnapshot(state:Snapshot){if(state.raceId!==eventRaceId){frames=[];seenEvents.clear();eventRaceId=state.raceId;}for(const e of state.events){if(seenEvents.has(e.id))continue;seenEvents.add(e.id);if(seenEvents.size>config.network.event_seen_max)seenEvents.delete(seenEvents.values().next().value!);}snapshot=state;frames.push(state);if(frames.length>config.network.snapshot_buffer_max)frames.shift();}
+function acceptSnapshot(state:Snapshot){
+  if(state.raceId!==eventRaceId){frames=[];eventRaceId=state.raceId;comicText='';}
+  for(const e of eventDeduper.consume(state.raceId,state.events)){
+    const text:Record<string,string>={whack_windup:'WHACK WINDUP!',block:'BLOCK!',hit:'WHACK!',immune:'IMMUNE'};
+    if(text[e.type]){comicText=text[e.type];comicUntil=state.serverTime+config.visuals.comic_banner_s*1000;}
+  }
+  snapshot=state;frames.push(state);if(frames.length>config.network.snapshot_buffer_max)frames.shift();
+}
 function sendInput(){
   if(!online||!room||!['countdown','race'].includes(room.phase)||!session)return;
   const player=room.players.find(p=>p.id===session?.playerId);if(player?.seat===null||player?.seat===undefined)return;
@@ -101,7 +110,7 @@ function sendInput(){
   session.seq++;saveSession();send({type:'input',raceId:snapshot?.raceId,seat:player.seat,inputEpoch:session.inputEpoch,seq:session.seq,whackCount:session.whackCount,walk:Number(left)-Number(right),fire:held.has('w')||controls.includes('fire')});
 }
 function releaseAll(){held.clear();pointers.clear();document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'));sendInput();}
-window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(!room||!['countdown','race'].includes(room.phase)||!['a','d','w'].includes(key)||e.repeat)return;e.preventDefault();held.add(key);sendInput();});
+window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(!room||!['countdown','race'].includes(room.phase)||!['a','d','w','s'].includes(key)||e.repeat)return;e.preventDefault();held.add(key);if(key==='s'&&session)session.whackCount++;sendInput();});
 window.addEventListener('keyup',e=>{if(held.delete(e.key.toLowerCase()))sendInput();});
 window.addEventListener('blur',releaseAll);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseAll();});
 setInterval(sendInput,1000/config.network.input_resend_hz);
@@ -113,7 +122,7 @@ function updateClock(){
   const target=document.querySelector('#race-clock');if(target)target.textContent=`${Math.floor(raceTime/60)}:${(raceTime%60).toFixed(1).padStart(4,'0')}`;
   const countdown=document.querySelector('#countdown');if(countdown)countdown.textContent=elapsed<config.rooms.countdown_s?String(Math.ceil(config.rooms.countdown_s-elapsed)):raceTime<config.rooms.go_banner_s?'GO!':'';
   const own=room?.players.find(p=>p.id===session?.playerId),ownRaft=own?.seat!==null&&own?.seat!==undefined?Math.floor(own.seat/((room?.mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2)/2)):snapshot.rafts[1].progress>snapshot.rafts[0].progress?1:0;
-  const banner=document.querySelector('#race-banner');if(banner)banner.textContent=snapshot.rafts[ownRaft].stun>0?'STUNNED':snapshot.firstFinishTime!==null?`${snapshot.winner===0?'▲ RED':'● BLUE'} FINISHED!`:own?.seat===null?"You'll join next race":room?.banner??'';
+  const banner=document.querySelector('#race-banner');if(banner)banner.textContent=snapshot.rafts[ownRaft].stun>0?'STUNNED':serverNow<comicUntil?comicText:snapshot.firstFinishTime!==null?`${snapshot.winner===0?'▲ RED':'● BLUE'} FINISHED!`:own?.seat===null?"You'll join next race":room?.banner??'';
   for(const [i,id]of ['red-progress','blue-progress'].entries()){const bar=document.querySelector<HTMLProgressElement>('#'+id);if(bar)bar.value=snapshot.rafts[i].progress/config.course.length;}
   const dbg=document.querySelector('#race-debug');if(dbg){const r=snapshot.rafts[ownRaft],a=snapshot.animals.find(a=>a.seat===own?.seat);dbg.textContent=`${room?.phase} · tick ${snapshot.tick} · ${snapshot.raceTime.toFixed(2)}s · fps ${raceView?.fps.toFixed(0)??0} · ping ${ping.toFixed(0)}ms\nTick average ${snapshot.tickAverageMs.toFixed(3)}ms / worst ${snapshot.tickWorstMs.toFixed(3)}ms\nx ${r.x.toFixed(1)} y ${r.y.toFixed(1)} heading ${(r.heading*180/Math.PI).toFixed(1)}° speed ${Math.hypot(r.vx,r.vy).toFixed(1)}\nphi ${a?.phi.toFixed(1)} · seq sent ${session?.seq??0} / ack ${a?.seq??-1}\n${config.network.sim_hz}Hz sim · ${config.network.snapshot_hz}Hz snapshots · ${config.network.input_resend_hz}Hz input · buffer ${config.network.interp_buffer_ms}ms`;}
   return ownRaft;

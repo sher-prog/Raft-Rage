@@ -3,7 +3,7 @@ import type {Config,Snapshot,RaftState} from '../shared.ts';
 import {Course,rad,wrap} from '../game/course.ts';
 export class RaceView {
   renderer:THREE.WebGLRenderer;scene=new THREE.Scene();camera:THREE.PerspectiveCamera;
-  rafts:THREE.Group[]=[];animals:THREE.Group[]=[];stars:THREE.Group[]=[];
+  rafts:THREE.Group[]=[];animals:THREE.Group[]=[];stars:THREE.Group[]=[];swings:THREE.Mesh[]=[];
   course:Course;resize:ResizeObserver;cameraReady=false;fps=0;frames=0;sample=0;
   constructor(readonly container:HTMLElement,readonly config:Config){
     const v=config.visuals;this.course=new Course(config);
@@ -63,13 +63,14 @@ export class RaceView {
         const mesh=new THREE.Mesh(geometry,new THREE.MeshToonMaterial({color:colors[color]}));mesh.scale.set(...dimensions as [number,number,number]);mesh.position.set(...position as [number,number,number]);group.add(mesh);
       }
       const cannon=new THREE.Mesh(new THREE.CylinderGeometry(v.cannon_radius,v.cannon_radius,v.cannon_length,v.radial_segments),new THREE.MeshToonMaterial({color:v.red_color}));cannon.rotation.x=Math.PI/2;cannon.position.set(0,v.body_height,v.cannon_length/2);group.add(cannon);
+      const swing=new THREE.Mesh(new THREE.TorusGeometry(v.whack_arc_radius,v.whack_arc_tube,v.radial_segments,v.radial_segments,Math.PI),new THREE.MeshToonMaterial({color:v.vest_color}));swing.rotation.x=Math.PI/2;swing.position.y=v.head_height;group.add(swing);this.swings.push(swing);
       this.rafts[state.raft].add(group);this.animals.push(group);
     }
   }
   draw(snapshot:Snapshot,ownRaft:number,dt:number){
     this.ensureAnimals(snapshot);const v=this.config.visuals;
     snapshot.rafts.forEach((r,i)=>{this.rafts[i].position.set(r.x,v.raft_height,-r.y);this.rafts[i].rotation.y=-r.heading;this.stars[i].visible=r.stun>0;this.stars[i].rotation.y=-(snapshot.raceTime*v.stun_orbit_speed);});
-    snapshot.animals.forEach((a,i)=>{const phi=rad(a.phi);this.animals[i].position.set(Math.sin(phi)*this.config.raft.rim_radius,0,-Math.cos(phi)*this.config.raft.rim_radius);this.animals[i].rotation.y=-phi+Math.PI;});
+    snapshot.animals.forEach((a,i)=>{const phi=rad(a.phi);this.animals[i].position.set(Math.sin(phi)*this.config.raft.rim_radius,0,-Math.cos(phi)*this.config.raft.rim_radius);this.animals[i].rotation.y=-phi+Math.PI;this.swings[i].visible=a.whackPhase==='windup';this.swings[i].rotation.z=(a.whackWindup/this.config.combat.whack_windup_s)*Math.PI;});
     const raft=snapshot.rafts[ownRaft]??snapshot.rafts[0],p=this.course.project(raft.x,raft.y);
     const target=new THREE.Vector3(raft.x-p.tx*v.camera_behind,v.camera_height,-raft.y+p.ty*v.camera_behind);
     if(!this.cameraReady){this.camera.position.copy(target);this.cameraReady=true;}else this.camera.position.lerp(target,1-Math.exp(-v.camera_follow_rate*dt));
