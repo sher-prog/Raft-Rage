@@ -1,28 +1,32 @@
 import type { Config, Mode, Snapshot, AnimalState, RaftState, InputState } from '../shared.ts';
 import { Course,rad,wrap,clamp } from './course.ts';
-type Animal=AnimalState & {input:InputState;seenTick:number};
+type Animal=AnimalState & {input:InputState;seenTick:number;pendingFire:boolean};
 type Shot={raft:number;phi:number;cant:number;dv:number;remaining:number};
 export class Simulation {
   tick=0;
   readonly dt:number;readonly countdownTicks:number;
   readonly course:Course;readonly rafts:RaftState[]=[];readonly animals:Animal[]=[];shots:Shot[]=[];
   tickAverageMs=0;tickWorstMs=0;tickTotalMs=0;tickCount=0;
-  constructor(readonly config:Config,readonly mode:Mode,readonly startServerTime=Date.now()){
+  botSeats=new Set<number>();botNext=new Map<number,number>();botProgress=new Map<number,{tick:number;progress:number}>();rngState:number;
+  constructor(readonly config:Config,readonly mode:Mode,readonly startServerTime=Date.now(),seed=config.simulation.default_seed){
+    this.rngState=seed||config.simulation.default_seed;
     this.dt=1/config.network.sim_hz;this.countdownTicks=Math.round(config.rooms.countdown_s*config.network.sim_hz);this.course=new Course(config);
     const seats=mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2;
     for(let i=0;i<2;i++){
       const pos=this.course.at(config.course.start_progress,(i===0?-1:1)*config.course.start_lateral_offset);
       this.rafts.push({x:pos.x,y:pos.y,heading:pos.heading,vx:0,vy:config.simulation.initial_speed,omega:config.simulation.initial_omega,progress:config.course.start_progress,stun:0,slow:0,immunity:0,finishTime:null});
     }
-    for(let seat=0;seat<seats;seat++)this.animals.push({seat,raft:Math.floor(seat/(seats/2)),phi:mode==='1v1'?config.walking.initial_phi_1v1_deg:config.walking.initial_phi_2v2_deg[seat%(seats/2)],recharge:0,fire:false,walk:0,seq:-1,whackCount:0,input:{seq:-1,walk:0,fire:false,whackCount:0},seenTick:0});
+    for(let seat=0;seat<seats;seat++)this.animals.push({seat,raft:Math.floor(seat/(seats/2)),phi:mode==='1v1'?config.walking.initial_phi_1v1_deg:config.walking.initial_phi_2v2_deg[seat%(seats/2)],recharge:0,fire:false,walk:0,seq:-1,whackCount:0,input:{seq:-1,walk:0,fire:false,whackCount:0},seenTick:0,pendingFire:false});
   }
+  setBots(seats:number[]){this.botSeats=new Set(seats);}
+  random(){let x=this.rngState;x^=x<<13;x^=x>>>17;x^=x<<5;this.rngState=x>>>0;return this.rngState/4294967296;}
   get phase():Snapshot['phase']{return this.tick<this.countdownTicks?'countdown':'race';}
   get raceTime(){return Math.max(0,(this.tick-this.countdownTicks)*this.dt);}
-  resetInput(seat:number){const a=this.animals[seat];if(a){a.input={seq:-1,walk:0,fire:false,whackCount:0};a.seq=-1;a.seenTick=this.tick;}}
-  release(seat:number){const a=this.animals[seat];if(a){a.input.fire=false;a.input.walk=0;}}
+  resetInput(seat:number){const a=this.animals[seat];if(a){a.input={seq:-1,walk:0,fire:false,whackCount:0};a.seq=-1;a.seenTick=this.tick;a.pendingFire=false;}}
+  release(seat:number){const a=this.animals[seat];if(a){a.input.fire=false;a.input.walk=0;a.pendingFire=false;}}
   input(seat:number,input:InputState){
     const a=this.animals[seat];if(!a||input.seq<=a.seq)return false;
-    a.seq=input.seq;a.input={...input};a.seenTick=this.tick;return true;
+    if(input.fire&&!a.input.fire)a.pendingFire=true;a.seq=input.seq;a.input={...input};a.seenTick=this.tick;return true;
   }
   step(){
     this.tick++;if(this.tick<=this.countdownTicks)return;
@@ -39,11 +43,12 @@ export class Simulation {
         const bound=360-c.walking.min_stern_gap_2v2_deg-Math.abs(other.phi);phi=left?Math.max(phi,-bound):Math.min(phi,bound);
       }
       a.phi=phi;
-      if(a.fire&&a.recharge<=c.simulation.epsilon){
+      if((a.fire||a.pendingFire)&&raft.stun===0&&a.recharge<=c.simulation.epsilon){
         const character=c.characters.hippo;
         this.shots.push({raft:a.raft,phi:rad(a.phi),cant:rad(-c.firing.general_cant_amplitude_deg*Math.sin(2*rad(a.phi))),dv:(this.mode==='1v1'?character.dv_1v1*c.multipliers.impulse_1v1:character.dv_2v2)*(raft.slow>0?c.multipliers.thrust_slow:1),remaining:c.firing.impulse_spread_s});
         a.recharge=this.mode==='1v1'?character.recharge_s_1v1:character.recharge_s_2v2;
       }
+      a.pendingFire=false;
     }
     for(const shot of this.shots){
       const r=this.rafts[shot.raft],portion=shot.dv*Math.min(dt,shot.remaining)/c.firing.impulse_spread_s;
@@ -69,6 +74,47 @@ export class Simulation {
       const rel=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
       if(rel<0){const impulse=-(1+c.course.raft_raft_restitution)*rel/2;a.vx-=impulse*nx;a.vy-=impulse*ny;b.vx+=impulse*nx;b.vy+=impulse*ny;}
     }
+    this.decideBots();
+  }
+  decideBots(){
+    const c=this.config,b=c.bots,level=b.levels.chill;
+    for(const seat of this.botSeats){
+      const a=this.animals[seat],raft=this.rafts[a.raft];if(raft.stun>0||this.tick<(this.botNext.get(seat)??0))continue;
+      this.botNext.set(seat,this.tick+Math.round(level.decision_tick_s*c.network.sim_hz));
+      const p=this.course.project(raft.x,raft.y);let lateral=0;
+      for(const rock of this.course.rocks){
+        if(rock.progress<p.progress||rock.progress>p.progress+b.lookahead)continue;
+        const rockLateral=this.course.project(rock.x,rock.y).lateral,clearance=rock.radius+c.raft.radius+b.obstacle_clearance;
+        if(Math.abs(rockLateral-lateral)<clearance)lateral=clamp(rockLateral+(p.lateral>=rockLateral?1:-1)*clearance,-c.course.half_width+c.raft.radius+b.obstacle_clearance,c.course.half_width-c.raft.radius-b.obstacle_clearance);
+      }
+      const aim=this.course.at(Math.min(c.course.length,p.progress+b.lookahead),lateral);
+      let dx=aim.x-raft.x,dy=aim.y-raft.y,length=Math.hypot(dx,dy)||1;
+      dx=dx/length*level.target_speed-raft.vx;dy=dy/length*level.target_speed-raft.vy;
+      const old=this.botProgress.get(seat);if(!old)this.botProgress.set(seat,{tick:this.tick,progress:p.progress});
+      else if((this.tick-old.tick)*this.dt>=b.stuck_window_s){
+        if(p.progress-old.progress<b.stuck_min_progress){
+          let obstacle=this.course.rocks.reduce<{x:number;y:number;distance:number}|undefined>((best,rock)=>{const d=Math.hypot(raft.x-rock.x,raft.y-rock.y)-rock.radius;return !best||d<best.distance?{...rock,distance:d}:best;},undefined);
+          if(obstacle&&obstacle.distance<c.raft.radius+b.obstacle_clearance){dx=raft.x-obstacle.x;dy=raft.y-obstacle.y;}
+          else{dx=-p.ty*Math.sign(p.lateral)*level.target_speed;dy=p.tx*Math.sign(p.lateral)*level.target_speed+p.ty*c.water.current_speed;}
+        }
+        this.botProgress.set(seat,{tick:this.tick,progress:p.progress});
+      }
+      length=Math.hypot(dx,dy)||1;dx/=length;dy/=length;
+      const dv=this.mode==='1v1'?c.characters.hippo.dv_1v1*c.multipliers.impulse_1v1:c.characters.hippo.dv_2v2;
+      const weight=Math.abs(raft.omega)>b.high_spin_threshold_rad_s?b.score_turn_weight_high_spin:b.score_turn_weight;
+      const score=(phi:number)=>{
+        const angle=rad(phi),cant=rad(-c.firing.general_cant_amplitude_deg*Math.sin(2*angle)),aim=raft.heading+angle+cant;
+        const fx=-Math.sin(aim),fy=-Math.cos(aim),rim=raft.heading+angle;
+        const dw=(Math.cos(rim)*fx-Math.sin(rim)*fy)*c.raft.rim_radius*dv/(c.raft.inertia_factor*c.raft.radius**2);
+        return fx*dx+fy*dy-weight*(Math.abs(raft.omega+dw)-Math.abs(raft.omega));
+      };
+      const zone=this.mode==='1v1'?[-180,180]:a.seat%2===0?[c.walking.zone_2v2_left_deg[0]+b.stern_avoid_2v2_deg,c.walking.zone_2v2_left_deg[1]]:[c.walking.zone_2v2_right_deg[0],c.walking.zone_2v2_right_deg[1]-b.stern_avoid_2v2_deg];
+      let best=a.phi,bestScore=-Infinity;for(let phi=zone[0];phi<=zone[1];phi+=b.candidate_step_deg){const value=score(phi);if(value>bestScore){best=phi;bestScore=value;}}
+      const difference=this.mode==='1v1'?wrap(rad(best-a.phi))*180/Math.PI:best-a.phi;
+      let walk=Math.abs(difference)<=b.walk_tolerance_deg?0:Math.sign(difference),fire=score(a.phi)>b.fire_threshold_hippo;
+      if(this.random()<level.fumble){if(this.random()<b.fumble_walk_chance)walk=Math.floor(this.random()*3)-1;fire=false;}
+      this.input(seat,{seq:a.seq+1,walk,fire,whackCount:a.input.whackCount});
+    }
   }
   collideBanks(r:RaftState){
     const c=this.config,p=this.course.project(r.x,r.y),limit=c.course.half_width-c.raft.radius;
@@ -92,6 +138,6 @@ export class Simulation {
     const n=this.config.network,q=(value:number,quantum:number)=>Math.round(value/quantum)*quantum;
     return {tick:this.tick,raceTime:q(this.raceTime,n.time_quantum_s),phase:this.phase,startServerTime:this.startServerTime,serverTime:Date.now(),tickAverageMs:this.tickAverageMs,tickWorstMs:this.tickWorstMs,
       rafts:this.rafts.map(r=>({...r,x:q(r.x,n.position_quantum),y:q(r.y,n.position_quantum),heading:q(r.heading,rad(n.angle_quantum_deg)),vx:q(r.vx,n.velocity_quantum),vy:q(r.vy,n.velocity_quantum),progress:q(r.progress,n.position_quantum)})),
-      animals:this.animals.map(({input,seenTick,...a})=>({...a,phi:q(a.phi,n.angle_quantum_deg)}))};
+      animals:this.animals.map(({input,seenTick,pendingFire,...a})=>({...a,phi:q(a.phi,n.angle_quantum_deg)}))};
   }
 }

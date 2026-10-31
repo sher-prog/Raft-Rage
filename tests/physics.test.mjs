@@ -39,3 +39,7 @@ test('real WS input is seat-bound and epoch-bound; reconnect starts a safe fresh
  a.ws.terminate();await new Promise(r=>setTimeout(r,20));const b=await client();b.send({type:'resume',code:owner.code,name:'Ana',token:owner.token});const joined=await b.wait(m=>m.type==='joined');assert.notEqual(joined.inputEpoch,owner.inputEpoch);
  b.send({type:'input',seat:0,inputEpoch:joined.inputEpoch,seq:1,walk:0,fire:true,whackCount:0});await b.wait(m=>m.type==='snapshot'&&m.snapshot.animals[0].seq===1);
 });
+
+test('a short press/release arriving between ticks still fires exactly one Hippo shot',()=>{
+ const sim=create('1v1');sim.input(0,{seq:1,walk:0,fire:true,whackCount:0});sim.input(0,{seq:2,walk:0,fire:false,whackCount:0});sim.step();assert.equal(sim.shots.length,1);advance(sim,.2);assert.ok(sim.rafts[0].vy>50);assert.equal(sim.shots.length,0);
+});

@@ -30,9 +30,10 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
     if (path === '/healthz' && req.method === 'GET') {res.writeHead(200,{'Content-Type':'text/plain','Cache-Control':'no-store'}); res.end('ok'); return;}
     const asset = assets.get(path ?? '');
     if (!asset || !['GET','HEAD'].includes(req.method ?? '')) {res.writeHead(404);res.end('Not found');return;}
+    const host=/^[a-zA-Z0-9.:[\]-]+$/.test(req.headers.host??'')?req.headers.host:'';
     res.writeHead(200, {
       'Content-Type':asset.type, 'Content-Length':asset.data.length, 'Cache-Control':'no-cache',
-      'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+      'Content-Security-Policy':`default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' ${host?`ws://${host} wss://${host}`:''}; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'`,
       'X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Permissions-Policy':'camera=(), microphone=(), geolocation=()'
     });
     res.end(req.method==='HEAD' ? undefined : asset.data);
@@ -149,7 +150,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
         if(room.sim){error(ws,'PHASE','The race has already started.');return;}
         const waiting=room.players.filter(p=>p.seat!==null&&p.socket&&!p.ready);
         if(waiting.length){error(ws,'NOT_READY',`Waiting for ${waiting[0].name} to be Ready`);return;}
-        room.sim=new Simulation(config,room.mode);room.lastPump=performance.now();room.accumulator=0;broadcast(room);return;
+        room.sim=new Simulation(config,room.mode,Date.now(),randomBytes(4).readUInt32LE(0));room.lastPump=performance.now();room.accumulator=0;broadcast(room);return;
       }
       if(room.sim){error(ws,'PHASE','Wait for the next lobby to change seats or mode.');return;}
       if(m.type==='ready'){if(player.seat!==null)player.ready=m.ready===true;broadcast(room);return;}
@@ -176,7 +177,8 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
       const sim=room.sim;if(!sim)continue;
       room.accumulator+=(now-room.lastPump)/1000;room.lastPump=now;
       while(room.accumulator>=sim.dt){
-        const phase=sim.phase,start=performance.now();sim.step();
+        const phase=sim.phase,start=performance.now();
+        sim.setBots(sim.animals.filter(a=>!room.players.some(p=>p.seat===a.seat&&!p.botDriving)).map(a=>a.seat));sim.step();
         const cost=performance.now()-start;sim.tickTotalMs+=cost;sim.tickCount++;sim.tickAverageMs=sim.tickTotalMs/sim.tickCount;sim.tickWorstMs=Math.max(sim.tickWorstMs,cost);
         room.accumulator-=sim.dt;
         if(phase!==sim.phase)broadcast(room);

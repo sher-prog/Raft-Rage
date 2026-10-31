@@ -91,7 +91,7 @@ function sendInput(){
   session.seq++;saveSession();send({type:'input',seat:player.seat,inputEpoch:session.inputEpoch,seq:session.seq,whackCount:session.whackCount,walk:Number(left)-Number(right),fire:held.has('w')||controls.includes('fire')});
 }
 function releaseAll(){held.clear();pointers.clear();document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'));sendInput();}
-window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(!raceView||!['a','d','w'].includes(key)||e.repeat)return;e.preventDefault();held.add(key);sendInput();});
+window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(!room||room.phase==='lobby'||!['a','d','w'].includes(key)||e.repeat)return;e.preventDefault();held.add(key);sendInput();});
 window.addEventListener('keyup',e=>{if(held.delete(e.key.toLowerCase()))sendInput();});
 window.addEventListener('blur',releaseAll);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseAll();});
 setInterval(sendInput,1000/config.network.input_resend_hz);
