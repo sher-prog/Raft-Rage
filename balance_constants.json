@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "1.2-clock (2026-10-31)",
+  "_version": "1.3-physics (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -40,7 +40,13 @@
       "message_burst",
       "message_rate_per_s",
       "scheduler_interval_ms",
-      "clock_offset_blend"
+      "clock_offset_blend",
+      "position_quantum",
+      "angle_quantum_deg",
+      "velocity_quantum",
+      "time_quantum_s",
+      "snapshot_buffer_max",
+      "clock_max_extrapolation_s"
     ],
     "protocol_version": 1,
     "reconnect_initial_ms": 500,
@@ -56,7 +62,13 @@
     "message_burst": 60,
     "message_rate_per_s": 30,
     "scheduler_interval_ms": 4,
-    "clock_offset_blend": 0.2
+    "clock_offset_blend": 0.2,
+    "position_quantum": 0.1,
+    "angle_quantum_deg": 0.1,
+    "velocity_quantum": 0.1,
+    "time_quantum_s": 0.001,
+    "snapshot_buffer_max": 120,
+    "clock_max_extrapolation_s": 0.25
   },
   "rooms": {
     "code_length": 4,
@@ -84,7 +96,8 @@
       "max_rooms",
       "max_connections",
       "code_blocklist",
-      "reclaim_by_name_after_grace"
+      "reclaim_by_name_after_grace",
+      "go_banner_s"
     ],
     "maintenance_interval_ms": 100,
     "code_attempts_max": 1000,
@@ -99,7 +112,8 @@
       "PISS",
       "COCK"
     ],
-    "reclaim_by_name_after_grace": true
+    "reclaim_by_name_after_grace": true,
+    "go_banner_s": 1
   },
   "names": {
     "max_chars": 12,
@@ -139,7 +153,16 @@
       180
     ],
     "min_stern_gap_2v2_deg": 30,
-    "_note": "1v1: the single animal walks the whole ring and wraps. 2v2: the bow (-20..+20) is empty. Left/right input is the animal's own left/right as it faces the raft centre: left input = phi increases (clockwise from above)."
+    "_note": "1v1: the single animal walks the whole ring and wraps. 2v2: the bow (-20..+20) is empty. Left/right input is the animal's own left/right as it faces the raft centre: left input = phi increases (clockwise from above).",
+    "_assumed": [
+      "initial_phi_1v1_deg",
+      "initial_phi_2v2_deg"
+    ],
+    "initial_phi_1v1_deg": 180,
+    "initial_phi_2v2_deg": [
+      -165,
+      165
+    ]
   },
   "firing": {
     "general_cant_amplitude_deg": 20,
@@ -310,9 +333,138 @@
       "whirlpool_spin_rad_s2",
       "whirlpool_drag_per_s",
       "bank_restitution",
-      "raft_raft_restitution"
+      "raft_raft_restitution",
+      "start_progress",
+      "path_sections",
+      "rock_positions",
+      "spike_zones"
     ],
-    "_tuning_note": "Tune course.length until a 2v2 race of Normal bots finishes in validation.finish_s_min..finish_s_max."
+    "_tuning_note": "Tune course.length until a 2v2 race of Normal bots finishes in validation.finish_s_min..finish_s_max.",
+    "start_progress": 0,
+    "path_sections": [
+      [
+        0.14,
+        0
+      ],
+      [
+        0.12,
+        45
+      ],
+      [
+        0.14,
+        -45
+      ],
+      [
+        0.12,
+        45
+      ],
+      [
+        0.14,
+        -45
+      ],
+      [
+        0.14,
+        45
+      ],
+      [
+        0.2,
+        0
+      ]
+    ],
+    "rock_positions": [
+      [
+        0.06,
+        -95,
+        28
+      ],
+      [
+        0.115,
+        88,
+        36
+      ],
+      [
+        0.19,
+        -72,
+        26
+      ],
+      [
+        0.29,
+        78,
+        32
+      ],
+      [
+        0.34,
+        -104,
+        40
+      ],
+      [
+        0.385,
+        60,
+        25
+      ],
+      [
+        0.46,
+        -75,
+        32
+      ],
+      [
+        0.57,
+        95,
+        28
+      ],
+      [
+        0.625,
+        -55,
+        36
+      ],
+      [
+        0.72,
+        80,
+        30
+      ],
+      [
+        0.78,
+        -90,
+        24
+      ],
+      [
+        0.865,
+        65,
+        34
+      ],
+      [
+        0.93,
+        -70,
+        28
+      ]
+    ],
+    "spike_zones": [
+      [
+        0.14,
+        190,
+        -1
+      ],
+      [
+        0.26,
+        190,
+        1
+      ],
+      [
+        0.4,
+        190,
+        -1
+      ],
+      [
+        0.52,
+        190,
+        1
+      ],
+      [
+        0.66,
+        190,
+        -1
+      ]
+    ]
   },
   "pickups": {
     "crates": 10,
@@ -499,7 +651,252 @@
     "hitbox_radius_visual_limit": 34,
     "_assumed": [
       "auto_low_effects_below_fps",
-      "auto_low_effects_after_s"
+      "auto_low_effects_after_s",
+      "camera_height",
+      "camera_behind",
+      "camera_ahead",
+      "camera_follow_rate",
+      "camera_fov_deg",
+      "camera_near",
+      "camera_far",
+      "fog_near",
+      "fog_far",
+      "river_depth",
+      "raft_height",
+      "tube_radius",
+      "tube_segments",
+      "radial_segments",
+      "body_radius",
+      "head_radius",
+      "body_height",
+      "head_height",
+      "eye_radius",
+      "cannon_length",
+      "cannon_radius",
+      "bank_height",
+      "bank_width",
+      "rock_height_mult",
+      "rock_segments",
+      "ambient_light",
+      "sun_light",
+      "sun_position",
+      "ground_half_size",
+      "hippo_color",
+      "red_color",
+      "blue_color",
+      "river_color",
+      "bank_color",
+      "ground_color",
+      "rock_color",
+      "foam_color",
+      "vest_color",
+      "sky_color",
+      "fps_sample_s",
+      "stun_stars",
+      "stun_orbit_speed",
+      "star_radius",
+      "spike_spacing",
+      "spike_height",
+      "spike_radius",
+      "finish_arch_height",
+      "finish_arch_width",
+      "finish_arch_post",
+      "hippo_parts"
+    ],
+    "camera_height": 240,
+    "camera_behind": 320,
+    "camera_ahead": 140,
+    "camera_follow_rate": 5,
+    "camera_fov_deg": 58,
+    "camera_near": 1,
+    "camera_far": 2400,
+    "fog_near": 850,
+    "fog_far": 2100,
+    "river_depth": 4,
+    "raft_height": 10,
+    "tube_radius": 7,
+    "tube_segments": 24,
+    "radial_segments": 8,
+    "body_radius": 6,
+    "head_radius": 5,
+    "body_height": 10,
+    "head_height": 10,
+    "eye_radius": 0.8,
+    "cannon_length": 8,
+    "cannon_radius": 2.5,
+    "bank_height": 12,
+    "bank_width": 40,
+    "rock_height_mult": 0.65,
+    "rock_segments": 7,
+    "ambient_light": 2,
+    "sun_light": 3,
+    "sun_position": [
+      200,
+      400,
+      100
+    ],
+    "ground_half_size": 22000,
+    "hippo_color": "#aaa4bf",
+    "red_color": "#f16d46",
+    "blue_color": "#53a5e1",
+    "river_color": "#199795",
+    "bank_color": "#456c52",
+    "ground_color": "#a7cda6",
+    "rock_color": "#374b4c",
+    "foam_color": "#c4eee0",
+    "vest_color": "#ffb43e",
+    "sky_color": "#c6e5db",
+    "fps_sample_s": 1,
+    "stun_stars": 5,
+    "stun_orbit_speed": 3,
+    "star_radius": 1.5,
+    "spike_spacing": 24,
+    "spike_height": 12,
+    "spike_radius": 6,
+    "finish_arch_height": 90,
+    "finish_arch_width": 180,
+    "finish_arch_post": 8,
+    "hippo_parts": [
+      [
+        "cylinder",
+        [
+          6,
+          10,
+          6
+        ],
+        [
+          0,
+          5,
+          0
+        ],
+        "vest"
+      ],
+      [
+        "sphere",
+        [
+          5,
+          5,
+          5
+        ],
+        [
+          0,
+          12,
+          0
+        ],
+        "hippo"
+      ],
+      [
+        "box",
+        [
+          6.5,
+          3,
+          3.5
+        ],
+        [
+          0,
+          10,
+          -4
+        ],
+        "hippo"
+      ],
+      [
+        "sphere",
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          -4,
+          15,
+          0
+        ],
+        "hippo"
+      ],
+      [
+        "sphere",
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          4,
+          15,
+          0
+        ],
+        "hippo"
+      ],
+      [
+        "sphere",
+        [
+          5.1,
+          2.5,
+          5.1
+        ],
+        [
+          0,
+          15,
+          0
+        ],
+        "team"
+      ],
+      [
+        "sphere",
+        [
+          1.1,
+          1.5,
+          0.9
+        ],
+        [
+          -2.2,
+          13,
+          -4.2
+        ],
+        "white"
+      ],
+      [
+        "sphere",
+        [
+          1.1,
+          1.5,
+          0.9
+        ],
+        [
+          2.2,
+          13,
+          -4.2
+        ],
+        "white"
+      ],
+      [
+        "sphere",
+        [
+          0.5,
+          0.8,
+          0.5
+        ],
+        [
+          -2.2,
+          13,
+          -5
+        ],
+        "ink"
+      ],
+      [
+        "sphere",
+        [
+          0.5,
+          0.8,
+          0.5
+        ],
+        [
+          2.2,
+          13,
+          -5
+        ],
+        "ink"
+      ]
     ]
   },
   "audio": {
@@ -532,5 +929,22 @@
     "finish_s_max": 85,
     "backwards_time_frac_with_keel_max": 0.02,
     "backwards_time_frac_without_keel": 0.4
-  }
+  },
+  "simulation": {
+    "_assumed": [
+      "epsilon",
+      "default_seed",
+      "initial_speed",
+      "initial_omega",
+      "collision_push_epsilon"
+    ],
+    "epsilon": 1e-08,
+    "default_seed": 19551,
+    "initial_speed": 0,
+    "initial_omega": 0,
+    "collision_push_epsilon": 0.01
+  },
+  "_assumed": [
+    "simulation"
+  ]
 }

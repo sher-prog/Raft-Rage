@@ -1,17 +1,22 @@
+import { RaceView,interpolate } from './race-view.ts';
 import type { Config, RoomView, ServerMessage, Snapshot } from '../shared.ts';
-type Session={code:string;name:string;playerId:string;token:string;bootId:string};
+type Session={code:string;name:string;playerId:string;token:string;bootId:string;inputEpoch:string;seq:number;whackCount:number};
 const main=document.querySelector<HTMLElement>('#main')!;
 const connection=document.querySelector<HTMLElement>('#connection')!;
 const how=document.querySelector<HTMLDialogElement>('#how')!;
 document.querySelector('#close-how')!.addEventListener('click',()=>how.close());
 const params=new URLSearchParams(location.search),debug=params.get('debug')==='1';
 const config:Config=await fetch('/balance_constants.json').then(r=>{if(!r.ok)throw new Error('Config unavailable');return r.json();});
+document.documentElement.style.setProperty('--pad-frac',`${config.views.phone_pad_frac*100}%`);
+document.documentElement.style.setProperty('--race-view-frac',`${config.views.phone_race_view_frac*100}%`);
 let session:Session|undefined;
 try{session=JSON.parse(sessionStorage.getItem('raft-rage-session')??'null')??undefined;}catch{}
 let socket:WebSocket|undefined,online=false,bootId=session?.bootId??'',room:RoomView|undefined;
 let reconnectDelay=config.network.reconnect_initial_ms,reconnectTimer:ReturnType<typeof setTimeout>|undefined;
 let screen:'home'|'create'|'join'|'solo'|'lobby'=params.has(config.rooms.share_link_param)?'join':'home';
 let clockOffset=0,snapshot:Snapshot|undefined;
+let raceView:RaceView|undefined,frames:Snapshot[]=[],lastFrame=performance.now();
+const held=new Set<string>(),pointers=new Map<number,string>();
 let ping=0,notice='',currentName='',prefillCode=params.get(config.rooms.share_link_param)??'';
 try{currentName=localStorage.getItem('raft-rage-name')??'';}catch{}
 const esc=(v:string)=>v.replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]!));
@@ -25,6 +30,7 @@ function pips(){
 }
 function render(){
   if(screen==='lobby'&&room&&room.phase!=='lobby'){renderRace();return;}
+  if(raceView){raceView.dispose();raceView=undefined;}document.body.classList.remove('in-race');
   if(screen==='home')main.innerHTML=`<section class="hero"><div class="hero-copy"><span class="eyebrow">A LITTLE FRIENDLY RIVER RIVALRY</span><h1>MAKE<br><span>WAVES.</span></h1><p class="intro">A river. Two rafts. Your very competitive friends. Stand to steer, spout to sprint, and try to stay friends at the finish.</p><div class="actions"><button class="primary" id="create">Create room <span aria-hidden="true">↗</span></button><div class="subactions"><button id="join">Join room</button><button id="solo">Solo vs bots</button></div><button class="text-button" id="how-button">How to play →</button></div><p class="edition">RAFT RAGE / FIRST SPLASH · LOBBY CHECKPOINT</p><p class="error" id="error" role="alert">${esc(notice)}</p></div>${art}</section>`;
   else if(screen!=='lobby'){
     const joining=screen==='join';
@@ -63,20 +69,56 @@ Configured: ${config.network.sim_hz} Hz sim / ${config.network.snapshot_hz} Hz s
   document.querySelector('#how-button')?.addEventListener('click',()=>how.showModal());
 }
 function renderRace(){
-  main.innerHTML=`<section class="race-screen"><div class="race-top"><b>▲ RED <span>vs</span> ● BLUE</b><strong id="race-clock">0:00.0</strong><button id="race-leave">Leave</button></div><div id="race-view">${art}<div id="countdown" role="status"></div></div><p class="notice">Authoritative clock checkpoint. Raft movement is being added next.</p><p id="error" class="error" role="alert"></p>${debug?'<pre id="race-debug" class="debug"></pre>':''}</section>`;
-  document.querySelector('#race-leave')!.addEventListener('click',()=>{send({type:'leave'});clearRoom();});updateClock();
+  if(raceView)return;
+  document.body.classList.add('in-race');
+  const own=room?.players.find(p=>p.id===session?.playerId);
+  main.innerHTML=`<section class="race-screen"><div class="race-top"><b>▲ RED <span>vs</span> ● BLUE</b><strong id="race-clock">0:00.0</strong><button id="pad-toggle">Show controls</button><button id="race-leave">Leave</button></div><div id="game-stage"></div><div id="countdown" role="status"></div><div id="race-banner" class="race-banner" role="status">${own?.seat===null?"You'll join next race":''}</div><div id="race-progress"><label>▲ RED <progress id="red-progress" max="1" value="0"></progress></label><label>● BLUE <progress id="blue-progress" max="1" value="0"></progress></label></div>${own?.seat!==null?`<div id="pad" class="pad"><button data-control="left" aria-label="Walk left">◀<small>WALK LEFT</small></button><button data-control="right" aria-label="Walk right">▶<small>WALK RIGHT</small></button><button data-control="fire" class="primary">SPOUT</button></div><div class="key-legend">A / D walk · W spout</div>`:''}<p id="error" class="error" role="alert"></p>${debug?'<pre id="race-debug" class="debug"></pre>':''}</section>`;
+  try{raceView=new RaceView(document.querySelector<HTMLElement>('#game-stage')!,config);}catch{showError('This browser could not start 3D. Try refreshing the page.');}
+  document.querySelector('#race-leave')!.addEventListener('click',()=>{releaseAll();send({type:'leave'});clearRoom();});
+  document.querySelector('#pad-toggle')!.addEventListener('click',()=>document.querySelector('#pad')?.classList.toggle('show-pad'));
+  document.querySelectorAll<HTMLButtonElement>('[data-control]').forEach(button=>{
+    button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);pointers.set(e.pointerId,button.dataset.control!);button.classList.add('held');sendInput();});
+    const release=(e:PointerEvent)=>{pointers.delete(e.pointerId);button.classList.remove('held');sendInput();};
+    button.addEventListener('pointerup',release);button.addEventListener('pointercancel',release);button.addEventListener('lostpointercapture',release);
+    button.addEventListener('contextmenu',e=>e.preventDefault());
+  });updateClock();
 }
+function acceptSnapshot(state:Snapshot){snapshot=state;frames.push(state);if(frames.length>config.network.snapshot_buffer_max)frames.shift();}
+function sendInput(){
+  if(!online||!room||room.phase==='lobby'||!session)return;
+  const player=room.players.find(p=>p.id===session?.playerId);if(player?.seat===null||player?.seat===undefined)return;
+  const controls=[...pointers.values()],left=held.has('a')||controls.includes('left'),right=held.has('d')||controls.includes('right');
+  session.seq++;saveSession();send({type:'input',seat:player.seat,inputEpoch:session.inputEpoch,seq:session.seq,whackCount:session.whackCount,walk:Number(left)-Number(right),fire:held.has('w')||controls.includes('fire')});
+}
+function releaseAll(){held.clear();pointers.clear();document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'));sendInput();}
+window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(!raceView||!['a','d','w'].includes(key)||e.repeat)return;e.preventDefault();held.add(key);sendInput();});
+window.addEventListener('keyup',e=>{if(held.delete(e.key.toLowerCase()))sendInput();});
+window.addEventListener('blur',releaseAll);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseAll();});
+setInterval(sendInput,1000/config.network.input_resend_hz);
 function updateClock(){
   if(!snapshot)return;
   const serverNow=Date.now()+clockOffset;
   const elapsed=(serverNow-snapshot.startServerTime)/1000;
-  const raceTime=Math.max(0,elapsed-config.rooms.countdown_s);
+  const raceTime=elapsed<config.rooms.countdown_s?0:Math.max(0,snapshot.raceTime+Math.min(config.network.clock_max_extrapolation_s,Math.max(0,(serverNow-snapshot.serverTime)/1000)));
   const target=document.querySelector('#race-clock');if(target)target.textContent=`${Math.floor(raceTime/60)}:${(raceTime%60).toFixed(1).padStart(4,'0')}`;
-  const countdown=document.querySelector('#countdown');if(countdown)countdown.textContent=elapsed<config.rooms.countdown_s?String(Math.ceil(config.rooms.countdown_s-elapsed)):raceTime<1?'GO!':'';
-  const dbg=document.querySelector('#race-debug');if(dbg)dbg.textContent=`tick ${snapshot.tick} · ${snapshot.phase} · ping ${ping.toFixed(0)}ms\nTick average ${snapshot.tickAverageMs.toFixed(3)}ms / worst ${snapshot.tickWorstMs.toFixed(3)}ms\n60Hz simulation · 20Hz snapshots · 10Hz inputs configured`;
+  const countdown=document.querySelector('#countdown');if(countdown)countdown.textContent=elapsed<config.rooms.countdown_s?String(Math.ceil(config.rooms.countdown_s-elapsed)):raceTime<config.rooms.go_banner_s?'GO!':'';
+  const own=room?.players.find(p=>p.id===session?.playerId),ownRaft=own?.seat!==null&&own?.seat!==undefined?Math.floor(own.seat/((room?.mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2)/2)):snapshot.rafts[1].progress>snapshot.rafts[0].progress?1:0;
+  const banner=document.querySelector('#race-banner');if(banner)banner.textContent=snapshot.rafts[ownRaft].stun>0?'STUNNED':own?.seat===null?"You'll join next race":room?.banner??'';
+  for(const [i,id]of ['red-progress','blue-progress'].entries()){const bar=document.querySelector<HTMLProgressElement>('#'+id);if(bar)bar.value=snapshot.rafts[i].progress/config.course.length;}
+  const dbg=document.querySelector('#race-debug');if(dbg){const r=snapshot.rafts[ownRaft],a=snapshot.animals.find(a=>a.seat===own?.seat);dbg.textContent=`${room?.phase} · tick ${snapshot.tick} · ${snapshot.raceTime.toFixed(2)}s · fps ${raceView?.fps.toFixed(0)??0} · ping ${ping.toFixed(0)}ms\nTick average ${snapshot.tickAverageMs.toFixed(3)}ms / worst ${snapshot.tickWorstMs.toFixed(3)}ms\nx ${r.x.toFixed(1)} y ${r.y.toFixed(1)} heading ${(r.heading*180/Math.PI).toFixed(1)}° speed ${Math.hypot(r.vx,r.vy).toFixed(1)}\nphi ${a?.phi.toFixed(1)} · seq sent ${session?.seq??0} / ack ${a?.seq??-1}\n${config.network.sim_hz}Hz sim · ${config.network.snapshot_hz}Hz snapshots · ${config.network.input_resend_hz}Hz input · buffer ${config.network.interp_buffer_ms}ms`;}
+  return ownRaft;
 }
-function animation(){updateClock();requestAnimationFrame(animation);}requestAnimationFrame(animation);
-function clearRoom(){snapshot=undefined;session=undefined;room=undefined;bootId='';saveSession();screen='home';const url=new URL(location.href);url.searchParams.delete(config.rooms.share_link_param);history.replaceState(null,'',url);render();}
+function animation(now:number){
+  const dt=Math.min(config.network.clock_max_extrapolation_s,(now-lastFrame)/1000);lastFrame=now;
+  const ownRaft=updateClock()??0;
+  if(raceView&&snapshot){
+    const time=Date.now()+clockOffset-config.network.interp_buffer_ms;let a=frames[0]??snapshot,b=snapshot;
+    for(let i=1;i<frames.length;i++){if(frames[i].serverTime>=time){a=frames[i-1];b=frames[i];break;}a=frames[i];}
+    const f=b.serverTime>a.serverTime?Math.max(0,Math.min(1,(time-a.serverTime)/(b.serverTime-a.serverTime))):1;
+    raceView.draw(interpolate(a,b,f),ownRaft,dt);
+  }requestAnimationFrame(animation);
+}requestAnimationFrame(animation);
+function clearRoom(){held.clear();pointers.clear();frames=[];snapshot=undefined;session=undefined;room=undefined;bootId='';saveSession();screen='home';const url=new URL(location.href);url.searchParams.delete(config.rooms.share_link_param);history.replaceState(null,'',url);render();}
 function connect(){
   const ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws`);socket=ws;
   ws.onmessage=e=>{
@@ -89,9 +131,9 @@ function connect(){
       online=true;reconnectDelay=config.network.reconnect_initial_ms;connection.textContent='River connected';connection.classList.add('online');
       if(session){currentName=session.name;send({type:'resume',...session});}
     }else if(m.type==='joined'){
-      session={code:m.code,name:currentName||session?.name||'',playerId:m.playerId,token:m.token,bootId:m.bootId};saveSession();screen='lobby';notice='';
-    }else if(m.type==='room'){room=m.room;snapshot=m.room.simulation;if(session){screen='lobby';render();}}
-    else if(m.type==='snapshot'){snapshot=m.snapshot;updateClock();}
+      session={code:m.code,name:currentName||session?.name||'',playerId:m.playerId,token:m.token,bootId:m.bootId,inputEpoch:m.inputEpoch,seq:0,whackCount:0};saveSession();screen='lobby';notice='';
+    }else if(m.type==='room'){room=m.room;if(m.room.simulation)acceptSnapshot(m.room.simulation);if(session){screen='lobby';render();}}
+    else if(m.type==='snapshot'){acceptSnapshot(m.snapshot);updateClock();}
     else if(m.type==='error'){
       if(m.code==='SERVER_RESTART'||m.code==='ROOM_MISSING'||m.code==='SESSION_MISSING'){
         if(session || m.code==='SERVER_RESTART')clearRoom();

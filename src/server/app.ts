@@ -9,7 +9,7 @@ import type { AddressInfo } from 'node:net';
 import type { RawData } from 'ws';
 import type { Config, PlayerView, RoomView, ServerMessage } from '../shared.ts';
 
-type Player = PlayerView & { token: string; socket?: WebSocket; disconnectedAt?: number; order: number };
+type Player = PlayerView & { token: string; socket?: WebSocket; disconnectedAt?: number; order: number; inputEpoch?:string };
 type Room = { code: string; hostId: string; mode: '1v1'|'2v2'; players: Player[]; revision: number; emptySince?: number; banner: string; sim?:Simulation; accumulator:number; lastPump:number };
 type Connection = { room?: Room; player?: Player; hello: boolean; lastSeen: number; lostAt?:number; budget: number; refillAt: number };
 export function loadConfig(): Config { return JSON.parse(readFileSync(new URL('../../balance_constants.json', import.meta.url), 'utf8')); }
@@ -60,7 +60,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
   };
   const detach = (ws:WebSocket, explicit=false) => {
     const c=clients.get(ws);if(!c?.room || !c.player || c.player.socket!==ws) return;
-    const {room,player}=c;player.socket=undefined;player.ready=false;player.disconnectedAt=c.lostAt??performance.now();
+    const {room,player}=c;player.socket=undefined;player.ready=false;if(player.seat!==null)room.sim?.release(player.seat);player.disconnectedAt=c.lostAt??performance.now();
     if(explicit){promote(room,player);room.players=room.players.filter(p=>p!==player);}
     if(!room.players.some(p=>p.socket))room.emptySince=performance.now();
     c.room=undefined;c.player=undefined;broadcast(room);
@@ -80,7 +80,8 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
   const attach=(ws:WebSocket,c:Connection,room:Room,p:Player)=>{
     p.socket=ws;p.disconnectedAt=undefined;p.botDriving=false;room.emptySince=undefined;c.room=room;c.player=p;
     if(!room.hostId)room.hostId=p.id;
-    send(ws,{type:'joined',code:room.code,playerId:p.id,token:p.token,bootId});broadcast(room);
+    p.inputEpoch=randomUUID();if(p.seat!==null)room.sim?.resetInput(p.seat);
+    send(ws,{type:'joined',code:room.code,playerId:p.id,token:p.token,bootId,inputEpoch:p.inputEpoch});broadcast(room);
   };
   server.on('upgrade',(req:IncomingMessage,socket,head)=>{
     let valid=false;
@@ -137,6 +138,12 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
         const p:Player={id:randomUUID(),token:randomBytes(config.rooms.token_bytes).toString('hex'),name,seat,ready:!!m.solo,connected:true,botDriving:false,order:order++};room.players.push(p);attach(ws,c,room,p);return;
       }
       const {room,player}=c;if(!room||!player){error(ws,'NO_ROOM','Join a room first.');return;}
+      if(m.type==='input'){
+        if(!room.sim||player.seat===null)return;
+        if(m.seat!==player.seat||m.inputEpoch!==player.inputEpoch)return;
+        if(!Number.isSafeInteger(m.seq)||Number(m.seq)<0||![-1,0,1].includes(Number(m.walk))||typeof m.fire!=='boolean'||!Number.isSafeInteger(m.whackCount)||Number(m.whackCount)<0)return;
+        room.sim.input(player.seat,{seq:Number(m.seq),walk:Number(m.walk),fire:m.fire,whackCount:Number(m.whackCount)});return;
+      }
       if(m.type==='start'){
         if(room.hostId!==player.id){error(ws,'HOST_ONLY','Only the host can start.');return;}
         if(room.sim){error(ws,'PHASE','The race has already started.');return;}
