@@ -7,9 +7,18 @@ const connection=document.querySelector<HTMLElement>('#connection')!;
 const how=document.querySelector<HTMLDialogElement>('#how')!;
 document.querySelector('#close-how')!.addEventListener('click',()=>how.close());
 const params=new URLSearchParams(location.search),debug=params.get('debug')==='1';
+declare const __BUILD_VERSION__:string;
 const config:Config=await fetch('/balance_constants.json').then(r=>{if(!r.ok)throw new Error('Config unavailable');return r.json();});
 document.documentElement.style.setProperty('--pad-frac',`${config.views.phone_pad_frac*100}%`);
 document.documentElement.style.setProperty('--race-view-frac',`${config.views.phone_race_view_frac*100}%`);
+const motionPreference=matchMedia('(prefers-reduced-motion: reduce)');
+let settings={lowEffects:config.views.default_low_effects,reduceMotion:motionPreference.matches},manualMotion=false;
+try{const saved=JSON.parse(sessionStorage.getItem('raft-rage-settings')??'null');if(saved){settings={lowEffects:saved.lowEffects===true,reduceMotion:saved.reduceMotion===true};manualMotion=true;}}catch{}
+const settingsDialog=document.querySelector<HTMLDialogElement>('#settings')!,lowBox=document.querySelector<HTMLInputElement>('#low-effects')!,motionBox=document.querySelector<HTMLInputElement>('#reduce-motion')!;
+lowBox.checked=settings.lowEffects;motionBox.checked=settings.reduceMotion;
+const applySettings=()=>{lowBox.checked=settings.lowEffects;motionBox.checked=settings.reduceMotion;raceView?.setEffects(settings.lowEffects,settings.reduceMotion);try{sessionStorage.setItem('raft-rage-settings',JSON.stringify(settings));}catch{}};
+document.querySelector('#close-settings')!.addEventListener('click',()=>settingsDialog.close());
+lowBox.addEventListener('change',()=>{settings.lowEffects=lowBox.checked;applySettings();});motionBox.addEventListener('change',()=>{manualMotion=true;settings.reduceMotion=motionBox.checked;applySettings();});motionPreference.addEventListener('change',e=>{if(!manualMotion){settings.reduceMotion=e.matches;applySettings();}});
 let session:Session|undefined;
 try{session=JSON.parse(sessionStorage.getItem('raft-rage-session')??'null')??undefined;}catch{}
 let socket:WebSocket|undefined,online=false,bootId=session?.bootId??'',room:RoomView|undefined;
@@ -18,9 +27,11 @@ let screen:'home'|'create'|'join'|'solo'|'lobby'=params.has(config.rooms.share_l
 let clockOffset=0,snapshot:Snapshot|undefined;
 let raceView:RaceView|undefined,frames:Snapshot[]=[],lastFrame=performance.now();
 const eventDeduper=new EventDeduper(config.network.event_seen_max);
-let eventRaceId='',comicText='',comicUntil=0;
+let eventRaceId='',comicText='',comicUntil=0,serverCpuPercent=0;
+let previousMetrics:Record<string,number|null>|undefined,serverMetrics:Record<string,number|null>|undefined,snapshotArrivals:number[]=[];
 const held=new Set<string>(),pointers=new Map<number,string>();
 let ping=0,notice='',currentName='',prefillCode=params.get(config.rooms.share_link_param)??'';
+try{if(sessionStorage.getItem('raft-rage-restarted')){notice='The server restarted. Start a new room.';sessionStorage.removeItem('raft-rage-restarted');}}catch{}
 try{currentName=localStorage.getItem('raft-rage-name')??'';}catch{}
 const esc=(v:string)=>v.replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]!));
 const send=(message:object)=>{if(online&&socket?.readyState===WebSocket.OPEN){socket.send(JSON.stringify(message));return true;}showError('Reconnecting… Please wait for the river connection.');return false;};
@@ -34,8 +45,8 @@ function pips(){
 function render(){
   if(screen==='lobby'&&room?.phase==='results'){renderResults();return;}
   if(screen==='lobby'&&room&&room.phase!=='lobby'){renderRace();return;}
-  if(raceView){raceView.dispose();raceView=undefined;}document.body.classList.remove('in-race');
-  if(screen==='home')main.innerHTML=`<section class="hero"><div class="hero-copy"><span class="eyebrow">A LITTLE FRIENDLY RIVER RIVALRY</span><h1>MAKE<br><span>WAVES.</span></h1><p class="intro">A river. Two rafts. Your very competitive friends. Stand to steer, spout to sprint, and try to stay friends at the finish.</p><div class="actions"><button class="primary" id="create">Create room <span aria-hidden="true">↗</span></button><div class="subactions"><button id="join">Join room</button><button id="solo">Solo vs bots</button></div><button class="text-button" id="how-button">How to play →</button></div><p class="edition">RAFT RAGE / FIRST SPLASH · LOBBY CHECKPOINT</p><p class="error" id="error" role="alert">${esc(notice)}</p></div>${art}</section>`;
+  if(raceView){raceView.dispose();raceView=undefined;}document.body.classList.remove('in-race','hud-hidden');
+  if(screen==='home')main.innerHTML=`<section class="hero"><div class="hero-copy"><span class="eyebrow">A LITTLE FRIENDLY RIVER RIVALRY</span><h1>MAKE<br><span>WAVES.</span></h1><p class="intro">A river. Two rafts. Your very competitive friends. Stand to steer, spout to sprint, and try to stay friends at the finish.</p><div class="actions"><button class="primary" id="create">Create room <span aria-hidden="true">↗</span></button><div class="subactions"><button id="join">Join room</button><button id="solo">Solo vs bots</button></div><button class="text-button" id="how-button">How to play →</button></div><button class="text-button" id="settings-button">⚙ Settings</button><p class="error" id="error" role="alert">${esc(notice)}</p></div>${art}</section>`;
   else if(screen!=='lobby'){
     const joining=screen==='join';
     main.innerHTML=`<section class="form-screen"><button class="text-button back" id="back">← Back to river</button><div class="card"><span class="eyebrow">${joining?'YOUR CREW IS WAITING':'START A LITTLE TROUBLE'}</span><h2>${joining?'Hop aboard.':screen==='solo'?'Your river.<br>Your rules.':'Round up<br>your crew.'}</h2><p class="muted">${joining?'Enter the room code and a name your friends know.':'Pick a display name. Share the room link with your friends.'}</p><form id="room-form">${joining?`<label for="code">Room code</label><input id="code" class="code" name="code" value="${esc(prefillCode)}" autocomplete="off" autocapitalize="characters" spellcheck="false" required aria-describedby="error">`:''}<label for="name">Display name</label><input id="name" name="name" value="${esc(currentName)}" placeholder="e.g. Ana" autocomplete="off" autocapitalize="words" spellcheck="false" required aria-describedby="name-help error"><p class="muted" id="name-help">1–${config.names.max_chars} letters, numbers or spaces.</p><p class="error" id="error" role="alert">${esc(notice)}</p><button class="primary submit" type="submit">${joining?'Join room →':'Create room →'}</button></form><p class="privacy">Your name stays in this room until the room closes. No accounts, analytics, trackers, ads or payments. Your browser remembers your name; hosting handles connection metadata.</p></div></section>`;
@@ -53,10 +64,10 @@ function render(){
       const seat=index*(seats/2)+i,p=room!.players.find(x=>x.seat===seat);
       return `<button class="seat ${p?.id===own?.id?'own':''}" data-seat="${seat}"><span>${esc(p?.name??'Bot (Chill)')}${p?.id===room!.hostId?' · HOST':''}${p?.id===own?.id?' · YOU':''}<small>${room!.mode==='1v1'?'Solo seat':i===0?'Left seat':'Right seat'} · Hippo</small></span><span class="seat-status">${p?(p.connected?(p.ready?'✓ READY':'Not ready'):'Reconnecting…'):'Tap to sit'}</span></button>`;
     }).join('')}</section>`;
-    main.innerHTML=`<section class="lobby"><div class="lobby-top"><div><span class="eyebrow">THE CREW ASSEMBLES</span><h2 class="room-code">${esc(room.code)}</h2><p class="muted">Players join at this link with no login.</p></div><div class="share-actions"><button id="copy">Copy link</button><button id="share">Share ↗</button></div></div><div id="banner" class="banner" role="status">${esc(room.banner||'Your raft is waiting. Bring a friend aboard.')}</div><div class="seat-grid">${team(0)}${team(1)}</div><div class="lobby-controls">${own?.seat!==null?`<button class="${own?.ready?'':'primary'}" id="ready">${own?.ready?'✓ READY':'Ready up'}</button>`:'<p class="muted">Spectating · Tap an open seat to sit.</p>'}<button class="text-button" id="how-button">How to play</button><button class="text-button" id="leave">Leave</button>${host?`<div class="host-controls"><span class="muted">Mode</span><button id="mode-1" class="${room.mode==='1v1'?'selected':''}" aria-pressed="${room.mode==='1v1'}">1v1</button><button id="mode-2" class="${room.mode==='2v2'?'selected':''}" aria-pressed="${room.mode==='2v2'}">2v2</button></div>`:''}</div><p class="hippo-choice">✓ HIPPO SELECTED · SPOUT<br><span class="muted">${pips()}</span></p>${host?`<button id="start" class="primary" ${room.players.some(p=>p.seat!==null&&p.connected&&!p.ready)?'disabled':''}>Start race</button><p class="muted">${room.players.filter(p=>p.seat!==null&&p.connected&&!p.ready).map(p=>`Waiting for ${esc(p.name)} to be Ready`).join(' · ')||'Crew ready. Let’s go!'}</p>`:'<p class="muted">Waiting for host to start…</p>'}<p class="error" id="error" role="alert">${esc(notice)}</p><div class="how-strip"><article class="how-card"><b>01 / Stand to steer</b><p>Walk the rim. Fire at the back to go forward, or from a side to slide.</p></article><article class="how-card"><b>02 / Pick an animal</b><p>Meet Hippo. Big heart, big cannon. Hold SPOUT to keep the kicks coming.</p></article><article class="how-card"><b>03 / Whack and block</b><p>Whack a nearby rival to stun. Whack during their windup to block.</p></article></div><p class="muted status-toast" id="share-status" role="status"></p>${debug?`<pre class="debug">LOBBY CHECKPOINT 0.1.0
+    main.innerHTML=`<section class="lobby"><div class="lobby-top"><div><span class="eyebrow">THE CREW ASSEMBLES</span><h2 class="room-code">${esc(room.code)}</h2><p class="muted">Players join at this link with no login.</p></div><div class="share-actions"><button id="copy">Copy link</button><button id="share">Share ↗</button></div></div><div id="banner" class="banner" role="status">${esc(room.banner||'Your raft is waiting. Bring a friend aboard.')}</div><div class="seat-grid">${team(0)}${team(1)}</div><div class="lobby-controls">${own?.seat!==null?`<button class="${own?.ready?'':'primary'}" id="ready">${own?.ready?'✓ READY':'Ready up'}</button>`:'<p class="muted">Spectating · Tap an open seat to sit.</p>'}<button class="text-button" id="how-button">How to play</button><button class="text-button" id="settings-button">⚙ Settings</button><button class="text-button" id="leave">Leave</button>${host?`<div class="host-controls"><span class="muted">Mode</span><button id="mode-1" class="${room.mode==='1v1'?'selected':''}" aria-pressed="${room.mode==='1v1'}">1v1</button><button id="mode-2" class="${room.mode==='2v2'?'selected':''}" aria-pressed="${room.mode==='2v2'}">2v2</button></div>`:''}</div><p class="hippo-choice">✓ HIPPO SELECTED · SPOUT<br><span class="muted">${pips()}</span></p>${host?`<button id="start" class="primary" ${room.players.some(p=>p.seat!==null&&p.connected&&!p.ready)?'disabled':''}>Start race</button><p class="muted">${room.players.filter(p=>p.seat!==null&&p.connected&&!p.ready).map(p=>`Waiting for ${esc(p.name)} to be Ready`).join(' · ')||'Crew ready. Let’s go!'}</p>`:'<p class="muted">Waiting for host to start…</p>'}<p class="error" id="error" role="alert">${esc(notice)}</p><div class="how-strip"><article class="how-card"><b>01 / Stand to steer</b><p>Walk the rim. Fire at the back to go forward, or from a side to slide.</p></article><article class="how-card"><b>02 / Pick an animal</b><p>Meet Hippo. Big heart, big cannon. Hold SPOUT to keep the kicks coming.</p></article><article class="how-card"><b>03 / Whack and block</b><p>Whack a nearby rival to stun. Whack during their windup to block.</p></article></div><p class="muted status-toast" id="share-status" role="status"></p>${debug?`<pre class="debug">BUILD ${__BUILD_VERSION__}
 phase: ${room.phase} · revision: ${room.revision} · ping: ${ping.toFixed(0)} ms
 player: ${esc(session?.playerId??'')} · boot: ${esc(bootId.slice(0,8))}
-Simulation: not running in this checkpoint
+Simulation starts with the race
 Configured: ${config.network.sim_hz} Hz sim / ${config.network.snapshot_hz} Hz snapshots / ${config.network.input_resend_hz} Hz input</pre>`:''}</section>`;
     document.querySelectorAll<HTMLButtonElement>('[data-seat]').forEach(b=>b.onclick=()=>send({type:'seat',seat:Number(b.dataset.seat)}));
     document.querySelector('#start')?.addEventListener('click',()=>send({type:'start'}));
@@ -70,14 +81,17 @@ Configured: ${config.network.sim_hz} Hz sim / ${config.network.snapshot_hz} Hz s
   }
   for(const id of ['create','join','solo'])document.querySelector(`#${id}`)?.addEventListener('click',()=>{screen=id as typeof screen;notice='';render();});
   document.querySelector('#back')?.addEventListener('click',()=>{screen='home';notice='';render();});
+  document.querySelector('#settings-button')?.addEventListener('click',()=>{releaseAll();settingsDialog.showModal();});
   document.querySelector('#how-button')?.addEventListener('click',()=>how.showModal());
 }
 function renderRace(){
-  if(raceView)return;
+  if(document.querySelector('#game-stage')){syncDebugActions();return;}
   document.body.classList.add('in-race');
   const own=room?.players.find(p=>p.id===session?.playerId);
-  main.innerHTML=`<section class="race-screen"><div class="race-top"><b>▲ RED <span>vs</span> ● BLUE</b><strong id="race-clock">0:00.0</strong><button id="pad-toggle">Show controls</button><button id="race-leave">Leave</button></div><div id="game-stage"></div><div id="countdown" role="status"></div><div id="race-banner" class="race-banner" role="status">${own?.seat===null?"You'll join next race":''}</div><div id="race-progress"><label>▲ RED <progress id="red-progress" max="1" value="0"></progress></label><label>● BLUE <progress id="blue-progress" max="1" value="0"></progress></label></div>${own?.seat!==null?`<div id="pad" class="pad"><button data-control="left" aria-label="Walk left">◀<small>WALK LEFT</small></button><button data-control="right" aria-label="Walk right">▶<small>WALK RIGHT</small></button><button data-control="whack">WHACK</button><button data-control="fire" class="primary">SPOUT</button></div><div class="key-legend">A / D walk · W spout · S whack</div>`:''}<p id="error" class="error" role="alert"></p>${debug?'<pre id="race-debug" class="debug"></pre>':''}</section>`;
-  try{raceView=new RaceView(document.querySelector<HTMLElement>('#game-stage')!,config);}catch{showError('This browser could not start 3D. Try refreshing the page.');}
+  main.innerHTML=`<section class="race-screen"><div class="race-top"><b>▲ RED <span>vs</span> ● BLUE</b><strong id="race-clock">0:00.0</strong><button id="race-settings" aria-label="Settings">⚙</button><button id="pad-toggle">Show controls</button><button id="race-leave">Leave</button></div><div id="game-stage"></div><div id="countdown" role="status"></div><div id="race-banner" class="race-banner" role="status">${own?.seat===null?"You'll join next race":''}</div><div id="race-progress"><label>▲ RED${own?.seat!==null&&own?.seat!==undefined&&Math.floor(own.seat/((room?.mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2)/2))===0?' YOU':''} <progress id="red-progress" max="1" value="0"></progress></label><label>● BLUE${own?.seat!==null&&own?.seat!==undefined&&Math.floor(own.seat/((room?.mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2)/2))===1?' YOU':''} <progress id="blue-progress" max="1" value="0"></progress></label></div>${own?.seat!==null?`<div id="pad" class="pad"><button data-control="left" aria-label="Walk left">◀<small>WALK LEFT</small></button><button data-control="right" aria-label="Walk right">▶<small>WALK RIGHT</small></button><button data-control="whack">WHACK</button><button data-control="fire" class="primary">SPOUT</button></div><div class="key-legend">A / D walk · W spout · S whack</div>`:''}<p id="error" class="error" role="alert"></p>${debug?'<pre id="race-debug" class="debug"></pre>':''}</section>`;
+  try{raceView=new RaceView(document.querySelector<HTMLElement>('#game-stage')!,config,()=>{settings.lowEffects=true;applySettings();comicText='Low effects enabled for smoother play';comicUntil=Date.now()+clockOffset+config.visuals.comic_banner_s*1000;});raceView.setEffects(settings.lowEffects,settings.reduceMotion);}catch{showError('This browser could not start 3D. Try refreshing the page.');}
+  document.querySelector('#race-settings')!.addEventListener('click',()=>{releaseAll();settingsDialog.showModal();});
+  syncDebugActions();
   document.querySelector('#race-leave')!.addEventListener('click',()=>{releaseAll();send({type:'leave'});clearRoom();});
   document.querySelector('#pad-toggle')!.addEventListener('click',()=>document.querySelector('#pad')?.classList.toggle('show-pad'));
   document.querySelectorAll<HTMLButtonElement>('[data-control]').forEach(button=>{
@@ -87,8 +101,23 @@ function renderRace(){
     button.addEventListener('contextmenu',e=>e.preventDefault());
   });updateClock();
 }
+function syncDebugActions(){
+  document.querySelector('#debug-actions')?.remove();
+  if(!debug||room?.hostId!==session?.playerId||!document.querySelector('.race-screen'))return;
+  const box=document.createElement('div');box.id='debug-actions';
+  box.innerHTML=`<label>Jump to <select id="jump-percent">${config.debug.jump_percents.map(n=>`<option value="${n}" ${n===config.debug.default_jump_percent?'selected':''}>${n}%</option>`).join('')}</select></label>${['Red','Blue','both'].map(raft=>`<button data-jump="${raft.toLowerCase()}">Jump ${raft} to ${config.debug.default_jump_percent}%</button>`).join('')}<button id="hide-hud" title="Tap the scene or press H to show the HUD again">Hide HUD</button>`;
+  document.querySelector('.race-screen')!.append(box);
+  const select=box.querySelector<HTMLSelectElement>('#jump-percent')!;
+  const update=()=>box.querySelectorAll<HTMLButtonElement>('[data-jump]').forEach(button=>button.textContent=`Jump ${button.dataset.jump==='both'?'both':button.dataset.jump==='red'?'Red':'Blue'} to ${select.value}%`);
+  select.addEventListener('change',update);box.querySelectorAll<HTMLButtonElement>('[data-jump]').forEach(button=>button.addEventListener('click',()=>send({type:'debug_jump',raft:button.dataset.jump,percent:Number(select.value)})));
+  box.querySelector('#hide-hud')!.addEventListener('click',()=>document.body.classList.toggle('hud-hidden'));
+}
+main.addEventListener('pointerdown',()=>{if(document.body.classList.contains('hud-hidden'))document.body.classList.remove('hud-hidden');},true);
+window.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='h'&&debug&&room?.hostId===session?.playerId)document.body.classList.toggle('hud-hidden');});
+function updateOrientation(){const block=matchMedia('(pointer:coarse)').matches&&innerWidth>innerHeight&&innerHeight<=config.views.phone_landscape_max_height_px;document.querySelector<HTMLElement>('#orientation')!.hidden=!block;if(block)releaseAll();}
+window.addEventListener('resize',updateOrientation);
 function renderResults(){
-  if(raceView){raceView.dispose();raceView=undefined;}held.clear();pointers.clear();document.body.classList.remove('in-race');
+  if(raceView){raceView.dispose();raceView=undefined;}held.clear();pointers.clear();document.body.classList.remove('in-race','hud-hidden');
   if(!snapshot||!room)return;
   const state=snapshot,host=room.hostId===session?.playerId,seats=room.mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2;
   const title=state.winner===null?config.race.timeout_tie_label:state.winner===0?'▲ RED WINS!':'● BLUE WINS!';
@@ -110,7 +139,7 @@ function sendInput(){
   session.seq++;saveSession();send({type:'input',raceId:snapshot?.raceId,seat:player.seat,inputEpoch:session.inputEpoch,seq:session.seq,whackCount:session.whackCount,walk:Number(left)-Number(right),fire:held.has('w')||controls.includes('fire')});
 }
 function releaseAll(){held.clear();pointers.clear();document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'));sendInput();}
-window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(!room||!['countdown','race'].includes(room.phase)||!['a','d','w','s'].includes(key)||e.repeat)return;e.preventDefault();held.add(key);if(key==='s'&&session)session.whackCount++;sendInput();});
+window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(!room||!['countdown','race'].includes(room.phase)||!['a','d','w','s'].includes(key)||settingsDialog.open||how.open||e.repeat)return;e.preventDefault();held.add(key);if(key==='s'&&session)session.whackCount++;sendInput();});
 window.addEventListener('keyup',e=>{if(held.delete(e.key.toLowerCase()))sendInput();});
 window.addEventListener('blur',releaseAll);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseAll();});
 setInterval(sendInput,1000/config.network.input_resend_hz);
@@ -124,7 +153,7 @@ function updateClock(){
   const own=room?.players.find(p=>p.id===session?.playerId),ownRaft=own?.seat!==null&&own?.seat!==undefined?Math.floor(own.seat/((room?.mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2)/2)):snapshot.rafts[1].progress>snapshot.rafts[0].progress?1:0;
   const banner=document.querySelector('#race-banner');if(banner)banner.textContent=snapshot.rafts[ownRaft].stun>0?'STUNNED':serverNow<comicUntil?comicText:snapshot.firstFinishTime!==null?`${snapshot.winner===0?'▲ RED':'● BLUE'} FINISHED!`:own?.seat===null?"You'll join next race":room?.banner??'';
   for(const [i,id]of ['red-progress','blue-progress'].entries()){const bar=document.querySelector<HTMLProgressElement>('#'+id);if(bar)bar.value=snapshot.rafts[i].progress/config.course.length;}
-  const dbg=document.querySelector('#race-debug');if(dbg){const r=snapshot.rafts[ownRaft],a=snapshot.animals.find(a=>a.seat===own?.seat);dbg.textContent=`${room?.phase} · tick ${snapshot.tick} · ${snapshot.raceTime.toFixed(2)}s · fps ${raceView?.fps.toFixed(0)??0} · ping ${ping.toFixed(0)}ms\nTick average ${snapshot.tickAverageMs.toFixed(3)}ms / worst ${snapshot.tickWorstMs.toFixed(3)}ms\nx ${r.x.toFixed(1)} y ${r.y.toFixed(1)} heading ${(r.heading*180/Math.PI).toFixed(1)}° speed ${Math.hypot(r.vx,r.vy).toFixed(1)}\nphi ${a?.phi.toFixed(1)} · seq sent ${session?.seq??0} / ack ${a?.seq??-1}\n${config.network.sim_hz}Hz sim · ${config.network.snapshot_hz}Hz snapshots · ${config.network.input_resend_hz}Hz input · buffer ${config.network.interp_buffer_ms}ms`;}
+  const dbg=document.querySelector('#race-debug');if(dbg){const r=snapshot.rafts[ownRaft],a=snapshot.animals.find(a=>a.seat===own?.seat);dbg.textContent=`${room?.phase} · tick ${snapshot.tick} · ${snapshot.raceTime.toFixed(2)}s · fps ${raceView?.fps.toFixed(0)??0} · ping ${ping.toFixed(0)}ms\nAVERAGE tick ${snapshot.tickAverageMs.toFixed(3)}ms / WORST tick ${snapshot.tickWorstMs.toFixed(3)}ms\nx ${r.x.toFixed(1)} y ${r.y.toFixed(1)} heading ${(r.heading*180/Math.PI).toFixed(1)}° speed ${Math.hypot(r.vx,r.vy).toFixed(1)}\nphi ${a?.phi.toFixed(1)} · seq sent ${session?.seq??0} / ack ${a?.seq??-1}\n${config.network.sim_hz}Hz sim · ${(snapshotArrivals.length/config.visuals.fps_sample_s).toFixed(0)}Hz received snapshots · ${config.network.input_resend_hz}Hz input · buffer ${config.network.interp_buffer_ms}ms\nThrust ×${((room?.mode==='1v1'?config.multipliers.impulse_1v1:1)*(r.slow>0?config.multipliers.thrust_slow:1)).toFixed(2)} · triangles ${raceView?.triangles??0}\nServer CPU ${serverCpuPercent.toFixed(2)}% core · event loop ${Number(serverMetrics?.eventLoopMeanMs??0).toFixed(2)} / ${Number(serverMetrics?.eventLoopMaxMs??0).toFixed(2)}ms · overruns ${serverMetrics?.overruns??0} · build ${__BUILD_VERSION__}`;}
   return ownRaft;
 }
 function animation(now:number){
@@ -143,16 +172,22 @@ function connect(){
   ws.onmessage=e=>{
     const m=JSON.parse(e.data) as ServerMessage;
     if(m.type==='hello'){
+      if(m.buildVersion&&m.buildVersion!==__BUILD_VERSION__){clearRoom();try{sessionStorage.setItem('raft-rage-restarted','1');}catch{}location.reload();return;}
       clockOffset=m.serverTime-Date.now();
       if(bootId&&bootId!==m.bootId){online=false;clearRoom();notice='The server restarted. Start a new room.';render();}
-      bootId=m.bootId;ws.send(JSON.stringify({type:'hello',bootId,protocol:config.network.protocol_version}));
+      bootId=m.bootId;ws.send(JSON.stringify({type:'hello',bootId,protocol:config.network.protocol_version,debug}));
     }else if(m.type==='connected'){
       online=true;reconnectDelay=config.network.reconnect_initial_ms;connection.textContent='River connected';connection.classList.add('online');
       if(session){currentName=session.name;send({type:'resume',...session});}
     }else if(m.type==='joined'){
       session={code:m.code,name:currentName||session?.name||'',playerId:m.playerId,token:m.token,bootId:m.bootId,inputEpoch:m.inputEpoch,seq:0,whackCount:0};saveSession();screen='lobby';notice='';
     }else if(m.type==='room'){room=m.room;if(m.room.simulation)acceptSnapshot(m.room.simulation);if(session){screen='lobby';render();}}
-    else if(m.type==='snapshot'){acceptSnapshot(m.snapshot);updateClock();}
+    else if(m.type==='snapshot'){const now=performance.now();snapshotArrivals.push(now);snapshotArrivals=snapshotArrivals.filter(t=>t>=now-config.visuals.fps_sample_s*1000);acceptSnapshot(m.snapshot);updateClock();}
+    else if(m.type==='metrics'){
+      serverMetrics=m.metrics;
+      if(previousMetrics){const wall=Number(m.metrics.wallMs)-Number(previousMetrics.wallMs),cpu=Number(m.metrics.cpuUserUs)+Number(m.metrics.cpuSystemUs)-Number(previousMetrics.cpuUserUs)-Number(previousMetrics.cpuSystemUs);if(wall>0)serverCpuPercent=cpu/(wall*1000)*100;}
+      previousMetrics=m.metrics;
+    }
     else if(m.type==='error'){
       if(m.code==='SERVER_RESTART'||m.code==='ROOM_MISSING'||m.code==='SESSION_MISSING'){
         if(session || m.code==='SERVER_RESTART')clearRoom();
@@ -166,5 +201,5 @@ function connect(){
   };
   ws.onerror=()=>{connection.textContent='Reconnecting…';};
 }
-setInterval(()=>{if(online)send({type:'ping',clientTime:Date.now()});},config.network.clock_sync_interval_s*1000);
-render();connect();
+setInterval(()=>{if(online){send({type:'ping',clientTime:Date.now()});if(debug&&room?.hostId===session?.playerId)send({type:'debug_metrics'});}},config.network.clock_sync_interval_s*1000);
+render();connect();updateOrientation();

@@ -9,11 +9,12 @@ export interface Snapshot {raceId:string;events:GameEvent[];winner:number|null;f
 export interface PlayerView {id:string;name:string;seat:number|null;connected:boolean;ready:boolean;botDriving:boolean}
 export interface RoomView {code:string;hostId:string;mode:'1v1'|'2v2';phase:Phase;simulation?:Snapshot;revision:number;banner:string;players:PlayerView[]}
 export type ServerMessage =
-  |{type:'hello';bootId:string;protocol:number;serverTime:number}
+  |{type:'hello';bootId:string;protocol:number;serverTime:number;buildVersion:string}
   |{type:'connected';bootId:string}
   |{type:'joined';bootId:string;code:string;playerId:string;token:string;inputEpoch:string}
   |{type:'room';room:RoomView}
   |{type:'snapshot';snapshot:Snapshot}
   |{type:'pong';serverTime:number;clientTime:number}
+  |{type:'metrics';metrics:Record<string,number|null>}
   |{type:'left'}
   |{type:'error';code:string;message:string};

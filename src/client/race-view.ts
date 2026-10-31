@@ -4,8 +4,8 @@ import {Course,rad,wrap} from '../game/course.ts';
 export class RaceView {
   renderer:THREE.WebGLRenderer;scene=new THREE.Scene();camera:THREE.PerspectiveCamera;
   rafts:THREE.Group[]=[];animals:THREE.Group[]=[];stars:THREE.Group[]=[];swings:THREE.Mesh[]=[];
-  course:Course;resize:ResizeObserver;cameraReady=false;fps=0;frames=0;sample=0;
-  constructor(readonly container:HTMLElement,readonly config:Config){
+  course:Course;resize:ResizeObserver;cameraReady=false;fps=0;frames=0;sample=0;fpsSampleStart=performance.now();lowSeconds=0;lowEffects=false;reduceMotion=false;
+  constructor(readonly container:HTMLElement,readonly config:Config,readonly onAutoLow:()=>void=()=>{}){
     const v=config.visuals;this.course=new Course(config);
     this.renderer=new THREE.WebGLRenderer({antialias:false,alpha:false,powerPreference:'low-power'});
     this.renderer.setPixelRatio(Math.min(devicePixelRatio,v.max_pixel_ratio));this.renderer.setClearColor(v.sky_color);
@@ -67,15 +67,17 @@ export class RaceView {
       this.rafts[state.raft].add(group);this.animals.push(group);
     }
   }
+  get triangles(){return this.renderer.info.render.triangles;}
+  setEffects(lowEffects:boolean,reduceMotion:boolean){this.lowEffects=lowEffects;this.reduceMotion=reduceMotion;this.renderer.setPixelRatio(Math.min(devicePixelRatio,lowEffects?this.config.visuals.low_effects_pixel_ratio:this.config.visuals.max_pixel_ratio));}
   draw(snapshot:Snapshot,ownRaft:number,dt:number){
     this.ensureAnimals(snapshot);const v=this.config.visuals;
     snapshot.rafts.forEach((r,i)=>{this.rafts[i].position.set(r.x,v.raft_height,-r.y);this.rafts[i].rotation.y=-r.heading;this.stars[i].visible=r.stun>0;this.stars[i].rotation.y=-(snapshot.raceTime*v.stun_orbit_speed);});
     snapshot.animals.forEach((a,i)=>{const phi=rad(a.phi);this.animals[i].position.set(Math.sin(phi)*this.config.raft.rim_radius,0,-Math.cos(phi)*this.config.raft.rim_radius);this.animals[i].rotation.y=-phi+Math.PI;this.swings[i].visible=a.whackPhase==='windup';this.swings[i].rotation.z=(a.whackWindup/this.config.combat.whack_windup_s)*Math.PI;});
     const raft=snapshot.rafts[ownRaft]??snapshot.rafts[0],p=this.course.project(raft.x,raft.y);
     const target=new THREE.Vector3(raft.x-p.tx*v.camera_behind,v.camera_height,-raft.y+p.ty*v.camera_behind);
-    if(!this.cameraReady){this.camera.position.copy(target);this.cameraReady=true;}else this.camera.position.lerp(target,1-Math.exp(-v.camera_follow_rate*dt));
+    if(!this.cameraReady){this.camera.position.copy(target);this.cameraReady=true;}else this.camera.position.lerp(target,1-Math.exp(-(this.reduceMotion?v.reduced_motion_camera_follow_rate:v.camera_follow_rate)*dt));
     this.camera.lookAt(raft.x+p.tx*v.camera_ahead,0,-raft.y-p.ty*v.camera_ahead);this.renderer.render(this.scene,this.camera);
-    this.frames++;this.sample+=dt;if(this.sample>=v.fps_sample_s){this.fps=this.frames/this.sample;this.frames=0;this.sample=0;}
+    this.frames++;this.sample=(performance.now()-this.fpsSampleStart)/1000;if(this.sample>=v.fps_sample_s){this.fps=this.frames/this.sample;if(this.fps<v.auto_low_effects_below_fps)this.lowSeconds+=this.sample;else this.lowSeconds=0;if(!this.lowEffects&&this.lowSeconds>=v.auto_low_effects_after_s){this.setEffects(true,this.reduceMotion);this.onAutoLow();}this.frames=0;this.sample=0;this.fpsSampleStart=performance.now();}
   }
   dispose(){this.resize.disconnect();this.scene.traverse(object=>{const m=object as THREE.Mesh;if(m.geometry)m.geometry.dispose();if(m.material)for(const material of Array.isArray(m.material)?m.material:[m.material])material.dispose();});this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }

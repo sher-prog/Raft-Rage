@@ -9,7 +9,7 @@ export class Simulation {
   tickAverageMs=0;tickWorstMs=0;tickTotalMs=0;tickCount=0;
   botSeats=new Set<number>();botNext=new Map<number,number>();botProgress=new Map<number,{tick:number;progress:number}>();rngState:number;
   ended=false;winner:number|null=null;firstFinishTime:number|null=null;firstFinishTick:number|null=null;events:GameEvent[]=[];eventSeq=0;spikeLatch=new Set<RaftState>();
-  constructor(readonly config:Config,readonly mode:Mode,readonly startServerTime=Date.now(),seed=config.simulation.default_seed,readonly raceId=`${startServerTime}-${seed}`){
+  constructor(readonly config:Config,readonly mode:Mode,public startServerTime=Date.now(),seed=config.simulation.default_seed,readonly raceId=`${startServerTime}-${seed}`){
     this.rngState=seed||config.simulation.default_seed;
     this.dt=1/config.network.sim_hz;this.countdownTicks=Math.round(config.rooms.countdown_s*config.network.sim_hz);this.course=new Course(config);
     const seats=mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2;
@@ -127,6 +127,14 @@ export class Simulation {
     }
     this.decideBots();this.events=this.events.filter(e=>(this.tick-e.tick)*this.dt<=c.network.event_repeat_s);
   }
+  jump(raft:'red'|'blue'|'both',percent:number){
+    if(this.phase!=='race'||this.firstFinishTime!==null)return false;
+    const c=this.config;for(const[index,r]of this.rafts.entries()){
+      if(raft!=='both'&&index!==(raft==='red'?0:1))continue;
+      const progress=c.course.length*percent/100,p=this.course.at(progress,(index===0?-1:1)*c.course.start_lateral_offset),dir=this.course.project(p.x,p.y);
+      Object.assign(r,p,{progress,vx:dir.tx*c.debug.jump_speed,vy:dir.ty*c.debug.jump_speed,omega:0,stun:0,slow:0,immunity:0});this.spikeLatch.delete(r);this.shots=this.shots.filter(s=>s.raft!==index);
+    }return true;
+  }
   cooldownWhack(a:Animal){a.whackPhase='cooldown';a.whackCooldown=this.config.combat.whack_cooldown_s;a.whackWindup=0;}
   stun(index:number,duration:number,slow=0){
     const r=this.rafts[index],c=this.config;r.stun=Math.min(c.combat.stun_max_s,r.stun+duration);r.slow=Math.max(r.slow,slow);
@@ -197,7 +205,7 @@ export class Simulation {
   }
   snapshot():Snapshot{
     const n=this.config.network,q=(value:number,quantum:number)=>Math.round(value/quantum)*quantum;
-    return {raceId:this.raceId,events:this.events.map(e=>({...e,x:q(e.x,n.position_quantum),y:q(e.y,n.position_quantum)})),winner:this.winner,firstFinishTime:this.firstFinishTime===null?null:q(this.firstFinishTime,n.time_quantum_s),tick:this.tick,raceTime:q(this.raceTime,n.time_quantum_s),phase:this.phase,startServerTime:this.startServerTime,serverTime:Date.now(),tickAverageMs:this.tickAverageMs,tickWorstMs:this.tickWorstMs,
+    return {raceId:this.raceId,events:this.events.map(e=>({...e,x:q(e.x,n.position_quantum),y:q(e.y,n.position_quantum)})),winner:this.winner,firstFinishTime:this.firstFinishTime===null?null:q(this.firstFinishTime,n.time_quantum_s),tick:this.tick,raceTime:q(this.raceTime,n.time_quantum_s),phase:this.phase,startServerTime:this.startServerTime,serverTime:Date.now(),tickAverageMs:q(this.tickAverageMs,this.config.visuals.tick_time_quantum_ms),tickWorstMs:q(this.tickWorstMs,this.config.visuals.tick_time_quantum_ms),
       rafts:this.rafts.map(r=>({...r,x:q(r.x,n.position_quantum),y:q(r.y,n.position_quantum),heading:q(r.heading,rad(n.angle_quantum_deg)),vx:q(r.vx,n.velocity_quantum),vy:q(r.vy,n.velocity_quantum),progress:q(r.progress,n.position_quantum),finishTime:r.finishTime===null?null:q(r.finishTime,n.time_quantum_s)})),
       animals:this.animals.map(({input,seenTick,pendingFire,whackStartTick,whackUntilTick,...a})=>({...a,phi:q(a.phi,n.angle_quantum_deg)}))};
   }

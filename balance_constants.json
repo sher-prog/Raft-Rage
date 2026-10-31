@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "1.6-combat (2026-10-31)",
+  "_version": "1.7-debug-settings (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -99,7 +99,8 @@
       "max_connections",
       "code_blocklist",
       "reclaim_by_name_after_grace",
-      "go_banner_s"
+      "go_banner_s",
+      "suspend_sim_when_empty"
     ],
     "maintenance_interval_ms": 100,
     "code_attempts_max": 1000,
@@ -115,7 +116,8 @@
       "COCK"
     ],
     "reclaim_by_name_after_grace": true,
-    "go_banner_s": 1
+    "go_banner_s": 1,
+    "suspend_sim_when_empty": true
   },
   "names": {
     "max_chars": 12,
@@ -651,8 +653,12 @@
     "phone_pad_frac": 0.45,
     "big_screen_split_distance": 500,
     "_assumed": [
-      "big_screen_split_distance"
-    ]
+      "big_screen_split_distance",
+      "phone_landscape_max_height_px",
+      "default_low_effects"
+    ],
+    "phone_landscape_max_height_px": 550,
+    "default_low_effects": false
   },
   "visuals": {
     "toon_light_steps": 3,
@@ -718,7 +724,10 @@
       "hippo_parts",
       "comic_banner_s",
       "whack_arc_radius",
-      "whack_arc_tube"
+      "whack_arc_tube",
+      "low_effects_pixel_ratio",
+      "reduced_motion_camera_follow_rate",
+      "tick_time_quantum_ms"
     ],
     "camera_height": 240,
     "camera_behind": 320,
@@ -917,7 +926,10 @@
     ],
     "comic_banner_s": 0.8,
     "whack_arc_radius": 6.5,
-    "whack_arc_tube": 0.7
+    "whack_arc_tube": 0.7,
+    "low_effects_pixel_ratio": 1,
+    "reduced_motion_camera_follow_rate": 2.5,
+    "tick_time_quantum_ms": 0.001
   },
   "audio": {
     "music_tempo_start": 1,
@@ -965,6 +977,27 @@
     "collision_push_epsilon": 0.01
   },
   "_assumed": [
-    "simulation"
-  ]
+    "simulation",
+    "debug"
+  ],
+  "debug": {
+    "jump_percents": [
+      5,
+      20,
+      40,
+      50,
+      68,
+      75,
+      95
+    ],
+    "_assumed": [
+      "jump_percents",
+      "default_jump_percent",
+      "jump_speed",
+      "event_loop_resolution_ms"
+    ],
+    "default_jump_percent": 95,
+    "jump_speed": 240,
+    "event_loop_resolution_ms": 10
+  }
 }

@@ -1,0 +1,12 @@
+{
+  "url":"https://raft-rage.onrender.com",
+  "observedAt":"2026-10-31T22:18:42.697Z",
+  "pageLoaded":true,"secureWebSocketConnected":true,"createRoom":true,"lowercaseShareLinkJoin":true,"independentClientRosterUpdated":true,
+  "publicJoinAndRemoteRosterMsIncludingBrowserAutomation":682,
+  "environment":"Cloud Chrome against public Render URL, not physical Safari/Android/cellular",
+  "firstScriptedHealthMs":9261.998,
+  "firstScriptedHealthBody":"ok",
+  "coldStartClassification":"Unknown; latency alone does not prove a Free cold wake",
+  "scriptedWssUsingProvidedEnvironmentProxyMs":3989.252,
+  "physicalCellularConfirmation":"pending"
+}

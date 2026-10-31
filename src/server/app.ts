@@ -10,44 +10,47 @@ import type { RawData } from 'ws';
 import type { Config, PlayerView, RoomView, ServerMessage } from '../shared.ts';
 
 type Player = PlayerView & { token: string; socket?: WebSocket; disconnectedAt?: number; order: number; inputEpoch?:string };
-type Room = { code: string; hostId: string; mode: '1v1'|'2v2'; players: Player[]; revision: number; emptySince?: number; banner: string; sim?:Simulation; accumulator:number; lastPump:number };
-type Connection = { room?: Room; player?: Player; hello: boolean; lastSeen: number; lostAt?:number; budget: number; refillAt: number };
+type Room = { code: string; hostId: string; mode: '1v1'|'2v2'; players: Player[]; revision: number; emptySince?: number; banner: string; sim?:Simulation; accumulator:number; lastPump:number; snapshotCount:number;snapshotTotalMs:number;snapshotWorstMs:number;snapshotBytes:number;schedulerLateMaxMs:number;overruns:number;pausedSince?:number };
+type Connection = { room?: Room; player?: Player; hello: boolean; lastSeen: number; lostAt?:number; budget: number; refillAt: number; debug:boolean; socket:IncomingMessage['socket'] };
 export function loadConfig(): Config { return JSON.parse(readFileSync(new URL('../../balance_constants.json', import.meta.url), 'utf8')); }
 
 export function createGameServer(config: Config, options: { bootId?: string; staticDir?: URL; measure?: boolean } = {}) {
+  const buildVersion=JSON.parse(readFileSync(new URL('../../package.json',import.meta.url),'utf8')).version as string;
   const bootId = options.bootId ?? randomUUID();
   const rooms = new Map<string, Room>();
   const clients = new Map<WebSocket, Connection>();
-  const assets = new Map<string,{data: Buffer; type: string}>();
+  const assets = new Map<string,{data: Buffer;br:Buffer;gzip:Buffer; type: string}>();
   const staticDir = options.staticDir ?? new URL('../client/', import.meta.url);
   for (const [path, file, type] of [
     ['/', 'index.html','text/html; charset=utf-8'], ['/main.js','main.js','text/javascript; charset=utf-8'],
     ['/style.css','style.css','text/css; charset=utf-8'], ['/balance_constants.json','balance_constants.json','application/json']
-  ]) assets.set(path, {data:readFileSync(new URL(file,staticDir)),type});
+  ]) assets.set(path, {data:readFileSync(new URL(file,staticDir)),br:readFileSync(new URL(file+'.br',staticDir)),gzip:readFileSync(new URL(file+'.gz',staticDir)),type});
   const server = createServer((req,res) => {
     const path = req.url?.split('?')[0];
     // Deliberately constant: no room, simulation, filesystem or telemetry work.
     if (path === '/healthz' && req.method === 'GET') {res.writeHead(200,{'Content-Type':'text/plain','Cache-Control':'no-store'}); res.end('ok'); return;}
+    if(path==='/version'&&req.method==='GET'){res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({version:buildVersion,configVersion:config._version,bootId}));return;}
     const asset = assets.get(path ?? '');
     if (!asset || !['GET','HEAD'].includes(req.method ?? '')) {res.writeHead(404);res.end('Not found');return;}
     const host=/^[a-zA-Z0-9.:[\]-]+$/.test(req.headers.host??'')?req.headers.host:'';
+    const accepted=req.headers['accept-encoding']??'',encoding=accepted.includes('br')?'br':accepted.includes('gzip')?'gzip':undefined;const data=encoding?asset[encoding]:asset.data;
     res.writeHead(200, {
-      'Content-Type':asset.type, 'Content-Length':asset.data.length, 'Cache-Control':'no-cache',
+      'Content-Type':asset.type, 'Content-Length':data.length, 'Cache-Control':'no-cache','Vary':'Accept-Encoding',...(encoding?{'Content-Encoding':encoding}:{}),
       'Content-Security-Policy':`default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' ${host?`ws://${host} wss://${host}`:''}; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'`,
       'X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Permissions-Policy':'camera=(), microphone=(), geolocation=()'
     });
-    res.end(req.method==='HEAD' ? undefined : asset.data);
+    res.end(req.method==='HEAD' ? undefined : data);
   });
   const wss = new WebSocketServer({noServer:true, maxPayload:config.network.max_message_bytes, perMessageDeflate:false});
   let bytesOut=0, messagesOut=0, bytesIn=0, messagesIn=0, order=0;
-  const loop = options.measure ? monitorEventLoopDelay({resolution:10}) : undefined;
+  let loop = options.measure ? monitorEventLoopDelay({resolution:config.debug.event_loop_resolution_ms}) : undefined;
   loop?.enable();
-  const send = (ws: WebSocket, message: ServerMessage) => {
-    if (ws.readyState!==WebSocket.OPEN) return;
-    if (ws.bufferedAmount>config.network.max_buffered_bytes) {ws.terminate();return;}
-    const encoded = JSON.stringify(message); bytesOut+=Buffer.byteLength(encoded);messagesOut++;
-    ws.send(encoded);
+  const sendRaw=(ws:WebSocket,encoded:string)=>{
+    if(ws.readyState!==WebSocket.OPEN)return;
+    if(ws.bufferedAmount>config.network.max_buffered_bytes){ws.terminate();return;}
+    bytesOut+=Buffer.byteLength(encoded);messagesOut++;ws.send(encoded);
   };
+  const send=(ws:WebSocket,message:ServerMessage)=>sendRaw(ws,JSON.stringify(message));
   const view = (room:Room):RoomView => ({
     code:room.code, hostId:room.hostId, mode:room.mode, phase:room.sim?.phase??'lobby', simulation:room.sim?.snapshot(), revision:room.revision, banner:room.banner,
     players:room.players.map(p=>({id:p.id,name:p.name,seat:p.seat,connected:!!p.socket,ready:p.ready,botDriving:!p.socket && p.disconnectedAt!==undefined && performance.now()-p.disconnectedAt>=config.network.disconnect_to_bot_s*1000}))
@@ -79,6 +82,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
   const seatCount=(r:Room)=>r.mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2;
   const freeSeat=(r:Room)=>Array.from({length:seatCount(r)},(_,i)=>i).find(i=>!r.players.some(p=>p.seat===i)) ?? null;
   const attach=(ws:WebSocket,c:Connection,room:Room,p:Player)=>{
+    if(room.sim&&room.pausedSince!==undefined){room.sim.startServerTime+=performance.now()-room.pausedSince;room.pausedSince=undefined;room.lastPump=performance.now();}
     p.socket=ws;p.disconnectedAt=undefined;p.botDriving=false;room.emptySince=undefined;c.room=room;c.player=p;
     if(!room.hostId)room.hostId=p.id;
     p.inputEpoch=randomUUID();if(p.seat!==null)room.sim?.resetInput(p.seat);
@@ -90,9 +94,9 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
     if(!valid || clients.size>=config.rooms.max_connections){socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');socket.destroy();return;}
     wss.handleUpgrade(req,socket,head,ws=>wss.emit('connection',ws,req));
   });
-  wss.on('connection',(ws:WebSocket)=>{
-    const now=performance.now();const c:Connection={hello:false,lastSeen:now,budget:config.network.message_burst,refillAt:now};clients.set(ws,c);
-    send(ws,{type:'hello',bootId,protocol:config.network.protocol_version,serverTime:Date.now()});
+  wss.on('connection',(ws:WebSocket,request:IncomingMessage)=>{
+    const now=performance.now();const c:Connection={hello:false,lastSeen:now,budget:config.network.message_burst,refillAt:now,debug:false,socket:request.socket};clients.set(ws,c);
+    send(ws,{type:'hello',bootId,protocol:config.network.protocol_version,serverTime:Date.now(),buildVersion});
     ws.on('pong',()=>{c.lastSeen=performance.now();});
     ws.on('error',()=>{}); // Never log names, payloads, tokens or network metadata.
     ws.on('message',(data:RawData)=>{
@@ -103,7 +107,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
       if(m.type==='hello'){
         if(m.bootId && m.bootId!==bootId){error(ws,'SERVER_RESTART','The server restarted. Start a new room.');return;}
         if(m.protocol!==config.network.protocol_version){error(ws,'VERSION','Please reload to update the game.');return;}
-        c.hello=true;send(ws,{type:'connected',bootId});return;
+        c.hello=true;c.debug=m.debug===true;if(c.debug&&!loop){loop=monitorEventLoopDelay({resolution:config.debug.event_loop_resolution_ms});loop.enable();}send(ws,{type:'connected',bootId});return;
       }
       if(!c.hello){error(ws,'HELLO_REQUIRED','Connect before joining a room.');return;}
       if(m.type==='ping'){send(ws,{type:'pong',clientTime:typeof m.clientTime==='number'?m.clientTime:0,serverTime:Date.now()});return;}
@@ -119,7 +123,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
             if(!rooms.has(code)&&!config.rooms.code_blocklist.includes(code)&&!config.names.blocklist.some(word=>code.toLowerCase().includes(word)))break;code='';
           }
           if(!code){error(ws,'CAPACITY','The river is busy. Try again shortly.');return;}
-          room={code,hostId:'',mode:(m.solo?config.rooms.default_mode_solo:config.rooms.default_mode_multiplayer) as Room['mode'],players:[],revision:0,banner:'',accumulator:0,lastPump:now};rooms.set(code,room);
+          room={code,hostId:'',mode:(m.solo?config.rooms.default_mode_solo:config.rooms.default_mode_multiplayer) as Room['mode'],players:[],revision:0,banner:'',accumulator:0,lastPump:now,snapshotCount:0,snapshotTotalMs:0,snapshotWorstMs:0,snapshotBytes:0,schedulerLateMaxMs:0,overruns:0};rooms.set(code,room);
         }else{room=rooms.get(codeOf(m.code));}
         if(!room){error(ws,'ROOM_MISSING',`No room ${codeOf(m.code)}. Check the code with your host.`);return;}
         const tokenPlayer=typeof m.token==='string'?room.players.find(p=>p.token===m.token):undefined;
@@ -139,6 +143,16 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
         const p:Player={id:randomUUID(),token:randomBytes(config.rooms.token_bytes).toString('hex'),name,seat,ready:!!m.solo,connected:true,botDriving:false,order:order++};room.players.push(p);attach(ws,c,room,p);return;
       }
       const {room,player}=c;if(!room||!player){error(ws,'NO_ROOM','Join a room first.');return;}
+      if(m.type==='debug_metrics'){
+        if(!c.debug||room.hostId!==player.id){error(ws,'HOST_ONLY','Debug metrics are for the host in debug mode.');return;}
+        const cpu=process.cpuUsage();send(ws,{type:'metrics',metrics:{cpuUserUs:cpu.user,cpuSystemUs:cpu.system,wallMs:performance.now(),rssBytes:process.memoryUsage().rss,activeRaceRooms:[...rooms.values()].filter(r=>r.sim&&r.sim.phase!=='results'&&r.players.some(p=>p.socket)).length,roomCount:rooms.size,connections:clients.size,bytesIn,bytesOut,messagesIn,messagesOut,socketBytesRead:[...clients.values()].reduce((n,c)=>n+c.socket.bytesRead,0),socketBytesWritten:[...clients.values()].reduce((n,c)=>n+c.socket.bytesWritten,0),eventLoopMeanMs:loop?loop.mean/1e6:null,eventLoopMaxMs:loop?loop.max/1e6:null,tick:room.sim?.tick??0,tickAverageMs:room.sim?.tickAverageMs??0,tickWorstMs:room.sim?.tickWorstMs??0,snapshotCount:room.snapshotCount,snapshotAverageMs:room.snapshotCount?room.snapshotTotalMs/room.snapshotCount:0,snapshotWorstMs:room.snapshotWorstMs,snapshotBytes:room.snapshotBytes,schedulerLateMaxMs:room.schedulerLateMaxMs,overruns:room.overruns}});return;
+      }
+      if(m.type==='debug_jump'){
+        if(!c.debug||room.hostId!==player.id){error(ws,'HOST_ONLY','Jump is for the host in debug mode.');return;}
+        if(!['red','blue','both'].includes(String(m.raft))||!config.debug.jump_percents.includes(Number(m.percent))){error(ws,'DEBUG','Choose a listed jump.');return;}
+        if(!room.sim?.jump(m.raft as 'red'|'blue'|'both',Number(m.percent))){error(ws,'PHASE','Jump during a race before anyone finishes.');return;}
+        room.banner=`Jumped ${m.raft} to ${m.percent}%`;broadcast(room);return;
+      }
       if(m.type==='input'){
         if(!room.sim||player.seat===null)return;
         if(m.seat!==player.seat||m.inputEpoch!==player.inputEpoch||m.raceId!==room.sim.raceId)return;
@@ -174,21 +188,23 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
       }
       error(ws,'UNAVAILABLE','Racing is coming in the next checkpoint.');
     });
-    ws.on('close',()=>{detach(ws);clients.delete(ws);});
+    ws.on('close',()=>{detach(ws);clients.delete(ws);if(loop&&!options.measure&&![...clients.values()].some(c=>c.debug)){loop.disable();loop=undefined;}});
   });
   const pump=setInterval(()=>{
     const now=performance.now();
     for(const room of rooms.values()){
-      const sim=room.sim;if(!sim)continue;if(sim.currentPhase()==='results'){room.accumulator=0;room.lastPump=now;continue;}
-      room.accumulator+=(now-room.lastPump)/1000;room.lastPump=now;
+      const sim=room.sim;if(!sim)continue;
+      if(config.rooms.suspend_sim_when_empty&&!room.players.some(p=>p.socket)){room.pausedSince??=now;room.lastPump=now;room.accumulator=0;continue;}
+      if(sim.currentPhase()==='results'){room.accumulator=0;room.lastPump=now;continue;}
+      room.accumulator+=(now-room.lastPump)/1000;room.lastPump=now;room.schedulerLateMaxMs=Math.max(room.schedulerLateMaxMs,Math.max(0,(room.accumulator-sim.dt)*1000));
       while(room.accumulator>=sim.dt){
         const phase:string=sim.phase,start=performance.now();
         sim.setBots(sim.animals.filter(a=>!room.players.some(p=>p.seat===a.seat&&!p.botDriving)).map(a=>a.seat));sim.step();
-        const cost=performance.now()-start;sim.tickTotalMs+=cost;sim.tickCount++;sim.tickAverageMs=sim.tickTotalMs/sim.tickCount;sim.tickWorstMs=Math.max(sim.tickWorstMs,cost);
+        const cost=performance.now()-start;sim.tickTotalMs+=cost;sim.tickCount++;sim.tickAverageMs=sim.tickTotalMs/sim.tickCount;sim.tickWorstMs=Math.max(sim.tickWorstMs,cost);if(cost>sim.dt*1000){room.overruns++;if(room.overruns===1)console.warn('Simulation tick exceeded budget; rates unchanged.');}
         room.accumulator-=sim.dt;
         if(phase!==sim.phase)broadcast(room);if(sim.currentPhase()==='results'){room.accumulator=0;break;}
         if(sim.tick%Math.round(config.network.sim_hz/config.network.snapshot_hz)===0){
-          const snapshot=sim.snapshot();for(const p of room.players)if(p.socket)send(p.socket,{type:'snapshot',snapshot});
+          const start=performance.now(),snapshot=sim.snapshot(),encoded=JSON.stringify({type:'snapshot',snapshot});room.snapshotCount++;room.snapshotBytes+=Buffer.byteLength(encoded);for(const p of room.players)if(p.socket)sendRaw(p.socket,encoded);const snapshotMs=performance.now()-start;room.snapshotTotalMs+=snapshotMs;room.snapshotWorstMs=Math.max(room.snapshotWorstMs,snapshotMs);
         }
       }
     }

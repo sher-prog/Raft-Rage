@@ -16,7 +16,7 @@ export async function setup(t,overrides){
       throw new Error('Expected protocol response was not received before timeout');
     };
     const send=m=>ws.send(JSON.stringify(m));
-    const hello=await wait(m=>m.type==='hello');send({type:'hello',protocol:config.network.protocol_version,bootId:bootId??hello.bootId});
+    const hello=await wait(m=>m.type==='hello');send({type:'hello',protocol:config.network.protocol_version,bootId:bootId??hello.bootId,debug:options.debug===true});
     if(!bootId||bootId===hello.bootId)await wait(m=>m.type==='connected');
     return {ws,wait,send,messages,hello,create:async(name,solo=false)=>{send({type:'create',name,solo});return wait(m=>m.type==='joined');},join:async(code,name,extra={})=>{send({type:'join',code,name,...extra});return wait(m=>m.type==='joined');}};
   }
