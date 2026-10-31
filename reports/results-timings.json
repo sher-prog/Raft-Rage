@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-10-31T22:12:24.864Z",
+  "resultsAfterFirstFinishSnapshotMs": 14983.80039,
+  "authoritativeFinishGraceS": 15,
+  "identicalResults": true,
+  "rematchSeatsRetained": true,
+  "readyCleared": true,
+  "spectatorSat": true,
+  "oldRaceInputsRejected": true,
+  "environment": "Local real WebSocket clients; real 15-second grace; finish placement is a test fixture"
+}

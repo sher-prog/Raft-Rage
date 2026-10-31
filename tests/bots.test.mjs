@@ -4,7 +4,7 @@ test('seeded Chill bots complete both rafts over full fixed course across ten ga
  const runs=[];
  for(const mode of ['1v1','2v2'])for(const seed of [1,2,3,4,5]){
   const sim=new Simulation(c,mode,0,seed);sim.setBots(sim.animals.map(a=>a.seat));const times=[null,null];
-  while(sim.raceTime<c.race.max_race_s){sim.step();sim.rafts.forEach((r,i)=>{if(r.progress>=c.course.length-c.simulation.epsilon&&times[i]===null)times[i]=sim.raceTime;});if(times.every(x=>x!==null))break;}
+  while(sim.phase!=='results'&&sim.raceTime<c.race.max_race_s){sim.step();sim.rafts.forEach((r,i)=>{if(r.progress>=c.course.length-c.simulation.epsilon&&times[i]===null)times[i]=sim.raceTime;});if(times.every(x=>x!==null))break;}
   assert.ok(times.every(x=>x!==null),`Both rafts must finish seed ${seed} mode ${mode}`);runs.push({mode,seed,times});
  }
  writeFileSync('reports/bot-full-course.json',JSON.stringify({timestamp:new Date().toISOString(),runs,environment:'Accelerated authoritative fixed-step simulation in Work; race times are simulated seconds, not wall time'},null,2)+'\n');

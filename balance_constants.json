@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "1.4-bots (2026-10-31)",
+  "_version": "1.5-results (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -46,7 +46,8 @@
       "velocity_quantum",
       "time_quantum_s",
       "snapshot_buffer_max",
-      "clock_max_extrapolation_s"
+      "clock_max_extrapolation_s",
+      "event_seen_max"
     ],
     "protocol_version": 1,
     "reconnect_initial_ms": 500,
@@ -68,7 +69,8 @@
     "velocity_quantum": 0.1,
     "time_quantum_s": 0.001,
     "snapshot_buffer_max": 120,
-    "clock_max_extrapolation_s": 0.25
+    "clock_max_extrapolation_s": 0.25,
+    "event_seen_max": 512
   },
   "rooms": {
     "code_length": 4,
@@ -553,7 +555,13 @@
   },
   "race": {
     "finish_grace_s": 15,
-    "max_race_s": 240
+    "max_race_s": 240,
+    "freeze_finished": true,
+    "_assumed": [
+      "freeze_finished",
+      "timeout_tie_label"
+    ],
+    "timeout_tie_label": "DRAW"
   },
   "turbo": {
     "fill_per_sync_pair_2v2": 0.16,

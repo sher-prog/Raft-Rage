@@ -33,11 +33,11 @@ test('keel restores heading; bank bounces, spikes stun once until recovery, rock
 });
 test('real WS input is seat-bound and epoch-bound; reconnect starts a safe fresh sequence stream',async t=>{
  const {client,game}=await setup(t,x=>{x.rooms.countdown_s=.05;});const a=await client();const owner=await a.create('Ana',true);a.send({type:'start'});await a.wait(m=>m.type==='snapshot'&&m.snapshot.phase==='race');
- const send=(seq,walk=1,extra={})=>a.send({type:'input',seat:0,inputEpoch:owner.inputEpoch,seq,walk,fire:false,whackCount:0,...extra});
+ const send=(seq,walk=1,extra={})=>a.send({type:'input',seat:0,raceId:game.rooms.get(owner.code).sim.raceId,inputEpoch:owner.inputEpoch,seq,walk,fire:false,whackCount:0,...extra});
  send(50);let state=(await a.wait(m=>m.type==='snapshot'&&m.snapshot.animals[0].seq===50)).snapshot;assert.ok(state.animals[0].phi!==180);
  send(60,-1,{inputEpoch:'old-stream'});send(70,-1,{seat:1});await new Promise(r=>setTimeout(r,100));assert.equal(game.rooms.get(owner.code).sim.animals[0].seq,50);
  a.ws.terminate();await new Promise(r=>setTimeout(r,20));const b=await client();b.send({type:'resume',code:owner.code,name:'Ana',token:owner.token});const joined=await b.wait(m=>m.type==='joined');assert.notEqual(joined.inputEpoch,owner.inputEpoch);
- b.send({type:'input',seat:0,inputEpoch:joined.inputEpoch,seq:1,walk:0,fire:true,whackCount:0});await b.wait(m=>m.type==='snapshot'&&m.snapshot.animals[0].seq===1);
+ b.send({type:'input',seat:0,raceId:game.rooms.get(owner.code).sim.raceId,inputEpoch:joined.inputEpoch,seq:1,walk:0,fire:true,whackCount:0});await b.wait(m=>m.type==='snapshot'&&m.snapshot.animals[0].seq===1);
 });
 
 test('a short press/release arriving between ticks still fires exactly one Hippo shot',()=>{

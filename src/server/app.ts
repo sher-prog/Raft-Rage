@@ -141,16 +141,21 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
       const {room,player}=c;if(!room||!player){error(ws,'NO_ROOM','Join a room first.');return;}
       if(m.type==='input'){
         if(!room.sim||player.seat===null)return;
-        if(m.seat!==player.seat||m.inputEpoch!==player.inputEpoch)return;
+        if(m.seat!==player.seat||m.inputEpoch!==player.inputEpoch||m.raceId!==room.sim.raceId)return;
         if(!Number.isSafeInteger(m.seq)||Number(m.seq)<0||![-1,0,1].includes(Number(m.walk))||typeof m.fire!=='boolean'||!Number.isSafeInteger(m.whackCount)||Number(m.whackCount)<0)return;
         room.sim.input(player.seat,{seq:Number(m.seq),walk:Number(m.walk),fire:m.fire,whackCount:Number(m.whackCount)});return;
+      }
+      if(m.type==='rematch'){
+        if(room.hostId!==player.id){error(ws,'HOST_ONLY','Only the host can rematch.');return;}
+        if(room.sim?.phase!=='results'){error(ws,'PHASE','Finish the race before rematching.');return;}
+        room.sim=undefined;room.accumulator=0;room.banner='';for(const p of room.players)p.ready=false;broadcast(room);return;
       }
       if(m.type==='start'){
         if(room.hostId!==player.id){error(ws,'HOST_ONLY','Only the host can start.');return;}
         if(room.sim){error(ws,'PHASE','The race has already started.');return;}
         const waiting=room.players.filter(p=>p.seat!==null&&p.socket&&!p.ready);
         if(waiting.length){error(ws,'NOT_READY',`Waiting for ${waiting[0].name} to be Ready`);return;}
-        room.sim=new Simulation(config,room.mode,Date.now(),randomBytes(4).readUInt32LE(0));room.lastPump=performance.now();room.accumulator=0;broadcast(room);return;
+        room.sim=new Simulation(config,room.mode,Date.now(),randomBytes(4).readUInt32LE(0),randomUUID());room.lastPump=performance.now();room.accumulator=0;broadcast(room);return;
       }
       if(room.sim){error(ws,'PHASE','Wait for the next lobby to change seats or mode.');return;}
       if(m.type==='ready'){if(player.seat!==null)player.ready=m.ready===true;broadcast(room);return;}
@@ -174,14 +179,14 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
   const pump=setInterval(()=>{
     const now=performance.now();
     for(const room of rooms.values()){
-      const sim=room.sim;if(!sim)continue;
+      const sim=room.sim;if(!sim)continue;if(sim.currentPhase()==='results'){room.accumulator=0;room.lastPump=now;continue;}
       room.accumulator+=(now-room.lastPump)/1000;room.lastPump=now;
       while(room.accumulator>=sim.dt){
-        const phase=sim.phase,start=performance.now();
+        const phase:string=sim.phase,start=performance.now();
         sim.setBots(sim.animals.filter(a=>!room.players.some(p=>p.seat===a.seat&&!p.botDriving)).map(a=>a.seat));sim.step();
         const cost=performance.now()-start;sim.tickTotalMs+=cost;sim.tickCount++;sim.tickAverageMs=sim.tickTotalMs/sim.tickCount;sim.tickWorstMs=Math.max(sim.tickWorstMs,cost);
         room.accumulator-=sim.dt;
-        if(phase!==sim.phase)broadcast(room);
+        if(phase!==sim.phase)broadcast(room);if(sim.currentPhase()==='results'){room.accumulator=0;break;}
         if(sim.tick%Math.round(config.network.sim_hz/config.network.snapshot_hz)===0){
           const snapshot=sim.snapshot();for(const p of room.players)if(p.socket)send(p.socket,{type:'snapshot',snapshot});
         }
