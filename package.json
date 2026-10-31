@@ -1,9 +1,11 @@
 {
   "name": "raft-rage",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24.22.1 <25" },
+  "engines": {
+    "node": ">=24.22.1 <25"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "start": "node dist/server/index.js",
@@ -13,9 +15,13 @@
     "check": "npm run typecheck && npm test",
     "bench:skeleton": "npm run build && node scripts/benchmark.mjs"
   },
-  "dependencies": { "ws": "8.22.1" },
+  "dependencies": {
+    "three": "0.180.0",
+    "ws": "8.22.1"
+  },
   "devDependencies": {
     "@types/node": "24.10.1",
+    "@types/three": "0.180.0",
     "@types/ws": "8.18.1",
     "esbuild": "0.25.12",
     "typescript": "5.9.3"

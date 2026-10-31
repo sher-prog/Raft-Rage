@@ -2,6 +2,7 @@ import { createGameServer } from './app.ts';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import type { Config } from '../shared.ts';
+export { Simulation } from '../game/simulation.ts';
 export { createGameServer } from './app.ts';
 // Kept explicit so importing this module in tests never starts a listener.
 if(process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href){

@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "1.1-skeleton (2026-10-31)",
+  "_version": "1.2-clock (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -38,7 +38,9 @@
       "max_message_bytes",
       "max_buffered_bytes",
       "message_burst",
-      "message_rate_per_s"
+      "message_rate_per_s",
+      "scheduler_interval_ms",
+      "clock_offset_blend"
     ],
     "protocol_version": 1,
     "reconnect_initial_ms": 500,
@@ -52,7 +54,9 @@
     "max_message_bytes": 4096,
     "max_buffered_bytes": 65536,
     "message_burst": 60,
-    "message_rate_per_s": 30
+    "message_rate_per_s": 30,
+    "scheduler_interval_ms": 4,
+    "clock_offset_blend": 0.2
   },
   "rooms": {
     "code_length": 4,

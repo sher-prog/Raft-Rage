@@ -1,3 +1,4 @@
+import { Simulation } from '../game/simulation.ts';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
@@ -9,7 +10,7 @@ import type { RawData } from 'ws';
 import type { Config, PlayerView, RoomView, ServerMessage } from '../shared.ts';
 
 type Player = PlayerView & { token: string; socket?: WebSocket; disconnectedAt?: number; order: number };
-type Room = { code: string; hostId: string; mode: '1v1'|'2v2'; players: Player[]; revision: number; emptySince?: number; banner: string };
+type Room = { code: string; hostId: string; mode: '1v1'|'2v2'; players: Player[]; revision: number; emptySince?: number; banner: string; sim?:Simulation; accumulator:number; lastPump:number };
 type Connection = { room?: Room; player?: Player; hello: boolean; lastSeen: number; lostAt?:number; budget: number; refillAt: number };
 export function loadConfig(): Config { return JSON.parse(readFileSync(new URL('../../balance_constants.json', import.meta.url), 'utf8')); }
 
@@ -47,7 +48,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
     ws.send(encoded);
   };
   const view = (room:Room):RoomView => ({
-    code:room.code, hostId:room.hostId, mode:room.mode, phase:'lobby', revision:room.revision, banner:room.banner,
+    code:room.code, hostId:room.hostId, mode:room.mode, phase:room.sim?.phase??'lobby', simulation:room.sim?.snapshot(), revision:room.revision, banner:room.banner,
     players:room.players.map(p=>({id:p.id,name:p.name,seat:p.seat,connected:!!p.socket,ready:p.ready,botDriving:!p.socket && p.disconnectedAt!==undefined && performance.now()-p.disconnectedAt>=config.network.disconnect_to_bot_s*1000}))
   });
   const broadcast = (room:Room) => {room.revision++; const state=view(room); for(const p of room.players) if(p.socket) send(p.socket,{type:'room',room:state});};
@@ -116,7 +117,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
             if(!rooms.has(code)&&!config.rooms.code_blocklist.includes(code)&&!config.names.blocklist.some(word=>code.toLowerCase().includes(word)))break;code='';
           }
           if(!code){error(ws,'CAPACITY','The river is busy. Try again shortly.');return;}
-          room={code,hostId:'',mode:m.solo?config.rooms.default_mode_solo:config.rooms.default_mode_multiplayer,players:[],revision:0,banner:''};rooms.set(code,room);
+          room={code,hostId:'',mode:(m.solo?config.rooms.default_mode_solo:config.rooms.default_mode_multiplayer) as Room['mode'],players:[],revision:0,banner:'',accumulator:0,lastPump:now};rooms.set(code,room);
         }else{room=rooms.get(codeOf(m.code));}
         if(!room){error(ws,'ROOM_MISSING',`No room ${codeOf(m.code)}. Check the code with your host.`);return;}
         const tokenPlayer=typeof m.token==='string'?room.players.find(p=>p.token===m.token):undefined;
@@ -131,11 +132,19 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
           attach(ws,c,room,candidate);return;
         }
         if(m.type==='resume'){error(ws,'SESSION_MISSING','Your seat is no longer reserved. Join the room again.');return;}
-        const seat=freeSeat(room);
+        const seat=room.sim?null:freeSeat(room);
         if(seat===null && room.players.filter(p=>p.seat===null).length>=config.rooms.max_spectators){error(ws,'FULL','Room is full. Try another room.');return;}
         const p:Player={id:randomUUID(),token:randomBytes(config.rooms.token_bytes).toString('hex'),name,seat,ready:!!m.solo,connected:true,botDriving:false,order:order++};room.players.push(p);attach(ws,c,room,p);return;
       }
       const {room,player}=c;if(!room||!player){error(ws,'NO_ROOM','Join a room first.');return;}
+      if(m.type==='start'){
+        if(room.hostId!==player.id){error(ws,'HOST_ONLY','Only the host can start.');return;}
+        if(room.sim){error(ws,'PHASE','The race has already started.');return;}
+        const waiting=room.players.filter(p=>p.seat!==null&&p.socket&&!p.ready);
+        if(waiting.length){error(ws,'NOT_READY',`Waiting for ${waiting[0].name} to be Ready`);return;}
+        room.sim=new Simulation(config,room.mode);room.lastPump=performance.now();room.accumulator=0;broadcast(room);return;
+      }
+      if(room.sim){error(ws,'PHASE','Wait for the next lobby to change seats or mode.');return;}
       if(m.type==='ready'){if(player.seat!==null)player.ready=m.ready===true;broadcast(room);return;}
       if(m.type==='seat'){
         if(!Number.isInteger(m.seat)||Number(m.seat)<0||Number(m.seat)>=seatCount(room)){error(ws,'SEAT','Choose a seat.');return;}
@@ -154,6 +163,22 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
     });
     ws.on('close',()=>{detach(ws);clients.delete(ws);});
   });
+  const pump=setInterval(()=>{
+    const now=performance.now();
+    for(const room of rooms.values()){
+      const sim=room.sim;if(!sim)continue;
+      room.accumulator+=(now-room.lastPump)/1000;room.lastPump=now;
+      while(room.accumulator>=sim.dt){
+        const phase=sim.phase,start=performance.now();sim.step();
+        const cost=performance.now()-start;sim.tickTotalMs+=cost;sim.tickCount++;sim.tickAverageMs=sim.tickTotalMs/sim.tickCount;sim.tickWorstMs=Math.max(sim.tickWorstMs,cost);
+        room.accumulator-=sim.dt;
+        if(phase!==sim.phase)broadcast(room);
+        if(sim.tick%Math.round(config.network.sim_hz/config.network.snapshot_hz)===0){
+          const snapshot=sim.snapshot();for(const p of room.players)if(p.socket)send(p.socket,{type:'snapshot',snapshot});
+        }
+      }
+    }
+  },config.network.scheduler_interval_ms);pump.unref();
   const maintenance=setInterval(()=>{
     const now=performance.now();
     for(const [ws,c] of clients){
@@ -176,6 +201,6 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
   return {server,bootId,rooms,
     metrics:()=>({rooms:rooms.size,connections:clients.size,bytesOut,messagesOut,bytesIn,messagesIn,eventLoopMeanMs:loop?loop.mean/1e6:null,eventLoopMaxMs:loop?loop.max/1e6:null}),
     listen:async(port=Number(process.env.PORT??3000))=>{await new Promise<void>(resolve=>server.listen(port,'0.0.0.0',resolve));return (server.address()as AddressInfo).port;},
-    close:async()=>{clearInterval(maintenance);clearInterval(heartbeat);loop?.disable();for(const ws of clients.keys())ws.terminate();await new Promise<void>(resolve=>wss.close(()=>resolve()));await new Promise<void>(resolve=>server.close(()=>resolve()));}
+    close:async()=>{clearInterval(pump);clearInterval(maintenance);clearInterval(heartbeat);loop?.disable();for(const ws of clients.keys())ws.terminate();await new Promise<void>(resolve=>wss.close(()=>resolve()));await new Promise<void>(resolve=>server.close(()=>resolve()));}
   };
 }

@@ -1,4 +1,4 @@
-import type { Config, RoomView, ServerMessage } from '../shared.ts';
+import type { Config, RoomView, ServerMessage, Snapshot } from '../shared.ts';
 type Session={code:string;name:string;playerId:string;token:string;bootId:string};
 const main=document.querySelector<HTMLElement>('#main')!;
 const connection=document.querySelector<HTMLElement>('#connection')!;
@@ -11,6 +11,7 @@ try{session=JSON.parse(sessionStorage.getItem('raft-rage-session')??'null')??und
 let socket:WebSocket|undefined,online=false,bootId=session?.bootId??'',room:RoomView|undefined;
 let reconnectDelay=config.network.reconnect_initial_ms,reconnectTimer:ReturnType<typeof setTimeout>|undefined;
 let screen:'home'|'create'|'join'|'solo'|'lobby'=params.has(config.rooms.share_link_param)?'join':'home';
+let clockOffset=0,snapshot:Snapshot|undefined;
 let ping=0,notice='',currentName='',prefillCode=params.get(config.rooms.share_link_param)??'';
 try{currentName=localStorage.getItem('raft-rage-name')??'';}catch{}
 const esc=(v:string)=>v.replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]!));
@@ -23,6 +24,7 @@ function pips(){
   return Object.entries(p).map(([key,value])=>`${key[0].toUpperCase()+key.slice(1)} ${'●'.repeat(value)}${'○'.repeat(config.characters.card_pips_max-value)} ${value}`).join(' · ');
 }
 function render(){
+  if(screen==='lobby'&&room&&room.phase!=='lobby'){renderRace();return;}
   if(screen==='home')main.innerHTML=`<section class="hero"><div class="hero-copy"><span class="eyebrow">A LITTLE FRIENDLY RIVER RIVALRY</span><h1>MAKE<br><span>WAVES.</span></h1><p class="intro">A river. Two rafts. Your very competitive friends. Stand to steer, spout to sprint, and try to stay friends at the finish.</p><div class="actions"><button class="primary" id="create">Create room <span aria-hidden="true">↗</span></button><div class="subactions"><button id="join">Join room</button><button id="solo">Solo vs bots</button></div><button class="text-button" id="how-button">How to play →</button></div><p class="edition">RAFT RAGE / FIRST SPLASH · LOBBY CHECKPOINT</p><p class="error" id="error" role="alert">${esc(notice)}</p></div>${art}</section>`;
   else if(screen!=='lobby'){
     const joining=screen==='join';
@@ -41,12 +43,13 @@ function render(){
       const seat=index*(seats/2)+i,p=room!.players.find(x=>x.seat===seat);
       return `<button class="seat ${p?.id===own?.id?'own':''}" data-seat="${seat}"><span>${esc(p?.name??'Bot (Chill)')}${p?.id===room!.hostId?' · HOST':''}${p?.id===own?.id?' · YOU':''}<small>${room!.mode==='1v1'?'Solo seat':i===0?'Left seat':'Right seat'} · Hippo</small></span><span class="seat-status">${p?(p.connected?(p.ready?'✓ READY':'Not ready'):'Reconnecting…'):'Tap to sit'}</span></button>`;
     }).join('')}</section>`;
-    main.innerHTML=`<section class="lobby"><div class="lobby-top"><div><span class="eyebrow">THE CREW ASSEMBLES</span><h2 class="room-code">${esc(room.code)}</h2><p class="muted">Players join at this link with no login.</p></div><div class="share-actions"><button id="copy">Copy link</button><button id="share">Share ↗</button></div></div><div id="banner" class="banner" role="status">${esc(room.banner||'Your raft is waiting. Bring a friend aboard.')}</div><div class="seat-grid">${team(0)}${team(1)}</div><div class="lobby-controls">${own?.seat!==null?`<button class="${own?.ready?'':'primary'}" id="ready">${own?.ready?'✓ READY':'Ready up'}</button>`:'<p class="muted">Spectating · Tap an open seat to sit.</p>'}<button class="text-button" id="how-button">How to play</button><button class="text-button" id="leave">Leave</button>${host?`<div class="host-controls"><span class="muted">Mode</span><button id="mode-1" class="${room.mode==='1v1'?'selected':''}" aria-pressed="${room.mode==='1v1'}">1v1</button><button id="mode-2" class="${room.mode==='2v2'?'selected':''}" aria-pressed="${room.mode==='2v2'}">2v2</button></div>`:''}</div><p class="hippo-choice">✓ HIPPO SELECTED · SPOUT<br><span class="muted">${pips()}</span></p><p class="notice">First checkpoint: the lobby is connected. Racing arrives in the next build.</p><p class="error" id="error" role="alert">${esc(notice)}</p><div class="how-strip"><article class="how-card"><b>01 / Stand to steer</b><p>Walk the rim. Fire at the back to go forward, or from a side to slide.</p></article><article class="how-card"><b>02 / Pick an animal</b><p>Meet Hippo. Big heart, big cannon. Hold SPOUT to keep the kicks coming.</p></article><article class="how-card"><b>03 / Whack and block</b><p>Whack a nearby rival to stun. Whack during their windup to block.</p></article></div><p class="muted status-toast" id="share-status" role="status"></p>${debug?`<pre class="debug">LOBBY CHECKPOINT 0.1.0
+    main.innerHTML=`<section class="lobby"><div class="lobby-top"><div><span class="eyebrow">THE CREW ASSEMBLES</span><h2 class="room-code">${esc(room.code)}</h2><p class="muted">Players join at this link with no login.</p></div><div class="share-actions"><button id="copy">Copy link</button><button id="share">Share ↗</button></div></div><div id="banner" class="banner" role="status">${esc(room.banner||'Your raft is waiting. Bring a friend aboard.')}</div><div class="seat-grid">${team(0)}${team(1)}</div><div class="lobby-controls">${own?.seat!==null?`<button class="${own?.ready?'':'primary'}" id="ready">${own?.ready?'✓ READY':'Ready up'}</button>`:'<p class="muted">Spectating · Tap an open seat to sit.</p>'}<button class="text-button" id="how-button">How to play</button><button class="text-button" id="leave">Leave</button>${host?`<div class="host-controls"><span class="muted">Mode</span><button id="mode-1" class="${room.mode==='1v1'?'selected':''}" aria-pressed="${room.mode==='1v1'}">1v1</button><button id="mode-2" class="${room.mode==='2v2'?'selected':''}" aria-pressed="${room.mode==='2v2'}">2v2</button></div>`:''}</div><p class="hippo-choice">✓ HIPPO SELECTED · SPOUT<br><span class="muted">${pips()}</span></p>${host?`<button id="start" class="primary" ${room.players.some(p=>p.seat!==null&&p.connected&&!p.ready)?'disabled':''}>Start race</button><p class="muted">${room.players.filter(p=>p.seat!==null&&p.connected&&!p.ready).map(p=>`Waiting for ${esc(p.name)} to be Ready`).join(' · ')||'Crew ready. Let’s go!'}</p>`:'<p class="muted">Waiting for host to start…</p>'}<p class="error" id="error" role="alert">${esc(notice)}</p><div class="how-strip"><article class="how-card"><b>01 / Stand to steer</b><p>Walk the rim. Fire at the back to go forward, or from a side to slide.</p></article><article class="how-card"><b>02 / Pick an animal</b><p>Meet Hippo. Big heart, big cannon. Hold SPOUT to keep the kicks coming.</p></article><article class="how-card"><b>03 / Whack and block</b><p>Whack a nearby rival to stun. Whack during their windup to block.</p></article></div><p class="muted status-toast" id="share-status" role="status"></p>${debug?`<pre class="debug">LOBBY CHECKPOINT 0.1.0
 phase: ${room.phase} · revision: ${room.revision} · ping: ${ping.toFixed(0)} ms
 player: ${esc(session?.playerId??'')} · boot: ${esc(bootId.slice(0,8))}
 Simulation: not running in this checkpoint
 Configured: ${config.network.sim_hz} Hz sim / ${config.network.snapshot_hz} Hz snapshots / ${config.network.input_resend_hz} Hz input</pre>`:''}</section>`;
     document.querySelectorAll<HTMLButtonElement>('[data-seat]').forEach(b=>b.onclick=()=>send({type:'seat',seat:Number(b.dataset.seat)}));
+    document.querySelector('#start')?.addEventListener('click',()=>send({type:'start'}));
     document.querySelector('#ready')?.addEventListener('click',()=>send({type:'ready',ready:!own?.ready}));
     document.querySelector('#mode-1')?.addEventListener('click',()=>send({type:'mode',mode:'1v1'}));
     document.querySelector('#mode-2')?.addEventListener('click',()=>send({type:'mode',mode:'2v2'}));
@@ -59,12 +62,27 @@ Configured: ${config.network.sim_hz} Hz sim / ${config.network.snapshot_hz} Hz s
   document.querySelector('#back')?.addEventListener('click',()=>{screen='home';notice='';render();});
   document.querySelector('#how-button')?.addEventListener('click',()=>how.showModal());
 }
-function clearRoom(){session=undefined;room=undefined;bootId='';saveSession();screen='home';const url=new URL(location.href);url.searchParams.delete(config.rooms.share_link_param);history.replaceState(null,'',url);render();}
+function renderRace(){
+  main.innerHTML=`<section class="race-screen"><div class="race-top"><b>▲ RED <span>vs</span> ● BLUE</b><strong id="race-clock">0:00.0</strong><button id="race-leave">Leave</button></div><div id="race-view">${art}<div id="countdown" role="status"></div></div><p class="notice">Authoritative clock checkpoint. Raft movement is being added next.</p><p id="error" class="error" role="alert"></p>${debug?'<pre id="race-debug" class="debug"></pre>':''}</section>`;
+  document.querySelector('#race-leave')!.addEventListener('click',()=>{send({type:'leave'});clearRoom();});updateClock();
+}
+function updateClock(){
+  if(!snapshot)return;
+  const serverNow=Date.now()+clockOffset;
+  const elapsed=(serverNow-snapshot.startServerTime)/1000;
+  const raceTime=Math.max(0,elapsed-config.rooms.countdown_s);
+  const target=document.querySelector('#race-clock');if(target)target.textContent=`${Math.floor(raceTime/60)}:${(raceTime%60).toFixed(1).padStart(4,'0')}`;
+  const countdown=document.querySelector('#countdown');if(countdown)countdown.textContent=elapsed<config.rooms.countdown_s?String(Math.ceil(config.rooms.countdown_s-elapsed)):raceTime<1?'GO!':'';
+  const dbg=document.querySelector('#race-debug');if(dbg)dbg.textContent=`tick ${snapshot.tick} · ${snapshot.phase} · ping ${ping.toFixed(0)}ms\nTick average ${snapshot.tickAverageMs.toFixed(3)}ms / worst ${snapshot.tickWorstMs.toFixed(3)}ms\n60Hz simulation · 20Hz snapshots · 10Hz inputs configured`;
+}
+function animation(){updateClock();requestAnimationFrame(animation);}requestAnimationFrame(animation);
+function clearRoom(){snapshot=undefined;session=undefined;room=undefined;bootId='';saveSession();screen='home';const url=new URL(location.href);url.searchParams.delete(config.rooms.share_link_param);history.replaceState(null,'',url);render();}
 function connect(){
   const ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws`);socket=ws;
   ws.onmessage=e=>{
     const m=JSON.parse(e.data) as ServerMessage;
     if(m.type==='hello'){
+      clockOffset=m.serverTime-Date.now();
       if(bootId&&bootId!==m.bootId){online=false;clearRoom();notice='The server restarted. Start a new room.';render();}
       bootId=m.bootId;ws.send(JSON.stringify({type:'hello',bootId,protocol:config.network.protocol_version}));
     }else if(m.type==='connected'){
@@ -72,12 +90,13 @@ function connect(){
       if(session){currentName=session.name;send({type:'resume',...session});}
     }else if(m.type==='joined'){
       session={code:m.code,name:currentName||session?.name||'',playerId:m.playerId,token:m.token,bootId:m.bootId};saveSession();screen='lobby';notice='';
-    }else if(m.type==='room'){room=m.room;if(session){screen='lobby';render();}}
+    }else if(m.type==='room'){room=m.room;snapshot=m.room.simulation;if(session){screen='lobby';render();}}
+    else if(m.type==='snapshot'){snapshot=m.snapshot;updateClock();}
     else if(m.type==='error'){
       if(m.code==='SERVER_RESTART'||m.code==='ROOM_MISSING'||m.code==='SESSION_MISSING'){
         if(session || m.code==='SERVER_RESTART')clearRoom();
       }showError(m.message);
-    }else if(m.type==='pong'){ping=Date.now()-m.clientTime;}
+    }else if(m.type==='pong'){ping=Date.now()-m.clientTime;clockOffset+=(m.serverTime+ping/2-Date.now()-clockOffset)*config.network.clock_offset_blend;}
   };
   ws.onclose=()=>{
     if(socket!==ws)return;online=false;connection.textContent='Reconnecting…';connection.classList.remove('online');
