@@ -3,6 +3,7 @@ import type {Config,Snapshot,RaftState} from '../shared.ts';
 import {Course,rad,wrap} from '../game/course.ts';
 export class RaceView {
   renderer:THREE.WebGLRenderer;scene=new THREE.Scene();camera:THREE.PerspectiveCamera;
+  stunLabels:HTMLDivElement[]=[];
   rafts:THREE.Group[]=[];animals:THREE.Group[]=[];stars:THREE.Group[]=[];swings:THREE.Mesh[]=[];
   course:Course;resize:ResizeObserver;cameraReady=false;fps=0;frames=0;sample=0;fpsSampleStart=performance.now();lowSeconds=0;lowEffects=false;reduceMotion=false;
   constructor(readonly container:HTMLElement,readonly config:Config,readonly onAutoLow:()=>void=()=>{}){
@@ -45,6 +46,7 @@ export class RaceView {
       const floor=new THREE.Mesh(new THREE.CylinderGeometry(config.raft.radius-v.tube_radius,config.raft.radius-v.tube_radius,v.tube_radius/2,v.tube_segments),mat(v.vest_color));floor.position.y=-v.tube_radius/2;raft.add(floor);
       const bench=new THREE.Mesh(new THREE.BoxGeometry(config.raft.radius, v.tube_radius/2,v.tube_radius),mat('#eed7a0'));raft.add(bench);
       this.rafts.push(raft);this.scene.add(raft);
+      const label=document.createElement('div');label.className='raft-stun-label';label.textContent=`${i===0?'▲ RED':'● BLUE'} · STUNNED`;label.hidden=true;container.append(label);this.stunLabels.push(label);
       const stars=new THREE.Group();for(let n=0;n<v.stun_stars;n++){const star=new THREE.Mesh(new THREE.OctahedronGeometry(v.star_radius),mat(v.vest_color));star.position.set(Math.sin(n/v.stun_stars*Math.PI*2)*config.raft.rim_radius,v.body_height*2,Math.cos(n/v.stun_stars*Math.PI*2)*config.raft.rim_radius);stars.add(star);}raft.add(stars);this.stars.push(stars);
     }
     this.resize=new ResizeObserver(()=>{this.renderer.setSize(container.clientWidth,container.clientHeight,false);this.camera.aspect=container.clientWidth/Math.max(1,container.clientHeight);this.camera.updateProjectionMatrix();});this.resize.observe(container);
@@ -77,11 +79,13 @@ export class RaceView {
     const target=new THREE.Vector3(raft.x-p.tx*v.camera_behind,v.camera_height,-raft.y+p.ty*v.camera_behind);
     if(!this.cameraReady){this.camera.position.copy(target);this.cameraReady=true;}else this.camera.position.lerp(target,1-Math.exp(-(this.reduceMotion?v.reduced_motion_camera_follow_rate:v.camera_follow_rate)*dt));
     this.camera.lookAt(raft.x+p.tx*v.camera_ahead,0,-raft.y-p.ty*v.camera_ahead);this.renderer.render(this.scene,this.camera);
+    snapshot.rafts.forEach((r,i)=>{const label=this.stunLabels[i],position=new THREE.Vector3(r.x,v.body_height*2,-r.y).project(this.camera);label.hidden=r.stun<=0||Math.abs(position.z)>1;label.style.left=`${(position.x+1)/2*this.container.clientWidth}px`;label.style.top=`${(1-position.y)/2*this.container.clientHeight}px`;});
     this.frames++;this.sample=(performance.now()-this.fpsSampleStart)/1000;if(this.sample>=v.fps_sample_s){this.fps=this.frames/this.sample;if(this.fps<v.auto_low_effects_below_fps)this.lowSeconds+=this.sample;else this.lowSeconds=0;if(!this.lowEffects&&this.lowSeconds>=v.auto_low_effects_after_s){this.setEffects(true,this.reduceMotion);this.onAutoLow();}this.frames=0;this.sample=0;this.fpsSampleStart=performance.now();}
   }
-  dispose(){this.resize.disconnect();this.scene.traverse(object=>{const m=object as THREE.Mesh;if(m.geometry)m.geometry.dispose();if(m.material)for(const material of Array.isArray(m.material)?m.material:[m.material])material.dispose();});this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
+  dispose(){for(const label of this.stunLabels)label.remove();this.resize.disconnect();this.scene.traverse(object=>{const m=object as THREE.Mesh;if(m.geometry)m.geometry.dispose();if(m.material)for(const material of Array.isArray(m.material)?m.material:[m.material])material.dispose();});this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }
 export function interpolate(a:Snapshot,b:Snapshot,t:number):Snapshot{
   const lerp=(x:number,y:number)=>x+(y-x)*t;
   return {...b,raceTime:lerp(a.raceTime,b.raceTime),rafts:b.rafts.map((r,i)=>{const prev=a.rafts[i]??r;return {...r,x:lerp(prev.x,r.x),y:lerp(prev.y,r.y),heading:prev.heading+wrap(r.heading-prev.heading)*t,progress:lerp(prev.progress,r.progress)};}),animals:b.animals.map((state,i)=>({...state,phi:(a.animals[i]?.phi??state.phi)+wrap(rad(state.phi-(a.animals[i]?.phi??state.phi)))*180/Math.PI*t}))};
 }
+

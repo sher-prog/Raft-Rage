@@ -1,37 +1,134 @@
-# Checkpoint 0.1.0 config change list
+# Phase 1 config changes
 
-Working config version: `1.1-skeleton (2026-10-31)`. Original source JSON is preserved in `docs/source/`. All pre-existing gameplay values are unchanged, including 60Hz simulation, 20Hz snapshots and 10Hz input resend. Every new key appears in its own group’s `_assumed`.
+Config: `1.7-debug-settings (2026-10-31)`. Compared with preserved original source JSON. No config changes in 0.1.7 or 0.1.8; 60/20/10 Hz retained.
 
-| Key | Change | Final value / documentation change |
-|---|---|---|
-| `_version` | Changed | "1.1-skeleton (2026-10-31)" |
-| `network._assumed` | Changed | Appended: protocol_version, reconnect_initial_ms, reconnect_max_ms, reconnect_factor, reconnect_jitter_frac, heartbeat_interval_s, heartbeat_timeout_s, handshake_timeout_s, stale_input_s, max_message_bytes, max_buffered_bytes, message_burst, message_rate_per_s |
-| `network.protocol_version` | Added | 1 |
-| `network.reconnect_initial_ms` | Added | 500 |
-| `network.reconnect_max_ms` | Added | 8000 |
-| `network.reconnect_factor` | Added | 1.7 |
-| `network.reconnect_jitter_frac` | Added | 0.2 |
-| `network.heartbeat_interval_s` | Added | 2 |
-| `network.heartbeat_timeout_s` | Added | 3 |
-| `network.handshake_timeout_s` | Added | 10 |
-| `network.stale_input_s` | Added | 0.5 |
-| `network.max_message_bytes` | Added | 4096 |
-| `network.max_buffered_bytes` | Added | 65536 |
-| `network.message_burst` | Added | 60 |
-| `network.message_rate_per_s` | Added | 30 |
-| `rooms._assumed` | Changed | Appended: maintenance_interval_ms, code_attempts_max, token_bytes, max_rooms, max_connections, code_blocklist, reclaim_by_name_after_grace |
-| `rooms.maintenance_interval_ms` | Added | 100 |
-| `rooms.code_attempts_max` | Added | 1000 |
-| `rooms.token_bytes` | Added | 32 |
-| `rooms.max_rooms` | Added | 64 |
-| `rooms.max_connections` | Added | 256 |
-| `rooms.code_blocklist` | Added | list (6 entries; see config) |
-| `rooms.reclaim_by_name_after_grace` | Added | true |
-| `names._assumed` | Changed | Appended: blocklist |
-| `names.blocklist` | Added | list (8 entries; see config) |
-| `characters.card_pips_max` | Added | 5 |
-| `characters._assumed` | Added | list (1 entries; see config) |
+Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 
-Heartbeat policy: a clean socket close starts the configured 3-second grace. For silent transport loss, the timeout is 3 seconds and disconnect time is anchored at last traffic, so detection does not add another grace period. Physical cellular latency and backgrounding remain to be validated. Reconnect jitter is cosmetic/network scheduling only. No gameplay RNG exists yet.
-
-`stale_input_s` is reserved for the next checkpoint; no race input processing or simulation exists yet. The 64-room / 256-connection limits are protective assumed caps, not measured 60Hz capacity. Quantization, course geometry, initial race state and other missing tunables will be added with implementation and listed here at the next checkpoint.
+- `_version`: changed.
+- `network._assumed`: changed.
+- `network.protocol_version`: added.
+- `network.reconnect_initial_ms`: added.
+- `network.reconnect_max_ms`: added.
+- `network.reconnect_factor`: added.
+- `network.reconnect_jitter_frac`: added.
+- `network.heartbeat_interval_s`: added.
+- `network.heartbeat_timeout_s`: added.
+- `network.handshake_timeout_s`: added.
+- `network.stale_input_s`: added.
+- `network.max_message_bytes`: added.
+- `network.max_buffered_bytes`: added.
+- `network.message_burst`: added.
+- `network.message_rate_per_s`: added.
+- `network.scheduler_interval_ms`: added.
+- `network.clock_offset_blend`: added.
+- `network.position_quantum`: added.
+- `network.angle_quantum_deg`: added.
+- `network.velocity_quantum`: added.
+- `network.time_quantum_s`: added.
+- `network.snapshot_buffer_max`: added.
+- `network.clock_max_extrapolation_s`: added.
+- `network.event_seen_max`: added.
+- `rooms._assumed`: changed.
+- `rooms.maintenance_interval_ms`: added.
+- `rooms.code_attempts_max`: added.
+- `rooms.token_bytes`: added.
+- `rooms.max_rooms`: added.
+- `rooms.max_connections`: added.
+- `rooms.code_blocklist`: added.
+- `rooms.reclaim_by_name_after_grace`: added.
+- `rooms.go_banner_s`: added.
+- `rooms.suspend_sim_when_empty`: added.
+- `names._assumed`: changed.
+- `names.blocklist`: added.
+- `walking._assumed`: added.
+- `walking.initial_phi_1v1_deg`: added.
+- `walking.initial_phi_2v2_deg`: added.
+- `characters.card_pips_max`: added.
+- `characters._assumed`: added.
+- `combat._assumed`: changed.
+- `combat.block_consumes_defender_swing`: added.
+- `course._assumed`: changed.
+- `course.start_progress`: added.
+- `course.path_sections`: added.
+- `course.rock_positions`: added.
+- `course.spike_zones`: added.
+- `race.freeze_finished`: added.
+- `race._assumed`: added.
+- `race.timeout_tie_label`: added.
+- `bots._assumed`: changed.
+- `bots.walk_tolerance_deg`: added.
+- `bots.fumble_walk_chance`: added.
+- `views._assumed`: changed.
+- `views.phone_landscape_max_height_px`: added.
+- `views.default_low_effects`: added.
+- `visuals._assumed`: changed.
+- `visuals.camera_height`: added.
+- `visuals.camera_behind`: added.
+- `visuals.camera_ahead`: added.
+- `visuals.camera_follow_rate`: added.
+- `visuals.camera_fov_deg`: added.
+- `visuals.camera_near`: added.
+- `visuals.camera_far`: added.
+- `visuals.fog_near`: added.
+- `visuals.fog_far`: added.
+- `visuals.river_depth`: added.
+- `visuals.raft_height`: added.
+- `visuals.tube_radius`: added.
+- `visuals.tube_segments`: added.
+- `visuals.radial_segments`: added.
+- `visuals.body_radius`: added.
+- `visuals.head_radius`: added.
+- `visuals.body_height`: added.
+- `visuals.head_height`: added.
+- `visuals.eye_radius`: added.
+- `visuals.cannon_length`: added.
+- `visuals.cannon_radius`: added.
+- `visuals.bank_height`: added.
+- `visuals.bank_width`: added.
+- `visuals.rock_height_mult`: added.
+- `visuals.rock_segments`: added.
+- `visuals.ambient_light`: added.
+- `visuals.sun_light`: added.
+- `visuals.sun_position`: added.
+- `visuals.ground_half_size`: added.
+- `visuals.hippo_color`: added.
+- `visuals.red_color`: added.
+- `visuals.blue_color`: added.
+- `visuals.river_color`: added.
+- `visuals.bank_color`: added.
+- `visuals.ground_color`: added.
+- `visuals.rock_color`: added.
+- `visuals.foam_color`: added.
+- `visuals.vest_color`: added.
+- `visuals.sky_color`: added.
+- `visuals.fps_sample_s`: added.
+- `visuals.stun_stars`: added.
+- `visuals.stun_orbit_speed`: added.
+- `visuals.star_radius`: added.
+- `visuals.spike_spacing`: added.
+- `visuals.spike_height`: added.
+- `visuals.spike_radius`: added.
+- `visuals.finish_arch_height`: added.
+- `visuals.finish_arch_width`: added.
+- `visuals.finish_arch_post`: added.
+- `visuals.hippo_parts`: added.
+- `visuals.comic_banner_s`: added.
+- `visuals.whack_arc_radius`: added.
+- `visuals.whack_arc_tube`: added.
+- `visuals.low_effects_pixel_ratio`: added.
+- `visuals.reduced_motion_camera_follow_rate`: added.
+- `visuals.tick_time_quantum_ms`: added.
+- `simulation`: added.
+- `simulation._assumed`: added.
+- `simulation.epsilon`: added.
+- `simulation.default_seed`: added.
+- `simulation.initial_speed`: added.
+- `simulation.initial_omega`: added.
+- `simulation.collision_push_epsilon`: added.
+- `_assumed`: added.
+- `debug`: added.
+- `debug.jump_percents`: added.
+- `debug._assumed`: added.
+- `debug.default_jump_percent`: added.
+- `debug.jump_speed`: added.
+- `debug.event_loop_resolution_ms`: added.

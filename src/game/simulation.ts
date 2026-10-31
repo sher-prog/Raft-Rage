@@ -145,8 +145,11 @@ export class Simulation {
   decideBots(){
     const c=this.config,b=c.bots,level=b.levels.chill;
     for(const seat of this.botSeats){
-      const a=this.animals[seat],raft=this.rafts[a.raft];if(raft.finishTime!==null||raft.stun>0||this.tick<(this.botNext.get(seat)??0))continue;
+      const a=this.animals[seat],raft=this.rafts[a.raft];if(raft.finishTime!==null||this.tick<(this.botNext.get(seat)??0))continue;
       this.botNext.set(seat,this.tick+Math.round(level.decision_tick_s*c.network.sim_hz));
+      // Bot takeover still owns an input stream while incapacitated. Release the
+      // previous driver's held controls and resume decisions after recovery.
+      if(raft.stun>0){this.input(seat,{seq:a.seq+1,walk:0,fire:false,whackCount:a.whackCount});continue;}
       const p=this.course.project(raft.x,raft.y);let lateral=0;
       for(const rock of this.course.rocks){
         if(rock.progress<p.progress||rock.progress>p.progress+b.lookahead)continue;

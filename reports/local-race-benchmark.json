@@ -1,0 +1,243 @@
+{
+  "timestamp": "2026-10-31T22:55:22.905Z",
+  "environment": "Local developer macOS machine; CPU includes server and load clients in one process",
+  "base": "http://127.0.0.1:61302",
+  "configVersion": "1.7-debug-settings (2026-10-31)",
+  "runtime": "v24.22.1",
+  "scenario": "Four human WebSocket clients per 2v2 room, all continuously firing, 10Hz input resend, native keepalive plus 2s clock pings, real fixed 60Hz authority and 20Hz snapshots. No-human rooms suspend after clients leave.",
+  "measurementLimits": "Node socket counters include WS framing/control/HTTP handshake. Render edge TLS/TCP/provider billing overhead is not measured. Histograms have 10ms resolution and include setup history. Graphics FPS is not measured. Largest tested passing load is a lower bound, not an unlimited capacity guarantee.",
+  "largestPassingRooms": 8,
+  "stoppedAfterFailure": false,
+  "results": [
+    {
+      "rooms": 1,
+      "clients": 4,
+      "sampleMs": 8005.597041999999,
+      "cpuMs": 400.002,
+      "cpuCores": 0.0499652927697282,
+      "cpuCoresPerUser": 0.01249132319243205,
+      "rssBytes": 49397760,
+      "activeRaceRoomsReported": 1,
+      "payloadOutBytesPerSecond": 148092.51499670974,
+      "payloadInBytesPerSecond": 6882.185015177285,
+      "nodeSocketOutBytesPerSecond": 148420.78532885519,
+      "nodeSocketInBytesPerSecond": 7226.693986279706,
+      "clientReceivedBytesPerSecond": 148094.2637732128,
+      "eventLoopMeanMs": 10.388289159620363,
+      "eventLoopMaxMs": 24.707071,
+      "roomMetrics": [
+        {
+          "simHz": 59.95805153341617,
+          "snapshotHz": 19.986017177805387,
+          "averageTickMs": 0.13264373749997457,
+          "worstTickMs": 10.677457999999206,
+          "overruns": 0,
+          "snapshotAverageMs": 0.46414149999999843,
+          "snapshotWorstMs": 12.494541000000027,
+          "schedulerLateMaxMs": 16.855124999999656
+        }
+      ],
+      "pass": true
+    },
+    {
+      "rooms": 2,
+      "clients": 8,
+      "sampleMs": 8006.4774590000015,
+      "cpuMs": 516.961,
+      "cpuCores": 0.06456784555346362,
+      "cpuCoresPerUser": 0.008070980694182953,
+      "rssBytes": 57163776,
+      "activeRaceRoomsReported": 2,
+      "payloadOutBytesPerSecond": 296135.2245280829,
+      "payloadInBytesPerSecond": 13762.856457696547,
+      "nodeSocketOutBytesPerSecond": 296791.69299713377,
+      "nodeSocketInBytesPerSecond": 14451.798633359518,
+      "clientReceivedBytesPerSecond": 296136.9731122851,
+      "eventLoopMeanMs": 10.337668971404181,
+      "eventLoopMaxMs": 24.707071,
+      "roomMetrics": [
+        {
+          "simHz": 59.951458360809696,
+          "snapshotHz": 19.983819453603232,
+          "averageTickMs": 0.05377811944448341,
+          "worstTickMs": 1.1801250000025902,
+          "overruns": 0,
+          "snapshotAverageMs": 0.3373980750000328,
+          "snapshotWorstMs": 7.8507080000017595,
+          "schedulerLateMaxMs": 7.752583000001343
+        },
+        {
+          "simHz": 59.95163121128759,
+          "snapshotHz": 19.983877070429198,
+          "averageTickMs": 0.025335111111022948,
+          "worstTickMs": 0.727707999998529,
+          "overruns": 0,
+          "snapshotAverageMs": 0.15198663333337664,
+          "snapshotWorstMs": 1.1291660000006232,
+          "schedulerLateMaxMs": 7.469250000000139
+        }
+      ],
+      "pass": true
+    },
+    {
+      "rooms": 4,
+      "clients": 16,
+      "sampleMs": 8005.290041999997,
+      "cpuMs": 616.554,
+      "cpuCores": 0.07701832123074001,
+      "cpuCoresPerUser": 0.004813645076921251,
+      "rssBytes": 44744704,
+      "activeRaceRoomsReported": 4,
+      "payloadOutBytesPerSecond": 593579.117692136,
+      "payloadInBytesPerSecond": 27529.795778010375,
+      "nodeSocketOutBytesPerSecond": 594892.2493769154,
+      "nodeSocketInBytesPerSecond": 28907.884509601645,
+      "clientReceivedBytesPerSecond": 593580.7416183063,
+      "eventLoopMeanMs": 10.336794137266024,
+      "eventLoopMaxMs": 24.707071,
+      "roomMetrics": [
+        {
+          "simHz": 59.960350903173456,
+          "snapshotHz": 19.986783634391152,
+          "averageTickMs": 0.05144977499989586,
+          "worstTickMs": 2.5129159999996773,
+          "overruns": 0,
+          "snapshotAverageMs": 0.29140830833330256,
+          "snapshotWorstMs": 3.609208000001672,
+          "schedulerLateMaxMs": 11.652291666664306
+        },
+        {
+          "simHz": 59.96287111013435,
+          "snapshotHz": 19.98762370337812,
+          "averageTickMs": 0.01866898333319619,
+          "worstTickMs": 1.1150000000052387,
+          "overruns": 0,
+          "snapshotAverageMs": 0.14331891250003537,
+          "snapshotWorstMs": 0.9850829999995767,
+          "schedulerLateMaxMs": 11.455624666664129
+        },
+        {
+          "simHz": 59.96433808381023,
+          "snapshotHz": 19.988112694603412,
+          "averageTickMs": 0.01667819583348723,
+          "worstTickMs": 1.5093330000017886,
+          "overruns": 0,
+          "snapshotAverageMs": 0.13375802916657448,
+          "snapshotWorstMs": 1.7268330000006245,
+          "schedulerLateMaxMs": 11.334374666663965
+        },
+        {
+          "simHz": 59.965375617334935,
+          "snapshotHz": 19.988458539111644,
+          "averageTickMs": 0.01319641666664716,
+          "worstTickMs": 0.39145799999823794,
+          "overruns": 0,
+          "snapshotAverageMs": 0.12050641249992017,
+          "snapshotWorstMs": 0.7493340000000899,
+          "schedulerLateMaxMs": 11.223541666665174
+        }
+      ],
+      "pass": true
+    },
+    {
+      "rooms": 8,
+      "clients": 32,
+      "sampleMs": 8006.218916999998,
+      "cpuMs": 828.55,
+      "cpuCores": 0.10348830185503659,
+      "cpuCoresPerUser": 0.0032340094329698934,
+      "rssBytes": 54345728,
+      "activeRaceRoomsReported": 8,
+      "payloadOutBytesPerSecond": 1183307.2637926224,
+      "payloadInBytesPerSecond": 55053.20358703852,
+      "nodeSocketOutBytesPerSecond": 1185933.2224652434,
+      "nodeSocketInBytesPerSecond": 57809.061280755894,
+      "clientReceivedBytesPerSecond": 1183309.6369478155,
+      "eventLoopMeanMs": 10.35283516670206,
+      "eventLoopMaxMs": 47.841279,
+      "roomMetrics": [
+        {
+          "simHz": 60.078297256982204,
+          "snapshotHz": 19.98446478402734,
+          "averageTickMs": 0.04048515672668685,
+          "worstTickMs": 6.177541999997629,
+          "overruns": 0,
+          "snapshotAverageMs": 0.22468747916636858,
+          "snapshotWorstMs": 1.9934169999978621,
+          "schedulerLateMaxMs": 18.876458666660945
+        },
+        {
+          "simHz": 60.058468039894734,
+          "snapshotHz": 19.97786878665937,
+          "averageTickMs": 0.023113596393802574,
+          "worstTickMs": 3.3345420000041486,
+          "overruns": 0,
+          "snapshotAverageMs": 0.13594913749996826,
+          "snapshotWorstMs": 2.520416999999725,
+          "schedulerLateMaxMs": 18.55045866666728
+        },
+        {
+          "simHz": 59.93436531465924,
+          "snapshotHz": 19.97812177155308,
+          "averageTickMs": 0.016491619444594915,
+          "worstTickMs": 1.8176249999960419,
+          "overruns": 0,
+          "snapshotAverageMs": 0.13708697083332785,
+          "snapshotWorstMs": 6.832000000002154,
+          "schedulerLateMaxMs": 18.28579166666419
+        },
+        {
+          "simHz": 59.92690883473857,
+          "snapshotHz": 19.97563627824619,
+          "averageTickMs": 0.024420804166604488,
+          "worstTickMs": 5.263542000000598,
+          "overruns": 0,
+          "snapshotAverageMs": 0.11609669583309976,
+          "snapshotWorstMs": 2.0486669999954756,
+          "schedulerLateMaxMs": 17.919041666663176
+        },
+        {
+          "simHz": 59.927119259368254,
+          "snapshotHz": 19.975706419789418,
+          "averageTickMs": 0.011838137500288011,
+          "worstTickMs": 0.4567499999975553,
+          "overruns": 0,
+          "snapshotAverageMs": 0.10381127083313307,
+          "snapshotWorstMs": 1.0526669999962905,
+          "schedulerLateMaxMs": 17.558583666667595
+        },
+        {
+          "simHz": 59.927428191588035,
+          "snapshotHz": 19.975809397196013,
+          "averageTickMs": 0.011001740277707641,
+          "worstTickMs": 0.23962500000197906,
+          "overruns": 0,
+          "snapshotAverageMs": 0.10583731666659636,
+          "snapshotWorstMs": 1.049250000003667,
+          "schedulerLateMaxMs": 17.327624666667163
+        },
+        {
+          "simHz": 59.926802526907096,
+          "snapshotHz": 19.975600842302363,
+          "averageTickMs": 0.01391394166665931,
+          "worstTickMs": 1.8959170000016456,
+          "overruns": 0,
+          "snapshotAverageMs": 0.09293624166648443,
+          "snapshotWorstMs": 0.4835000000020955,
+          "schedulerLateMaxMs": 33.753833333333596
+        },
+        {
+          "simHz": 59.92719688304916,
+          "snapshotHz": 19.975732294349722,
+          "averageTickMs": 0.010122386110924707,
+          "worstTickMs": 0.5921669999952428,
+          "overruns": 0,
+          "snapshotAverageMs": 0.08925467500008986,
+          "snapshotWorstMs": 0.4852089999985765,
+          "schedulerLateMaxMs": 33.56095833333295
+        }
+      ],
+      "pass": true
+    }
+  ]
+}

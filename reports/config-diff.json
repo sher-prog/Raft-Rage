@@ -1,137 +1,1179 @@
 [
-  [
-    "_version",
-    "Changed",
-    "\"1.1-skeleton (2026-10-31)\""
-  ],
-  [
-    "network._assumed",
-    "Changed",
-    "Appended: protocol_version, reconnect_initial_ms, reconnect_max_ms, reconnect_factor, reconnect_jitter_frac, heartbeat_interval_s, heartbeat_timeout_s, handshake_timeout_s, stale_input_s, max_message_bytes, max_buffered_bytes, message_burst, message_rate_per_s"
-  ],
-  [
-    "network.protocol_version",
-    "Added",
-    "1"
-  ],
-  [
-    "network.reconnect_initial_ms",
-    "Added",
-    "500"
-  ],
-  [
-    "network.reconnect_max_ms",
-    "Added",
-    "8000"
-  ],
-  [
-    "network.reconnect_factor",
-    "Added",
-    "1.7"
-  ],
-  [
-    "network.reconnect_jitter_frac",
-    "Added",
-    "0.2"
-  ],
-  [
-    "network.heartbeat_interval_s",
-    "Added",
-    "2"
-  ],
-  [
-    "network.heartbeat_timeout_s",
-    "Added",
-    "3"
-  ],
-  [
-    "network.handshake_timeout_s",
-    "Added",
-    "10"
-  ],
-  [
-    "network.stale_input_s",
-    "Added",
-    "0.5"
-  ],
-  [
-    "network.max_message_bytes",
-    "Added",
-    "4096"
-  ],
-  [
-    "network.max_buffered_bytes",
-    "Added",
-    "65536"
-  ],
-  [
-    "network.message_burst",
-    "Added",
-    "60"
-  ],
-  [
-    "network.message_rate_per_s",
-    "Added",
-    "30"
-  ],
-  [
-    "rooms._assumed",
-    "Changed",
-    "Appended: maintenance_interval_ms, code_attempts_max, token_bytes, max_rooms, max_connections, code_blocklist, reclaim_by_name_after_grace"
-  ],
-  [
-    "rooms.maintenance_interval_ms",
-    "Added",
-    "100"
-  ],
-  [
-    "rooms.code_attempts_max",
-    "Added",
-    "1000"
-  ],
-  [
-    "rooms.token_bytes",
-    "Added",
-    "32"
-  ],
-  [
-    "rooms.max_rooms",
-    "Added",
-    "64"
-  ],
-  [
-    "rooms.max_connections",
-    "Added",
-    "256"
-  ],
-  [
-    "rooms.code_blocklist",
-    "Added",
-    "list (6 entries; see config)"
-  ],
-  [
-    "rooms.reclaim_by_name_after_grace",
-    "Added",
-    "true"
-  ],
-  [
-    "names._assumed",
-    "Changed",
-    "Appended: blocklist"
-  ],
-  [
-    "names.blocklist",
-    "Added",
-    "list (8 entries; see config)"
-  ],
-  [
-    "characters.card_pips_max",
-    "Added",
-    "5"
-  ],
-  [
-    "characters._assumed",
-    "Added",
-    "list (1 entries; see config)"
-  ]
+  {
+    "key": "_version",
+    "change": "changed",
+    "before": "1.0 (2026-10-31)",
+    "value": "1.7-debug-settings (2026-10-31)"
+  },
+  {
+    "key": "network._assumed",
+    "change": "changed",
+    "before": [
+      "snapshot_hz",
+      "input_resend_hz",
+      "event_repeat_s",
+      "clock_sync_interval_s"
+    ],
+    "value": [
+      "snapshot_hz",
+      "input_resend_hz",
+      "event_repeat_s",
+      "clock_sync_interval_s",
+      "protocol_version",
+      "reconnect_initial_ms",
+      "reconnect_max_ms",
+      "reconnect_factor",
+      "reconnect_jitter_frac",
+      "heartbeat_interval_s",
+      "heartbeat_timeout_s",
+      "handshake_timeout_s",
+      "stale_input_s",
+      "max_message_bytes",
+      "max_buffered_bytes",
+      "message_burst",
+      "message_rate_per_s",
+      "scheduler_interval_ms",
+      "clock_offset_blend",
+      "position_quantum",
+      "angle_quantum_deg",
+      "velocity_quantum",
+      "time_quantum_s",
+      "snapshot_buffer_max",
+      "clock_max_extrapolation_s",
+      "event_seen_max"
+    ]
+  },
+  {
+    "key": "network.protocol_version",
+    "change": "added",
+    "value": 1
+  },
+  {
+    "key": "network.reconnect_initial_ms",
+    "change": "added",
+    "value": 500
+  },
+  {
+    "key": "network.reconnect_max_ms",
+    "change": "added",
+    "value": 8000
+  },
+  {
+    "key": "network.reconnect_factor",
+    "change": "added",
+    "value": 1.7
+  },
+  {
+    "key": "network.reconnect_jitter_frac",
+    "change": "added",
+    "value": 0.2
+  },
+  {
+    "key": "network.heartbeat_interval_s",
+    "change": "added",
+    "value": 2
+  },
+  {
+    "key": "network.heartbeat_timeout_s",
+    "change": "added",
+    "value": 3
+  },
+  {
+    "key": "network.handshake_timeout_s",
+    "change": "added",
+    "value": 10
+  },
+  {
+    "key": "network.stale_input_s",
+    "change": "added",
+    "value": 0.5
+  },
+  {
+    "key": "network.max_message_bytes",
+    "change": "added",
+    "value": 4096
+  },
+  {
+    "key": "network.max_buffered_bytes",
+    "change": "added",
+    "value": 65536
+  },
+  {
+    "key": "network.message_burst",
+    "change": "added",
+    "value": 60
+  },
+  {
+    "key": "network.message_rate_per_s",
+    "change": "added",
+    "value": 30
+  },
+  {
+    "key": "network.scheduler_interval_ms",
+    "change": "added",
+    "value": 4
+  },
+  {
+    "key": "network.clock_offset_blend",
+    "change": "added",
+    "value": 0.2
+  },
+  {
+    "key": "network.position_quantum",
+    "change": "added",
+    "value": 0.1
+  },
+  {
+    "key": "network.angle_quantum_deg",
+    "change": "added",
+    "value": 0.1
+  },
+  {
+    "key": "network.velocity_quantum",
+    "change": "added",
+    "value": 0.1
+  },
+  {
+    "key": "network.time_quantum_s",
+    "change": "added",
+    "value": 0.001
+  },
+  {
+    "key": "network.snapshot_buffer_max",
+    "change": "added",
+    "value": 120
+  },
+  {
+    "key": "network.clock_max_extrapolation_s",
+    "change": "added",
+    "value": 0.25
+  },
+  {
+    "key": "network.event_seen_max",
+    "change": "added",
+    "value": 512
+  },
+  {
+    "key": "rooms._assumed",
+    "change": "changed",
+    "before": [
+      "max_spectators",
+      "idle_close_min",
+      "countdown_s",
+      "default_mode_multiplayer",
+      "default_mode_solo"
+    ],
+    "value": [
+      "max_spectators",
+      "idle_close_min",
+      "countdown_s",
+      "default_mode_multiplayer",
+      "default_mode_solo",
+      "maintenance_interval_ms",
+      "code_attempts_max",
+      "token_bytes",
+      "max_rooms",
+      "max_connections",
+      "code_blocklist",
+      "reclaim_by_name_after_grace",
+      "go_banner_s",
+      "suspend_sim_when_empty"
+    ]
+  },
+  {
+    "key": "rooms.maintenance_interval_ms",
+    "change": "added",
+    "value": 100
+  },
+  {
+    "key": "rooms.code_attempts_max",
+    "change": "added",
+    "value": 1000
+  },
+  {
+    "key": "rooms.token_bytes",
+    "change": "added",
+    "value": 32
+  },
+  {
+    "key": "rooms.max_rooms",
+    "change": "added",
+    "value": 64
+  },
+  {
+    "key": "rooms.max_connections",
+    "change": "added",
+    "value": 256
+  },
+  {
+    "key": "rooms.code_blocklist",
+    "change": "added",
+    "value": [
+      "FUCK",
+      "SHIT",
+      "CUNT",
+      "DICK",
+      "PISS",
+      "COCK"
+    ]
+  },
+  {
+    "key": "rooms.reclaim_by_name_after_grace",
+    "change": "added",
+    "value": true
+  },
+  {
+    "key": "rooms.go_banner_s",
+    "change": "added",
+    "value": 1
+  },
+  {
+    "key": "rooms.suspend_sim_when_empty",
+    "change": "added",
+    "value": true
+  },
+  {
+    "key": "names._assumed",
+    "change": "changed",
+    "before": [
+      "unique_per_room"
+    ],
+    "value": [
+      "unique_per_room",
+      "blocklist"
+    ]
+  },
+  {
+    "key": "names.blocklist",
+    "change": "added",
+    "value": [
+      "fuck",
+      "shit",
+      "cunt",
+      "nigger",
+      "faggot",
+      "cock",
+      "dick",
+      "pussy"
+    ]
+  },
+  {
+    "key": "walking._assumed",
+    "change": "added",
+    "value": [
+      "initial_phi_1v1_deg",
+      "initial_phi_2v2_deg"
+    ]
+  },
+  {
+    "key": "walking.initial_phi_1v1_deg",
+    "change": "added",
+    "value": 180
+  },
+  {
+    "key": "walking.initial_phi_2v2_deg",
+    "change": "added",
+    "value": [
+      -165,
+      165
+    ]
+  },
+  {
+    "key": "characters.card_pips_max",
+    "change": "added",
+    "value": 5
+  },
+  {
+    "key": "characters._assumed",
+    "change": "added",
+    "value": [
+      "card_pips_max"
+    ]
+  },
+  {
+    "key": "combat._assumed",
+    "change": "changed",
+    "before": [
+      "whack_reach",
+      "whack_cooldown_s"
+    ],
+    "value": [
+      "whack_reach",
+      "whack_cooldown_s",
+      "block_consumes_defender_swing"
+    ]
+  },
+  {
+    "key": "combat.block_consumes_defender_swing",
+    "change": "added",
+    "value": true
+  },
+  {
+    "key": "course._assumed",
+    "change": "changed",
+    "before": [
+      "length",
+      "half_width",
+      "start_lateral_offset",
+      "sharp_turns_with_spikes",
+      "rock_radius_min",
+      "rock_radius_max",
+      "floating_log_length",
+      "floating_log_width",
+      "whirlpool_radius",
+      "whirlpool_spin_rad_s2",
+      "whirlpool_drag_per_s",
+      "bank_restitution",
+      "raft_raft_restitution"
+    ],
+    "value": [
+      "length",
+      "half_width",
+      "start_lateral_offset",
+      "sharp_turns_with_spikes",
+      "rock_radius_min",
+      "rock_radius_max",
+      "floating_log_length",
+      "floating_log_width",
+      "whirlpool_radius",
+      "whirlpool_spin_rad_s2",
+      "whirlpool_drag_per_s",
+      "bank_restitution",
+      "raft_raft_restitution",
+      "start_progress",
+      "path_sections",
+      "rock_positions",
+      "spike_zones"
+    ]
+  },
+  {
+    "key": "course.start_progress",
+    "change": "added",
+    "value": 0
+  },
+  {
+    "key": "course.path_sections",
+    "change": "added",
+    "value": [
+      [
+        0.14,
+        0
+      ],
+      [
+        0.12,
+        45
+      ],
+      [
+        0.14,
+        -45
+      ],
+      [
+        0.12,
+        45
+      ],
+      [
+        0.14,
+        -45
+      ],
+      [
+        0.14,
+        45
+      ],
+      [
+        0.2,
+        0
+      ]
+    ]
+  },
+  {
+    "key": "course.rock_positions",
+    "change": "added",
+    "value": [
+      [
+        0.06,
+        -95,
+        28
+      ],
+      [
+        0.115,
+        88,
+        36
+      ],
+      [
+        0.19,
+        -72,
+        26
+      ],
+      [
+        0.29,
+        78,
+        32
+      ],
+      [
+        0.34,
+        -104,
+        40
+      ],
+      [
+        0.385,
+        60,
+        25
+      ],
+      [
+        0.46,
+        -75,
+        32
+      ],
+      [
+        0.57,
+        95,
+        28
+      ],
+      [
+        0.625,
+        -55,
+        36
+      ],
+      [
+        0.72,
+        80,
+        30
+      ],
+      [
+        0.78,
+        -90,
+        24
+      ],
+      [
+        0.865,
+        65,
+        34
+      ],
+      [
+        0.93,
+        -70,
+        28
+      ]
+    ]
+  },
+  {
+    "key": "course.spike_zones",
+    "change": "added",
+    "value": [
+      [
+        0.14,
+        190,
+        -1
+      ],
+      [
+        0.26,
+        190,
+        1
+      ],
+      [
+        0.4,
+        190,
+        -1
+      ],
+      [
+        0.52,
+        190,
+        1
+      ],
+      [
+        0.66,
+        190,
+        -1
+      ]
+    ]
+  },
+  {
+    "key": "race.freeze_finished",
+    "change": "added",
+    "value": true
+  },
+  {
+    "key": "race._assumed",
+    "change": "added",
+    "value": [
+      "freeze_finished",
+      "timeout_tie_label"
+    ]
+  },
+  {
+    "key": "race.timeout_tie_label",
+    "change": "added",
+    "value": "DRAW"
+  },
+  {
+    "key": "bots._assumed",
+    "change": "changed",
+    "before": [
+      "levels.*.whack_block_chance",
+      "lookahead",
+      "candidate_step_deg",
+      "obstacle_clearance",
+      "stuck_window_s",
+      "stuck_min_progress"
+    ],
+    "value": [
+      "levels.*.whack_block_chance",
+      "lookahead",
+      "candidate_step_deg",
+      "obstacle_clearance",
+      "stuck_window_s",
+      "stuck_min_progress",
+      "walk_tolerance_deg",
+      "fumble_walk_chance"
+    ]
+  },
+  {
+    "key": "bots.walk_tolerance_deg",
+    "change": "added",
+    "value": 3
+  },
+  {
+    "key": "bots.fumble_walk_chance",
+    "change": "added",
+    "value": 0.5
+  },
+  {
+    "key": "views._assumed",
+    "change": "changed",
+    "before": [
+      "big_screen_split_distance"
+    ],
+    "value": [
+      "big_screen_split_distance",
+      "phone_landscape_max_height_px",
+      "default_low_effects"
+    ]
+  },
+  {
+    "key": "views.phone_landscape_max_height_px",
+    "change": "added",
+    "value": 550
+  },
+  {
+    "key": "views.default_low_effects",
+    "change": "added",
+    "value": false
+  },
+  {
+    "key": "visuals._assumed",
+    "change": "changed",
+    "before": [
+      "auto_low_effects_below_fps",
+      "auto_low_effects_after_s"
+    ],
+    "value": [
+      "auto_low_effects_below_fps",
+      "auto_low_effects_after_s",
+      "camera_height",
+      "camera_behind",
+      "camera_ahead",
+      "camera_follow_rate",
+      "camera_fov_deg",
+      "camera_near",
+      "camera_far",
+      "fog_near",
+      "fog_far",
+      "river_depth",
+      "raft_height",
+      "tube_radius",
+      "tube_segments",
+      "radial_segments",
+      "body_radius",
+      "head_radius",
+      "body_height",
+      "head_height",
+      "eye_radius",
+      "cannon_length",
+      "cannon_radius",
+      "bank_height",
+      "bank_width",
+      "rock_height_mult",
+      "rock_segments",
+      "ambient_light",
+      "sun_light",
+      "sun_position",
+      "ground_half_size",
+      "hippo_color",
+      "red_color",
+      "blue_color",
+      "river_color",
+      "bank_color",
+      "ground_color",
+      "rock_color",
+      "foam_color",
+      "vest_color",
+      "sky_color",
+      "fps_sample_s",
+      "stun_stars",
+      "stun_orbit_speed",
+      "star_radius",
+      "spike_spacing",
+      "spike_height",
+      "spike_radius",
+      "finish_arch_height",
+      "finish_arch_width",
+      "finish_arch_post",
+      "hippo_parts",
+      "comic_banner_s",
+      "whack_arc_radius",
+      "whack_arc_tube",
+      "low_effects_pixel_ratio",
+      "reduced_motion_camera_follow_rate",
+      "tick_time_quantum_ms"
+    ]
+  },
+  {
+    "key": "visuals.camera_height",
+    "change": "added",
+    "value": 240
+  },
+  {
+    "key": "visuals.camera_behind",
+    "change": "added",
+    "value": 320
+  },
+  {
+    "key": "visuals.camera_ahead",
+    "change": "added",
+    "value": 140
+  },
+  {
+    "key": "visuals.camera_follow_rate",
+    "change": "added",
+    "value": 5
+  },
+  {
+    "key": "visuals.camera_fov_deg",
+    "change": "added",
+    "value": 58
+  },
+  {
+    "key": "visuals.camera_near",
+    "change": "added",
+    "value": 1
+  },
+  {
+    "key": "visuals.camera_far",
+    "change": "added",
+    "value": 2400
+  },
+  {
+    "key": "visuals.fog_near",
+    "change": "added",
+    "value": 850
+  },
+  {
+    "key": "visuals.fog_far",
+    "change": "added",
+    "value": 2100
+  },
+  {
+    "key": "visuals.river_depth",
+    "change": "added",
+    "value": 4
+  },
+  {
+    "key": "visuals.raft_height",
+    "change": "added",
+    "value": 10
+  },
+  {
+    "key": "visuals.tube_radius",
+    "change": "added",
+    "value": 7
+  },
+  {
+    "key": "visuals.tube_segments",
+    "change": "added",
+    "value": 24
+  },
+  {
+    "key": "visuals.radial_segments",
+    "change": "added",
+    "value": 8
+  },
+  {
+    "key": "visuals.body_radius",
+    "change": "added",
+    "value": 6
+  },
+  {
+    "key": "visuals.head_radius",
+    "change": "added",
+    "value": 5
+  },
+  {
+    "key": "visuals.body_height",
+    "change": "added",
+    "value": 10
+  },
+  {
+    "key": "visuals.head_height",
+    "change": "added",
+    "value": 10
+  },
+  {
+    "key": "visuals.eye_radius",
+    "change": "added",
+    "value": 0.8
+  },
+  {
+    "key": "visuals.cannon_length",
+    "change": "added",
+    "value": 8
+  },
+  {
+    "key": "visuals.cannon_radius",
+    "change": "added",
+    "value": 2.5
+  },
+  {
+    "key": "visuals.bank_height",
+    "change": "added",
+    "value": 12
+  },
+  {
+    "key": "visuals.bank_width",
+    "change": "added",
+    "value": 40
+  },
+  {
+    "key": "visuals.rock_height_mult",
+    "change": "added",
+    "value": 0.65
+  },
+  {
+    "key": "visuals.rock_segments",
+    "change": "added",
+    "value": 7
+  },
+  {
+    "key": "visuals.ambient_light",
+    "change": "added",
+    "value": 2
+  },
+  {
+    "key": "visuals.sun_light",
+    "change": "added",
+    "value": 3
+  },
+  {
+    "key": "visuals.sun_position",
+    "change": "added",
+    "value": [
+      200,
+      400,
+      100
+    ]
+  },
+  {
+    "key": "visuals.ground_half_size",
+    "change": "added",
+    "value": 22000
+  },
+  {
+    "key": "visuals.hippo_color",
+    "change": "added",
+    "value": "#aaa4bf"
+  },
+  {
+    "key": "visuals.red_color",
+    "change": "added",
+    "value": "#f16d46"
+  },
+  {
+    "key": "visuals.blue_color",
+    "change": "added",
+    "value": "#53a5e1"
+  },
+  {
+    "key": "visuals.river_color",
+    "change": "added",
+    "value": "#199795"
+  },
+  {
+    "key": "visuals.bank_color",
+    "change": "added",
+    "value": "#456c52"
+  },
+  {
+    "key": "visuals.ground_color",
+    "change": "added",
+    "value": "#a7cda6"
+  },
+  {
+    "key": "visuals.rock_color",
+    "change": "added",
+    "value": "#374b4c"
+  },
+  {
+    "key": "visuals.foam_color",
+    "change": "added",
+    "value": "#c4eee0"
+  },
+  {
+    "key": "visuals.vest_color",
+    "change": "added",
+    "value": "#ffb43e"
+  },
+  {
+    "key": "visuals.sky_color",
+    "change": "added",
+    "value": "#c6e5db"
+  },
+  {
+    "key": "visuals.fps_sample_s",
+    "change": "added",
+    "value": 1
+  },
+  {
+    "key": "visuals.stun_stars",
+    "change": "added",
+    "value": 5
+  },
+  {
+    "key": "visuals.stun_orbit_speed",
+    "change": "added",
+    "value": 3
+  },
+  {
+    "key": "visuals.star_radius",
+    "change": "added",
+    "value": 1.5
+  },
+  {
+    "key": "visuals.spike_spacing",
+    "change": "added",
+    "value": 24
+  },
+  {
+    "key": "visuals.spike_height",
+    "change": "added",
+    "value": 12
+  },
+  {
+    "key": "visuals.spike_radius",
+    "change": "added",
+    "value": 6
+  },
+  {
+    "key": "visuals.finish_arch_height",
+    "change": "added",
+    "value": 90
+  },
+  {
+    "key": "visuals.finish_arch_width",
+    "change": "added",
+    "value": 180
+  },
+  {
+    "key": "visuals.finish_arch_post",
+    "change": "added",
+    "value": 8
+  },
+  {
+    "key": "visuals.hippo_parts",
+    "change": "added",
+    "value": [
+      [
+        "cylinder",
+        [
+          6,
+          10,
+          6
+        ],
+        [
+          0,
+          5,
+          0
+        ],
+        "vest"
+      ],
+      [
+        "sphere",
+        [
+          5,
+          5,
+          5
+        ],
+        [
+          0,
+          12,
+          0
+        ],
+        "hippo"
+      ],
+      [
+        "box",
+        [
+          6.5,
+          3,
+          3.5
+        ],
+        [
+          0,
+          10,
+          -4
+        ],
+        "hippo"
+      ],
+      [
+        "sphere",
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          -4,
+          15,
+          0
+        ],
+        "hippo"
+      ],
+      [
+        "sphere",
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          4,
+          15,
+          0
+        ],
+        "hippo"
+      ],
+      [
+        "sphere",
+        [
+          5.1,
+          2.5,
+          5.1
+        ],
+        [
+          0,
+          15,
+          0
+        ],
+        "team"
+      ],
+      [
+        "sphere",
+        [
+          1.1,
+          1.5,
+          0.9
+        ],
+        [
+          -2.2,
+          13,
+          -4.2
+        ],
+        "white"
+      ],
+      [
+        "sphere",
+        [
+          1.1,
+          1.5,
+          0.9
+        ],
+        [
+          2.2,
+          13,
+          -4.2
+        ],
+        "white"
+      ],
+      [
+        "sphere",
+        [
+          0.5,
+          0.8,
+          0.5
+        ],
+        [
+          -2.2,
+          13,
+          -5
+        ],
+        "ink"
+      ],
+      [
+        "sphere",
+        [
+          0.5,
+          0.8,
+          0.5
+        ],
+        [
+          2.2,
+          13,
+          -5
+        ],
+        "ink"
+      ]
+    ]
+  },
+  {
+    "key": "visuals.comic_banner_s",
+    "change": "added",
+    "value": 0.8
+  },
+  {
+    "key": "visuals.whack_arc_radius",
+    "change": "added",
+    "value": 6.5
+  },
+  {
+    "key": "visuals.whack_arc_tube",
+    "change": "added",
+    "value": 0.7
+  },
+  {
+    "key": "visuals.low_effects_pixel_ratio",
+    "change": "added",
+    "value": 1
+  },
+  {
+    "key": "visuals.reduced_motion_camera_follow_rate",
+    "change": "added",
+    "value": 2.5
+  },
+  {
+    "key": "visuals.tick_time_quantum_ms",
+    "change": "added",
+    "value": 0.001
+  },
+  {
+    "key": "simulation",
+    "change": "added",
+    "value": {
+      "_assumed": [
+        "epsilon",
+        "default_seed",
+        "initial_speed",
+        "initial_omega",
+        "collision_push_epsilon"
+      ],
+      "epsilon": 1e-08,
+      "default_seed": 19551,
+      "initial_speed": 0,
+      "initial_omega": 0,
+      "collision_push_epsilon": 0.01
+    }
+  },
+  {
+    "key": "simulation._assumed",
+    "change": "added",
+    "value": [
+      "epsilon",
+      "default_seed",
+      "initial_speed",
+      "initial_omega",
+      "collision_push_epsilon"
+    ]
+  },
+  {
+    "key": "simulation.epsilon",
+    "change": "added",
+    "value": 1e-08
+  },
+  {
+    "key": "simulation.default_seed",
+    "change": "added",
+    "value": 19551
+  },
+  {
+    "key": "simulation.initial_speed",
+    "change": "added",
+    "value": 0
+  },
+  {
+    "key": "simulation.initial_omega",
+    "change": "added",
+    "value": 0
+  },
+  {
+    "key": "simulation.collision_push_epsilon",
+    "change": "added",
+    "value": 0.01
+  },
+  {
+    "key": "_assumed",
+    "change": "added",
+    "value": [
+      "simulation",
+      "debug"
+    ]
+  },
+  {
+    "key": "debug",
+    "change": "added",
+    "value": {
+      "jump_percents": [
+        5,
+        20,
+        40,
+        50,
+        68,
+        75,
+        95
+      ],
+      "_assumed": [
+        "jump_percents",
+        "default_jump_percent",
+        "jump_speed",
+        "event_loop_resolution_ms"
+      ],
+      "default_jump_percent": 95,
+      "jump_speed": 240,
+      "event_loop_resolution_ms": 10
+    }
+  },
+  {
+    "key": "debug.jump_percents",
+    "change": "added",
+    "value": [
+      5,
+      20,
+      40,
+      50,
+      68,
+      75,
+      95
+    ]
+  },
+  {
+    "key": "debug._assumed",
+    "change": "added",
+    "value": [
+      "jump_percents",
+      "default_jump_percent",
+      "jump_speed",
+      "event_loop_resolution_ms"
+    ]
+  },
+  {
+    "key": "debug.default_jump_percent",
+    "change": "added",
+    "value": 95
+  },
+  {
+    "key": "debug.jump_speed",
+    "change": "added",
+    "value": 240
+  },
+  {
+    "key": "debug.event_loop_resolution_ms",
+    "change": "added",
+    "value": 10
+  }
 ]
