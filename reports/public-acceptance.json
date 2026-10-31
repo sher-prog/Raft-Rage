@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-31T22:58:20.487Z",
+  "timestamp": "2026-10-31T23:05:07.524Z",
   "base": "https://raft-rage.onrender.com",
   "environment": "Real WebSocket clients from developer machine; no physical Safari/cellular claim",
   "checks": [
@@ -10,7 +10,7 @@
     {
       "name": "P1-4: authoritative countdown",
       "status": "PASS",
-      "countdownMs": 3025.4337079999996
+      "countdownMs": 3023.141709
     },
     {
       "name": "P1-7: late spectator",
@@ -19,7 +19,7 @@
     {
       "name": "P1-8: real debug jump, finish, identical results",
       "status": "PASS",
-      "resultsAfterFirstFinishReceivedMs": 14946.286166999998,
+      "resultsAfterFirstFinishReceivedMs": 14962.515834,
       "authoritativeGraceS": 15
     },
     {

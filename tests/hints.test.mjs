@@ -5,6 +5,7 @@ const state=(raceId='first',extra={})=>({raceId,phase:'race',animals:[{seat:0,ph
 test('first playable race teaches own walking and successful fire, ignores rival actions, and stays dismissed on rematch',()=>{
  const hints=new FirstRaceHints();hints.observe(state(),null);assert.equal(hints.raceId,'');
  hints.observe(state(),0);assert.ok(hints.visible('first'));assert.equal(hints.walkDone,false);
+ hints.observe(state('first',{animals:[{seat:0,phi:-180,seq:1}]}),0);assert.equal(hints.walkDone,false);
  hints.observe(state('first',{events:[{type:'shot',seat:1}]}),0);assert.equal(hints.fireDone,false);
  hints.observe(state('first',{animals:[{seat:0,phi:177,seq:1}],events:[{type:'shot',seat:0}]}),0);
  assert.ok(hints.walkDone&&hints.fireDone);
