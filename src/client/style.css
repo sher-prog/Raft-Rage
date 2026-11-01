@@ -78,3 +78,5 @@ progress::-webkit-progress-bar{background:#d5dfd6}#red-progress::-webkit-progres
 }
 
 #leave-race h2{font-size:30px;letter-spacing:-1px}.leave-actions{display:flex;gap:12px;margin-top:24px}.leave-actions button{flex:1}
+
+.character-card .animal-icon{display:block}.character-portrait{display:block;width:68px;height:68px;max-width:100%}.character-card small{display:grid;gap:5px}.pip-stat{display:flex;justify-content:space-between;gap:5px;white-space:nowrap}.pip-stat>span:last-child{font-variant-numeric:tabular-nums}
