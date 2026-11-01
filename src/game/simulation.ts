@@ -5,6 +5,8 @@ import { Course,rad,wrap,clamp } from './course.ts';
 type Animal=AnimalState & {input:InputState;seenTick:number;pendingFire:boolean;whackStartTick:number;whackUntilTick:number};
 type Shot={raft:number;phi:number;cant:number;dv:number;remaining:number;duration?:number};
 export class Simulation {
+  recovery=new Map<RaftState,{since:number;progress:number;lastStun:number}>();
+  rescueProtection=new Map<RaftState,number>();
   systems:RacingSystems;difficulty:Difficulty='chill';
   tick=0;
   readonly dt:number;readonly countdownTicks:number;
@@ -41,6 +43,7 @@ export class Simulation {
     const c=this.config,dt=this.dt;
     this.systems.beginTick(dt);
     for(const raft of this.rafts){
+      this.trackRecovery(raft);
       const wasStunned=raft.stun>0;raft.stun=Math.max(0,raft.stun-dt);
       if(raft.stun<c.simulation.epsilon)raft.stun=0;
       if(wasStunned&&raft.stun===0){raft.immunity=c.combat.immunity_s;this.spikeLatch.delete(raft);}else raft.immunity=Math.max(0,raft.immunity-dt);
@@ -130,6 +133,33 @@ export class Simulation {
     }
     this.decideBots();this.events=this.events.filter(e=>(this.tick-e.tick)*this.dt<=c.network.event_repeat_s);
   }
+  trackRecovery(r:RaftState){
+    const c=this.config.recovery,now=this.raceTime,old=this.recovery.get(r);
+    if(r.finishTime!==null||!old||Math.abs(r.progress-old.progress)>c.max_progress_u||now-old.lastStun>c.stun_gap_s){
+      this.recovery.delete(r);r.rescueReady=false;
+      if(r.stun>0&&r.finishTime===null)this.recovery.set(r,{since:now,progress:r.progress,lastStun:now});
+      return;
+    }
+    if(r.stun>0)old.lastStun=now;
+    r.rescueReady=now-old.since>=c.stuck_stun_s;
+  }
+  protectedFromStun(r:RaftState){return this.raceTime<(this.rescueProtection.get(r)??0);}
+  rescue(index:number){
+    const r=this.rafts[index];if(!r||this.phase!=='race')return false;
+    this.trackRecovery(r);if(!r.rescueReady)return false;
+    const c=this.config,margin=c.raft.radius+c.recovery.clearance_u;
+    // Search upstream only, with explicit wall, obstacle and rival clearance.
+    for(let progress=Math.max(c.course.start_progress,r.progress-c.recovery.rewind_u);progress>=c.course.start_progress;progress-=c.recovery.search_step_u){
+      const p=this.course.at(progress),other=this.rafts[1-index];
+      const blocked=this.systems.walls.some(w=>{const dx=w.b.x-w.a.x,dy=w.b.y-w.a.y,t=clamp(((p.x-w.a.x)*dx+(p.y-w.a.y)*dy)/(dx*dx+dy*dy),0,1);return Math.hypot(p.x-w.a.x-dx*t,p.y-w.a.y-dy*t)<margin+(w.padding??0);})||this.systems.awardHazards.some(h=>Math.hypot(p.x-h.x,p.y-h.y)<margin+h.radius)||Math.hypot(p.x-other.x,p.y-other.y)<margin+c.raft.radius;
+      if(blocked)continue;
+      Object.assign(r,{x:p.x,y:p.y,heading:p.heading,progress,vx:Math.sin(p.heading)*c.water.current_speed,vy:Math.cos(p.heading)*c.water.current_speed,omega:0,stun:0,slow:0,height:0,vz:0,airTime:0,rescueReady:false,immunity:c.combat.immunity_s});
+      this.spikeLatch.delete(r);this.shots=this.shots.filter(s=>s.raft!==index);this.recovery.delete(r);this.rescueProtection.set(r,this.raceTime+c.recovery.protection_s);
+      for(const a of this.animals)if(a.raft===index){this.release(a.seat);a.charge=0;a.walk=0;a.fire=false;this.cooldownWhack(a);}
+      this.emit('rescued',index);return true;
+    }
+    return false;
+  }
   jump(raft:'red'|'blue'|'both',percent:number){
     if(this.phase!=='race'||this.firstFinishTime!==null)return false;
     const c=this.config;for(const[index,r]of this.rafts.entries()){
@@ -140,7 +170,7 @@ export class Simulation {
   }
   cooldownWhack(a:Animal){a.whackPhase='cooldown';a.whackCooldown=this.config.combat.whack_cooldown_s;a.whackWindup=0;}
   stun(index:number,duration:number,slow=0){
-    const r=this.rafts[index],c=this.config;r.stun=Math.min(c.combat.stun_max_s,r.stun+duration);r.slow=Math.max(r.slow,slow);
+    const r=this.rafts[index],c=this.config;if(this.protectedFromStun(r))return;r.stun=Math.min(c.combat.stun_max_s,r.stun+duration);r.slow=Math.max(r.slow,slow);
     for(const a of this.animals)if(a.raft===index){a.pendingFire=false;a.fire=false;a.walk=0;a.charge=0;if(a.whackPhase==='windup')this.cooldownWhack(a);}
     this.emit('stun',index,undefined,duration);
   }
@@ -266,6 +296,7 @@ export class Simulation {
   }
   bankSpike(r:RaftState,side:number){
     const c=this.config,p=this.course.project(r.x,r.y);
+    if(this.protectedFromStun(r))return;
     if(r.bubble){r.bubble=false;this.emit('bubble_block',this.rafts.indexOf(r));return;}
     if(r.height===0&&!this.spikeLatch.has(r)&&c.course.spike_zones.some(([fraction,length,bank])=>bank===side&&Math.abs(p.progress-fraction*c.course.length)<=length/2)){
       this.spikeLatch.add(r);this.stun(this.rafts.indexOf(r),c.course.spike_stun_s);r.vx*=c.course.spike_speed_factor;r.vy*=c.course.spike_speed_factor;

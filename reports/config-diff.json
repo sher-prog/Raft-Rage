@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "3.12-snapshot-pacing (2026-10-31)"
+    "value": "3.13-character-colors-hud-events (2026-11-01)"
   },
   {
     "key": "network._assumed",
@@ -811,7 +811,8 @@
       "pose_breath_amplitude",
       "pose_walk_lean",
       "phone_race_view_frac",
-      "phone_pad_frac"
+      "phone_pad_frac",
+      "animal_clothing_colors"
     ]
   },
   {
@@ -1494,6 +1495,36 @@
     "value": 0.32
   },
   {
+    "key": "visuals.animal_clothing_colors",
+    "change": "added",
+    "value": {
+      "hippo": "#e53935",
+      "frog": "#149b43",
+      "bear": "#2468e8",
+      "capybara": "#f6ce25"
+    }
+  },
+  {
+    "key": "visuals.animal_clothing_colors.hippo",
+    "change": "added",
+    "value": "#e53935"
+  },
+  {
+    "key": "visuals.animal_clothing_colors.frog",
+    "change": "added",
+    "value": "#149b43"
+  },
+  {
+    "key": "visuals.animal_clothing_colors.bear",
+    "change": "added",
+    "value": "#2468e8"
+  },
+  {
+    "key": "visuals.animal_clothing_colors.capybara",
+    "change": "added",
+    "value": "#f6ce25"
+  },
+  {
     "key": "audio._assumed",
     "change": "changed",
     "before": [
@@ -1630,7 +1661,8 @@
     "value": [
       "simulation",
       "debug",
-      "release"
+      "release",
+      "recovery"
     ]
   },
   {
@@ -1816,5 +1848,75 @@
     "key": "release.foam",
     "change": "added",
     "value": true
+  },
+  {
+    "key": "recovery",
+    "change": "added",
+    "value": {
+      "stuck_stun_s": 6,
+      "max_progress_u": 12,
+      "stun_gap_s": 0.5,
+      "rewind_u": 160,
+      "search_step_u": 20,
+      "clearance_u": 12,
+      "protection_s": 2,
+      "_assumed": [
+        "stuck_stun_s",
+        "max_progress_u",
+        "stun_gap_s",
+        "rewind_u",
+        "search_step_u",
+        "clearance_u",
+        "protection_s"
+      ]
+    }
+  },
+  {
+    "key": "recovery.stuck_stun_s",
+    "change": "added",
+    "value": 6
+  },
+  {
+    "key": "recovery.max_progress_u",
+    "change": "added",
+    "value": 12
+  },
+  {
+    "key": "recovery.stun_gap_s",
+    "change": "added",
+    "value": 0.5
+  },
+  {
+    "key": "recovery.rewind_u",
+    "change": "added",
+    "value": 160
+  },
+  {
+    "key": "recovery.search_step_u",
+    "change": "added",
+    "value": 20
+  },
+  {
+    "key": "recovery.clearance_u",
+    "change": "added",
+    "value": 12
+  },
+  {
+    "key": "recovery.protection_s",
+    "change": "added",
+    "value": 2
+  },
+  {
+    "key": "recovery._assumed",
+    "change": "added",
+    "value": [
+      "stuck_stun_s",
+      "max_progress_u",
+      "stun_gap_s",
+      "rewind_u",
+      "search_step_u",
+      "clearance_u",
+      "protection_s"
+    ]
   }
 ]

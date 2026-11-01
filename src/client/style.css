@@ -46,3 +46,17 @@ progress::-webkit-progress-bar{background:#d5dfd6}#red-progress::-webkit-progres
 .spectator-view #pad-toggle{display:none}
 
 .pad button.hot{background:#ef9d42}.pad button.hot .resource-label{color:#7d241b}@media(max-width:480px){.race-top>b{display:none}.race-top{gap:6px}.race-top button{padding:6px 9px}}
+
+/* Event feedback shares the HUD instead of covering the raft or water. */
+#race-progress{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 14px}
+#race-progress>label{min-width:0}.race-hud-meta{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:24px}
+#race-progress #race-resources{position:static;flex:1 1 auto;min-width:0;margin:0;padding:0;background:none;border-radius:0;text-align:left;font-size:11px;line-height:1.3}
+#race-banner.hud-event{position:static;flex:0 1 48%;max-width:48%;margin:0;padding:2px 0;background:none;border:0;box-shadow:none;transform:none;clip-path:none;color:#113e40;text-shadow:none;text-align:right;font-size:13px;font-style:normal;font-weight:950;line-height:1.2;overflow-wrap:anywhere;pointer-events:none}
+#race-banner.hud-event:empty{display:none}.clothing-key{display:flex;align-items:center;gap:6px}.clothing-key i{display:inline-block;width:12px;height:12px;border:1px solid #113e40;border-radius:50%}
+.character-card[data-character="hippo"]{border-top:5px solid var(--kit-hippo)}.character-card[data-character="frog"]{border-top:5px solid var(--kit-frog)}.character-card[data-character="bear"]{border-top:5px solid var(--kit-bear)}.character-card[data-character="capybara"]{border-top:5px solid var(--kit-capybara)}
+[data-character="hippo"] .clothing-key i{background:var(--kit-hippo)}[data-character="frog"] .clothing-key i{background:var(--kit-frog)}[data-character="bear"] .clothing-key i{background:var(--kit-bear)}[data-character="capybara"] .clothing-key i{background:var(--kit-capybara)}
+@media(max-width:780px){#race-banner.hud-event{font-size:12px}.race-hud-meta{gap:8px}#race-progress #race-resources{font-size:10px}}
+
+#race-progress #race-hints{position:static;grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:center;gap:2px 12px;padding:0;pointer-events:none}
+#race-progress #race-hints p{background:none;border:0;padding:0;font-size:11px;line-height:1.2}#race-progress #race-hints .hint-done{display:none}
+#race-progress #rescue{grid-column:1/-1;min-height:44px;padding:6px;background:#ffd34e;font-size:13px}#race-progress #rescue[hidden]{display:none}

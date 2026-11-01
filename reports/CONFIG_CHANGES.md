@@ -1,6 +1,6 @@
 # Build config changes
 
-Config: `3.12-snapshot-pacing (2026-10-31)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
+Config: `3.13-character-colors-hud-events (2026-11-01)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
 
 Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 
@@ -176,6 +176,11 @@ Every changed/added key is listed below; exact values and original values are in
 - `visuals.pose_walk_lean`: added.
 - `visuals.phone_race_view_frac`: added.
 - `visuals.phone_pad_frac`: added.
+- `visuals.animal_clothing_colors`: added.
+- `visuals.animal_clothing_colors.hippo`: added.
+- `visuals.animal_clothing_colors.frog`: added.
+- `visuals.animal_clothing_colors.bear`: added.
+- `visuals.animal_clothing_colors.capybara`: added.
 - `audio._assumed`: changed.
 - `audio.enabled_default`: added.
 - `audio.silly_default`: added.
@@ -214,3 +219,12 @@ Every changed/added key is listed below; exact values and original values are in
 - `release.scenery`: added.
 - `release._assumed`: added.
 - `release.foam`: added.
+- `recovery`: added.
+- `recovery.stuck_stun_s`: added.
+- `recovery.max_progress_u`: added.
+- `recovery.stun_gap_s`: added.
+- `recovery.rewind_u`: added.
+- `recovery.search_step_u`: added.
+- `recovery.clearance_u`: added.
+- `recovery.protection_s`: added.
+- `recovery._assumed`: added.

@@ -2,14 +2,14 @@ import * as THREE from 'three';
 import type {Character,Config,AnimalState,RaftState} from '../shared.ts';
 /** Original crouched rigs: separate silhouettes, bent limbs and snapshot-driven expressions. */
 export function makeCharacter(c:Config,kind:Character,team:number){
- const v=c.visuals,g=new THREE.Group(),skin=v.animal_skin_colors[kind],ink='#173b3b',cream='#fff5d8',teamColor=team===0?v.red_color:v.blue_color,materials=new Map<string,THREE.MeshToonMaterial>();
+ const v=c.visuals,g=new THREE.Group(),skin=v.animal_skin_colors[kind],ink='#173b3b',cream='#fff5d8',clothingColor=v.animal_clothing_colors[kind],materials=new Map<string,THREE.MeshToonMaterial>();
  const material=(color:string)=>{let m=materials.get(color);if(!m){m=new THREE.MeshToonMaterial({color});materials.set(color,m);}return m;};
  const sphere=new THREE.SphereGeometry(1,v.character_segments,v.character_segments),box=new THREE.BoxGeometry(1,1,1),cylinder=new THREE.CylinderGeometry(1,1,1,v.radial_segments);
  const group=(name:string,parent:THREE.Group,pos:number[])=>{const p=new THREE.Group();p.name=name;p.position.set(...pos as [number,number,number]);parent.add(p);return p;};
  const part=(parent:THREE.Group,shape:'sphere'|'box'|'cylinder',size:number[],pos:number[],color:string,name='')=>{const m=new THREE.Mesh(shape==='sphere'?sphere:shape==='box'?box:cylinder,material(color));m.scale.set(...size as [number,number,number]);m.position.set(...pos as [number,number,number]);m.name=name;parent.add(m);return m;};
  const frog=kind==='frog',capy=kind==='capybara',bear=kind==='bear',body=group('body-rig',g,[0,frog?5:capy?6:7,0]);
  part(body,'sphere',frog?[5.6,3.7,4.6]:capy?[5.5,4.8,6.2]:bear?[6.1,6.1,4.8]:[6.3,5.8,4.8],[0,0,0],skin);
- part(body,'sphere',frog?[5.8,2.2,4.7]:capy?[5.65,2.6,5.8]:[6.35,3.1,4.9],[0,0,-.25],v.vest_color);
+ part(body,'sphere',frog?[5.8,2.2,4.7]:capy?[5.65,2.6,5.8]:[6.35,3.1,4.9],[0,0,-.25],clothingColor,'clothing');
  for(const side of [-1,1])part(body,'box',[1,4,.55],[side*2,0,-4.85],'#f7dc98');part(body,'box',[2,1.3,.7],[0,-.3,-5.15],ink);
  if(bear)part(body,'sphere',[3.4,3.6,.55],[0,.5,-4.6],'#d8b88c');
  const head=group('head-rig',g,[0,frog?10:capy?11.5:13.5,-1]),headY=head.position.y;
@@ -22,7 +22,7 @@ export function makeCharacter(c:Config,kind:Character,team:number){
  if(bear)part(head,'sphere',[1.1,.7,.55],[0,-.3,-5.9],ink);
  const mouth=part(head,'box',[frog?4.2:3.5,.65,.45],[0,frog?-1.1:-2.5,frog?-4.1:capy?-6.7:-6.2],ink,'mouth');
  if(kind==='hippo')for(const side of [-1,1])part(head,'box',[.85,.95,.7],[side,-2.3,-6.35],cream);
- part(head,'sphere',frog?[3.2,1,2.8]:capy?[4.5,1.2,4.2]:[5.1,1.3,4.4],[0,frog?3.4:4.3,.2],teamColor);part(head,'box',[frog?3.5:5.4,.55,2],[0,frog?3.3:4.15,-2.8],teamColor);
+ part(head,'sphere',frog?[3.2,1,2.8]:capy?[4.5,1.2,4.2]:[5.1,1.3,4.4],[0,frog?3.4:4.3,.2],clothingColor,'clothing-cap');part(head,'box',[frog?3.5:5.4,.55,2],[0,frog?3.3:4.15,-2.8],clothingColor,'clothing-visor');
  const arms:THREE.Group[]=[],legs:THREE.Group[]=[];
  for(const side of [-1,1]){const arm=group('arm-rig',g,[side*(frog?4.8:5.4),frog?6.2:8.3,-.5]);part(arm,'sphere',[1.65,2.3,1.8],[0,-1.2,0],skin);const forearm=part(arm,'sphere',[1.55,1.9,1.7],[-side*.4,-3,-1.6],skin);forearm.rotation.x=-.6;part(arm,'sphere',[1.9,1.3,2],[-side*.6,-4.2,-3.1],skin);arms.push(arm);
   const leg=group('leg-rig',g,[side*(frog?4.2:3),frog?2.7:3,1]);part(leg,'sphere',frog?[2.8,2.8,3.1]:[2,2.1,2.3],[0,0,.3],skin);part(leg,'sphere',[1.6,1.6,1.6],[0,-1.1,-.7],skin);part(leg,'sphere',frog?[2.4,1,3.1]:[2,1.1,2.7],[0,-2,-1.7],skin);for(let toe=-1;toe<=1;toe++)part(leg,'sphere',[.55,.4,.85],[toe*.95,-2,-3.5],frog?'#a6d166':bear?'#ddb88b':skin);legs.push(leg);}

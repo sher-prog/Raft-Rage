@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "3.12-snapshot-pacing (2026-10-31)",
+  "_version": "3.13-character-colors-hud-events (2026-11-01)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -854,7 +854,8 @@
       "pose_breath_amplitude",
       "pose_walk_lean",
       "phone_race_view_frac",
-      "phone_pad_frac"
+      "phone_pad_frac",
+      "animal_clothing_colors"
     ],
     "camera_height": 180,
     "camera_behind": 300,
@@ -1110,7 +1111,13 @@
     "pose_breath_amplitude": 0.12,
     "pose_walk_lean": 0.04,
     "phone_race_view_frac": 0.68,
-    "phone_pad_frac": 0.32
+    "phone_pad_frac": 0.32,
+    "animal_clothing_colors": {
+      "hippo": "#e53935",
+      "frog": "#149b43",
+      "bear": "#2468e8",
+      "capybara": "#f6ce25"
+    }
   },
   "audio": {
     "music_tempo_start": 1,
@@ -1187,7 +1194,8 @@
   "_assumed": [
     "simulation",
     "debug",
-    "release"
+    "release",
+    "recovery"
   ],
   "debug": {
     "jump_percents": [
@@ -1242,5 +1250,23 @@
       "foam"
     ],
     "foam": true
+  },
+  "recovery": {
+    "stuck_stun_s": 6,
+    "max_progress_u": 12,
+    "stun_gap_s": 0.5,
+    "rewind_u": 160,
+    "search_step_u": 20,
+    "clearance_u": 12,
+    "protection_s": 2,
+    "_assumed": [
+      "stuck_stun_s",
+      "max_progress_u",
+      "stun_gap_s",
+      "rewind_u",
+      "search_step_u",
+      "clearance_u",
+      "protection_s"
+    ]
   }
 }

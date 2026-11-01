@@ -43,3 +43,7 @@ The user requested completion of all remaining phases, including all characters,
 ## Camera, lag and animal-art corrections
 
 The user supplied a raft reference image, requested a visible carried log and larger readable art, then reported that the close-up was laggy and hid the river/opponent. The controlling correction is a car-racing-style chase view showing the river width and nearby opponents, plus original animal rigs that do not look like upright mannequins. These are corrections to existing features. Keep all prior physics, rate, budget and test-preservation requirements. Implementation choices and visual tunables are recorded in the config report, not treated as changes to the original gameplay rules.
+
+## Nov 1 stun rescue correction
+
+The user explicitly permits a previous-location respawn after 5–7 seconds of permanent/repeating stun. Implement a server-authorized RESCUE button at 6 seconds of recurring stun with no meaningful progress, rewinding upstream to a clear location with 2 seconds of stun protection. Ordinary bank contact never triggers a reposition. This is the sole new exception to the no-teleport rule. Keep all existing tests and 60/20/10 Hz.

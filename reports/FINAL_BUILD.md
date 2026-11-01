@@ -1,3 +1,7 @@
+# Latest correction checkpoint
+
+0.3.13: primary-colour animal kits, event/hint messages within the top HUD, and server-authorized six-second stun rescue. See CHECKPOINT_0_3_13.md for current checks. Prior deployment measurements remain below as history, not measurements of 0.3.13.
+
 # Raft Rage — 9:10 PM PT status
 
 Live: https://raft-rage.onrender.com · build **0.3.12** · tested code commit `86f2d083cd42b3dbca8dffc6706fd31de93a5835` (9:01:27 PM PT). Reload the page once to load the updated client.

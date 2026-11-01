@@ -162,6 +162,11 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
         if(m.type==='debug_pickup'&&!['speed','log','bubble'].includes(String(m.item))){error(ws,'DEBUG','Choose a pickup.');return;}
         room.sim.rafts.forEach((r,i)=>{if(m.raft!=='both'&&i!==(m.raft==='red'?0:1))return;if(m.type==='debug_turbo')r.turboMeter=1;else room.sim!.systems.pickup(i,m.item as 'speed'|'log'|'bubble');});broadcast(room);return;
       }
+      if(m.type==='rescue'){
+        if(!room.sim||player.seat===null||m.seat!==player.seat||m.inputEpoch!==player.inputEpoch||m.raceId!==room.sim.raceId)return;
+        const index=Math.floor(player.seat/(seatCount(room)/2));
+        if(room.sim.rescue(index))broadcast(room);return;
+      }
       if(m.type==='input'){
         if(!room.sim||player.seat===null)return;
         if(m.seat!==player.seat||m.inputEpoch!==player.inputEpoch||m.raceId!==room.sim.raceId)return;
