@@ -12,6 +12,7 @@ export interface Snapshot {world:{crates:number[];projectiles:{x:number;y:number
 export interface PlayerView {character?:Character;bigScreen?:boolean;id:string;name:string;seat:number|null;connected:boolean;ready:boolean;botDriving:boolean}
 export interface RoomView {difficulty?:Difficulty;code:string;hostId:string;mode:'1v1'|'2v2';phase:Phase;simulation?:Snapshot;revision:number;banner:string;players:PlayerView[]}
 export type ServerMessage =
+  |{type:'reclaim_wait';message:string}
   |{type:'hello';bootId:string;protocol:number;serverTime:number;buildVersion:string}
   |{type:'connected';bootId:string}
   |{type:'joined';bootId:string;code:string;playerId:string;token:string;inputEpoch:string}

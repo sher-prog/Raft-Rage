@@ -131,9 +131,18 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
         const named=room.players.find(p=>p.name.toLowerCase()===name.toLowerCase());
         const candidate=tokenPlayer??named;
         if(candidate){
-          if(candidate.socket){error(ws,'NAME_TAKEN','Name taken in this room');return;}
+          const validResume=!!tokenPlayer&&m.type==='resume';
+          if(candidate.socket&&!validResume){error(ws,'NAME_TAKEN','Name taken in this room');return;}
           const gracePassed=candidate.disconnectedAt!==undefined && now-candidate.disconnectedAt>=config.network.disconnect_to_bot_s*1000;
-          if(!tokenPlayer && !(gracePassed&&config.rooms.reclaim_by_name_after_grace)){error(ws,'NAME_TAKEN','Name taken in this room');return;}
+          if(!tokenPlayer && !(gracePassed&&config.rooms.reclaim_by_name_after_grace)){
+            if(candidate.disconnectedAt!==undefined){send(ws,{type:'reclaim_wait',message:`Reconnecting you as ${candidate.name}…`});return;}
+            error(ws,'NAME_TAKEN','Name taken in this room');return;
+          }
+          if(validResume&&candidate.socket&&candidate.socket!==ws){
+            const old=candidate.socket,previous=clients.get(old);
+            if(previous){previous.room=undefined;previous.player=undefined;}
+            old.close(4001,'Session resumed');
+          }
           if(gracePassed)promote(room,candidate);
           if(!tokenPlayer)candidate.token=randomBytes(config.rooms.token_bytes).toString('hex');
           attach(ws,c,room,candidate);return;
