@@ -23,3 +23,7 @@ World assets are original procedural 3D shapes; character models remain modular 
 | 3G / 0.3.7 | Whack-open shortcut gate, timed give-way, fast current channel, seeded once-per-race all-bot choice | 58/58, 76.327s; gate lifetime/pinned tests and full-course mixed bots |
 
 3G intentional assumed geometry tuning: shortcut.lateral -120→120, avoiding the left-side rock at 78%. Rates and existing bank restitution unchanged. Local tick-budget warnings remain outside the strict timing test; final Render race load check pending.
+
+| 3H / 0.3.8 | Mixed trees, boulder banks, docks and cheering spectators, closer camera, distinct propulsion rings/droplets/clouds, heat steam/hiss, narrow HUD and control text polish | 62/62, 50.146s, zero local overrun warnings; desktop/390px browser review; full released-ruleset wall tests |
+
+3H: camera_height 240→190, camera_behind 320→260, camera_ahead 140→120; three assumed effect geometry fields added. Geometry placement for scenery follows the shared mitered bank without changing collision. Static collision/award geometry is cached to reduce allocation. Initial 60/62 run failed the unchanged 16.67ms tick budget and 5s production startup timeout; clean rerun after allocation cleanup passed 62/62, then final visual changes passed 62/62 again. All original cases/assertions remain. Physical Safari/Android, audible audio and phone FPS still need user-operated acceptance.

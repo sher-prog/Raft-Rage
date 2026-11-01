@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "3.7-shortcut (2026-10-31)",
+  "_version": "3.8-final-world (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -825,11 +825,14 @@
       "scenery_distance",
       "effect_colors",
       "sky_top_color",
-      "sky_bottom_color"
+      "sky_bottom_color",
+      "effect_ring_tube_ratio",
+      "effect_ring_segments",
+      "effect_droplet_stretch"
     ],
-    "camera_height": 240,
-    "camera_behind": 320,
-    "camera_ahead": 140,
+    "camera_height": 190,
+    "camera_behind": 260,
+    "camera_ahead": 120,
     "camera_follow_rate": 5,
     "camera_fov_deg": 58,
     "camera_near": 1,
@@ -1043,7 +1046,14 @@
       "capybara": "#e6d9b2"
     },
     "sky_top_color": "#77bbd0",
-    "sky_bottom_color": "#eff0bc"
+    "sky_bottom_color": "#eff0bc",
+    "effect_ring_tube_ratio": 0.14,
+    "effect_ring_segments": 16,
+    "effect_droplet_stretch": [
+      0.55,
+      1.5,
+      0.55
+    ]
   },
   "audio": {
     "music_tempo_start": 1,
@@ -1151,7 +1161,7 @@
     "awards": true,
     "big_screen": true,
     "shortcut": true,
-    "scenery": false,
+    "scenery": true,
     "_assumed": [
       "phase",
       "crocodiles",

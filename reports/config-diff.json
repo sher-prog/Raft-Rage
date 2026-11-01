@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "3.7-shortcut (2026-10-31)"
+    "value": "3.8-final-world (2026-10-31)"
   },
   {
     "key": "network._assumed",
@@ -782,23 +782,26 @@
       "scenery_distance",
       "effect_colors",
       "sky_top_color",
-      "sky_bottom_color"
+      "sky_bottom_color",
+      "effect_ring_tube_ratio",
+      "effect_ring_segments",
+      "effect_droplet_stretch"
     ]
   },
   {
     "key": "visuals.camera_height",
     "change": "added",
-    "value": 240
+    "value": 190
   },
   {
     "key": "visuals.camera_behind",
     "change": "added",
-    "value": 320
+    "value": 260
   },
   {
     "key": "visuals.camera_ahead",
     "change": "added",
-    "value": 140
+    "value": 120
   },
   {
     "key": "visuals.camera_follow_rate",
@@ -1291,6 +1294,25 @@
     "value": "#eff0bc"
   },
   {
+    "key": "visuals.effect_ring_tube_ratio",
+    "change": "added",
+    "value": 0.14
+  },
+  {
+    "key": "visuals.effect_ring_segments",
+    "change": "added",
+    "value": 16
+  },
+  {
+    "key": "visuals.effect_droplet_stretch",
+    "change": "added",
+    "value": [
+      0.55,
+      1.5,
+      0.55
+    ]
+  },
+  {
     "key": "audio._assumed",
     "change": "changed",
     "before": [
@@ -1504,7 +1526,7 @@
       "awards": true,
       "big_screen": true,
       "shortcut": true,
-      "scenery": false,
+      "scenery": true,
       "_assumed": [
         "phase",
         "crocodiles",
@@ -1563,7 +1585,7 @@
   {
     "key": "release.scenery",
     "change": "added",
-    "value": false
+    "value": true
   },
   {
     "key": "release._assumed",

@@ -44,3 +44,5 @@ progress::-webkit-progress-bar{background:#d5dfd6}#red-progress::-webkit-progres
 #big-screen-labels small{display:block;font-size:11px;font-weight:600}
 
 .spectator-view #pad-toggle{display:none}
+
+.pad button.hot{background:#ef9d42}.pad button.hot .resource-label{color:#7d241b}@media(max-width:480px){.race-top>b{display:none}.race-top{gap:6px}.race-top button{padding:6px 9px}}

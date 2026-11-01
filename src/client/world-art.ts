@@ -5,7 +5,7 @@ export function sign(text:string,color='#ffd34e'){
  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=128;const ctx=canvas.getContext('2d')!;ctx.fillStyle='#113e40';ctx.fillRect(0,0,512,128);ctx.strokeStyle=color;ctx.lineWidth=10;ctx.strokeRect(7,7,498,114);ctx.fillStyle=color;ctx.font='900 66px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,67);const texture=new THREE.CanvasTexture(canvas);const mat=new THREE.MeshBasicMaterial({map:texture,transparent:true,side:THREE.DoubleSide});const mesh=new THREE.Mesh(new THREE.PlaneGeometry(100,25),mat);return mesh;
 }
 export class WorldArt {
- wakes:THREE.Group[]=[];shields:THREE.Mesh[]=[];flow:THREE.Mesh[]=[];
+ cheering:THREE.Mesh[]=[];wakes:THREE.Group[]=[];shields:THREE.Mesh[]=[];flow:THREE.Mesh[]=[];
  crocs:THREE.Group[]=[];jaws:THREE.Group[]=[];gate:THREE.Group|undefined;foam:THREE.Group;chunks:THREE.Group[]=[];projectiles:THREE.Mesh[]=[];
  constructor(readonly scene:THREE.Scene,readonly c:Config,readonly course:Course){
  const mat=(color:string)=>new THREE.MeshToonMaterial({color});const part=(group:THREE.Group,geometry:THREE.BufferGeometry,color:string,pos:number[],scale=[1,1,1])=>{const m=new THREE.Mesh(geometry,mat(color));m.position.set(...pos as [number,number,number]);m.scale.set(...scale as [number,number,number]);group.add(m);return m;};
@@ -26,10 +26,10 @@ export class WorldArt {
   for(let i=0;i<2;i++){const wake=new THREE.Group();for(const offset of [0,10]){const points=[new THREE.Vector3(-c.raft.radius,0,c.raft.radius+offset),new THREE.Vector3(0,0,offset),new THREE.Vector3(c.raft.radius,0,c.raft.radius+offset)];wake.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:'#f3fff3',transparent:true,opacity:.8})));}scene.add(wake);this.wakes.push(wake);const shield=new THREE.Mesh(new THREE.SphereGeometry(c.raft.radius,16,10),new THREE.MeshBasicMaterial({color:'#a6eeff',transparent:true,opacity:.22,depthWrite:false}));scene.add(shield);this.shields.push(shield);}
  }
 
- if(c.release.scenery)for(let f=0;f<c.course.length;f+=c.visuals.tree_spacing*5){const chunk=new THREE.Group();chunk.userData.progress=f;for(let n=0;n<5;n++)for(const side of [-1,1]){const progress=f+n*c.visuals.tree_spacing,p=course.at(progress,side*(c.course.half_width+c.visuals.bank_width+35));
+ if(c.release.scenery)for(let f=0;f<c.course.length;f+=c.visuals.tree_spacing*5){const chunk=new THREE.Group();chunk.userData.progress=f;for(let n=0;n<5;n++)for(const side of [-1,1]){const progress=f+n*c.visuals.tree_spacing,p=course.atBank(progress,side*(c.course.half_width+c.visuals.bank_width+35));
   part(chunk,new THREE.CylinderGeometry(5,7,45,6),'#755138',[p.x,20,-p.y]);if((n+side)%2===0){part(chunk,new THREE.ConeGeometry(28,58,7),'#397b51',[p.x,63,-p.y]);part(chunk,new THREE.ConeGeometry(20,40,7),'#5b985b',[p.x,87,-p.y]);}else{part(chunk,new THREE.IcosahedronGeometry(25,0),'#5d9752',[p.x,62,-p.y],[1,1.4,1]);part(chunk,new THREE.IcosahedronGeometry(18,0),'#79a967',[p.x+12,50,-p.y+5]);}
-  const b=course.at(progress,side*(c.course.half_width+13));part(chunk,new THREE.DodecahedronGeometry(18,0),'#607968',[b.x,9,-b.y],[1.4,.8,1]);
-  if(n===0){const dock=course.at(progress,side*(c.course.half_width-15));part(chunk,new THREE.BoxGeometry(55,5,55),'#a87942',[dock.x,10,-dock.y]);for(let k=0;k<3;k++){part(chunk,new THREE.SphereGeometry(5,6,5),k%2?'#bd9a6b':'#aaa4bf',[dock.x+(k-1)*15,21,-dock.y]);part(chunk,new THREE.SphereGeometry(3,6,5),'#ffd34e',[dock.x+(k-1)*15,28,-dock.y]);}}
+  const b=course.atBank(progress,side*(c.course.half_width+13));part(chunk,new THREE.DodecahedronGeometry(18,0),'#607968',[b.x,9,-b.y],[1.4,.8,1]);
+  if(n===0){const dock=course.atBank(progress,side*(c.course.half_width+28));part(chunk,new THREE.BoxGeometry(55,5,55),'#a87942',[dock.x,10,-dock.y]);for(let k=0;k<3;k++){part(chunk,new THREE.SphereGeometry(5,6,5),k%2?'#bd9a6b':'#aaa4bf',[dock.x+(k-1)*15,21,-dock.y]);part(chunk,new THREE.SphereGeometry(3,6,5),'#ffd34e',[dock.x+(k-1)*15,28,-dock.y]);for(const armSide of [-1,1]){const arm=part(chunk,new THREE.CylinderGeometry(1.2,1.2,9,4),'#bd9a6b',[dock.x+(k-1)*15+armSide*5,23,-dock.y]);arm.userData.side=armSide;arm.userData.phase=k;this.cheering.push(arm);}}}
  }scene.add(chunk);this.chunks.push(chunk);}
  if(c.release.visuals){const label=sign('FINISH');const p=course.at(c.course.length);label.scale.set(1.7,1.2,1);label.position.set(p.x,c.visuals.finish_arch_height,-p.y);label.rotation.y=-p.heading;scene.add(label);}
  for(let i=0;i<8;i++){const m=new THREE.Mesh(new THREE.CylinderGeometry(c.pickups.projectile_radius,c.pickups.projectile_radius,40,8),mat('#9d6e43'));m.rotation.z=Math.PI/2;m.visible=false;scene.add(m);this.projectiles.push(m);}
@@ -40,6 +40,7 @@ export class WorldArt {
  this.flow.forEach(m=>{const f=(Number(m.userData.progress)+state.raceTime*c.water.current_speed)%c.course.length,p=this.course.at(f,Number(m.userData.lateral));m.visible=!low&&Math.abs(f-progress)<c.visuals.scenery_distance;m.position.set(p.x,1,-p.y);m.rotation.z=-p.heading;});
  this.wakes.forEach((g,i)=>{const r=state.rafts[i],p=this.course.project(r.x,r.y);g.visible=!low&&r.height===0;g.position.set(r.x,2,-r.y);g.rotation.y=-p.heading;g.scale.setScalar(.7+Math.min(1,Math.hypot(r.vx,r.vy)/c.water.speed_cap));});
  this.shields.forEach((m,i)=>{const r=state.rafts[i];m.visible=r.bubble;m.position.set(r.x,c.visuals.raft_height+r.height,-r.y);});
+ this.cheering.forEach(arm=>arm.rotation.z=Number(arm.userData.side)*(1+Math.sin(state.raceTime*c.visuals.stun_orbit_speed+Number(arm.userData.phase))*.6));
  this.chunks.forEach(chunk=>{chunk.visible=!low&&Math.abs(Number(chunk.userData.progress)-progress)<c.visuals.scenery_distance;});
  }
 }

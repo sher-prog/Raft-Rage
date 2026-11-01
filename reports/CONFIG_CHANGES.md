@@ -1,6 +1,6 @@
-# Phase 1 config changes
+# Build config changes
 
-Config: `3.7-shortcut (2026-10-31)`. Compared with preserved original source JSON. No config changes in 0.1.7 or 0.1.8; 60/20/10 Hz retained.
+Config: `3.8-final-world (2026-10-31)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
 
 Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 
@@ -143,6 +143,9 @@ Every changed/added key is listed below; exact values and original values are in
 - `visuals.effect_colors.capybara`: added.
 - `visuals.sky_top_color`: added.
 - `visuals.sky_bottom_color`: added.
+- `visuals.effect_ring_tube_ratio`: added.
+- `visuals.effect_ring_segments`: added.
+- `visuals.effect_droplet_stretch`: added.
 - `audio._assumed`: changed.
 - `audio.enabled_default`: added.
 - `audio.silly_default`: added.

@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-11-01T02:36:58.086Z",
+  "rates": {
+    "sim": 60,
+    "snapshots": 20,
+    "input": 10
+  },
+  "environment": "Accelerated fixed-step simulation, independent drawn-bank geometry oracle; no bot controllers",
+  "scenarios": 1680,
+  "ticks": 302400,
+  "maxDisplacement": 6.962115754550092,
+  "minBankClearance": 34.00065015677379,
+  "fullCourse": [
+    {
+      "side": -1,
+      "steps": 6925,
+      "finishTime": 115.41666666666667,
+      "bankContactTicks": 73,
+      "segmentsWithBankContact": [
+        0,
+        1,
+        2,
+        6
+      ],
+      "maxTickDisplacement": 5.758053711777109,
+      "maxProgress": 18000
+    },
+    {
+      "side": 1,
+      "steps": 6711,
+      "finishTime": 111.85,
+      "bankContactTicks": 184,
+      "segmentsWithBankContact": [
+        0,
+        1,
+        4,
+        5
+      ],
+      "maxTickDisplacement": 5.266060834380837,
+      "maxProgress": 18000
+    }
+  ]
+}

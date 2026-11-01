@@ -27,6 +27,12 @@ export class Course {
     return points.map((p,i)=>{const a=sections[Math.max(0,i-1)],b=sections[Math.min(i,sections.length-1)],nx=a.ty+b.ty,ny=-a.tx-b.tx;
       const scale=width/(nx*b.ty-ny*b.tx);return {x:p.x+nx*scale,y:p.y+ny*scale};});
   }
+  /** Render-only placement on the same mitered bank used by collision. */
+  atBank(progress:number,width:number){
+    const index=this.segments.findIndex(s=>progress<=s.start+s.length),i=index<0?this.segments.length-1:index,s=this.segments[i],points=this.bankPoints(width),a=points[i],b=points[i+1];
+    const along=(a.x-s.x)*s.tx+(a.y-s.y)*s.ty,span=(b.x-a.x)*s.tx+(b.y-a.y)*s.ty,t=clamp((progress-s.start-along)/span,0,1);
+    return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,heading:s.heading};
+  }
   at(progress:number,lateral=0){
     const s=this.segments.find(s=>progress<=s.start+s.length)??this.segments.at(-1)!;
     const d=progress-s.start;
