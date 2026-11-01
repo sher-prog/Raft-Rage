@@ -1,7 +1,7 @@
 import test from'node:test';import assert from'node:assert/strict';import{readFileSync,writeFileSync}from'node:fs';import{performance}from'node:perf_hooks';import{setup}from'./support.mjs';
 const c=JSON.parse(readFileSync('balance_constants.json'));
 test('production build exposes version and compressed assets with same executable content',async t=>{
- const{base}=await setup(t);const version=await(await fetch(base+'/version')).json();assert.equal(version.version,'0.3.18');assert.equal(version.configVersion,c._version);
+ const{base}=await setup(t);const version=await(await fetch(base+'/version')).json();assert.equal(version.version,'0.3.19');assert.equal(version.configVersion,c._version);
  const response=await fetch(base+'/main.js',{headers:{'accept-encoding':'br'}});assert.equal(response.headers.get('content-encoding'),'br');const script=await response.text();assert.ok(script.includes('SPOUT'));assert.ok(Number(response.headers.get('content-length'))<Buffer.byteLength(script));
 });
 test('jump is debug-host-only, accepts listed percentages and updates both clients; real CPU/snapshot metrics are available',async t=>{

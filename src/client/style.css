@@ -69,3 +69,10 @@ progress::-webkit-progress-bar{background:#d5dfd6}#red-progress::-webkit-progres
  .scorecard tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;border:1px solid #113e4055;border-radius:10px;padding:10px;background:#fffdf5}
  .scorecard tbody th{grid-column:1/-1;padding:0 0 8px;overflow-wrap:anywhere}.scorecard tbody td{display:flex;justify-content:space-between;gap:6px;min-width:0;padding:7px 0;font-size:12px;border:0;font-variant-numeric:tabular-nums}.scorecard tbody td::before{content:attr(data-label);font-size:9px;font-weight:800;line-height:1.6}.scorecard tbody td:last-child{grid-column:1/-1}.awards{grid-template-columns:1fr}
 }
+
+@media(max-width:780px){
+ body.touch-phone #game-stage{bottom:var(--pad-frac)}body.touch-phone.spectator-view #game-stage{bottom:0}
+ body.touch-phone .pad{display:grid;top:calc(var(--race-view-frac) + 16px);bottom:max(22px,env(safe-area-inset-bottom));height:auto;left:14px;right:14px;gap:10px}
+ body.touch-phone .race-screen{background:#cfe4d3}body.touch-phone .key-legend,body.touch-phone #pad-toggle{display:none}body.touch-phone .race-top{padding:8px 10px;gap:6px}body.touch-phone .race-top>b{display:none}body.touch-phone .race-top strong{font-size:28px}
+ body.touch-phone #race-progress{top:calc(66px + env(safe-area-inset-top,0px));left:8px;right:8px;font-size:14px;padding:8px}body.touch-phone #race-progress output{font-size:11px}body.touch-phone #countdown{bottom:var(--pad-frac);font-size:75px}body.touch-phone #race-debug{font-size:9px;top:calc(250px + env(safe-area-inset-top,0px))}
+}

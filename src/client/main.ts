@@ -1,3 +1,4 @@
+import {useTouchPad} from './touch-layout.ts';
 import {JoinRetry} from './join-retry.ts';
 import {capybaraIcon} from './character-icon.ts';
 import {RiverAudio} from './audio.ts';
@@ -131,7 +132,7 @@ function syncDebugActions(){
 }
 main.addEventListener('pointerdown',()=>{if(document.body.classList.contains('hud-hidden'))document.body.classList.remove('hud-hidden');},true);
 window.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='h'&&debug&&room?.hostId===session?.playerId)document.body.classList.toggle('hud-hidden');});
-function updateOrientation(){const block=matchMedia('(pointer:coarse)').matches&&innerWidth>innerHeight&&innerHeight<=config.views.phone_landscape_max_height_px;document.querySelector<HTMLElement>('#orientation')!.hidden=!block;if(block)releaseAll();}
+function updateOrientation(){document.body.classList.toggle('touch-phone',useTouchPad(innerWidth,navigator.maxTouchPoints,matchMedia('(pointer:coarse)').matches));const block=matchMedia('(pointer:coarse)').matches&&innerWidth>innerHeight&&innerHeight<=config.views.phone_landscape_max_height_px;document.querySelector<HTMLElement>('#orientation')!.hidden=!block;if(block)releaseAll();}
 window.addEventListener('resize',updateOrientation);
 function scorecard(state:Snapshot){
  const columns=Object.entries(config.stats.awards),name=(seat:number)=>room?.players.find(p=>p.seat===seat)?.name??`Bot ${state.animals[seat].character}`,max=(key:string)=>Math.max(...state.animals.map(a=>(a.stats as Record<string,number>)[key]));
