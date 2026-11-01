@@ -10,6 +10,9 @@ type Session={code:string;name:string;playerId:string;token:string;bootId:string
 const main=document.querySelector<HTMLElement>('#main')!;
 const connection=document.querySelector<HTMLElement>('#connection')!;
 const how=document.querySelector<HTMLDialogElement>('#how')!;
+const leaveDialog=document.querySelector<HTMLDialogElement>('#leave-race')!;
+document.querySelector('#leave-stay')!.addEventListener('click',()=>leaveDialog.close());
+document.querySelector('#leave-confirm')!.addEventListener('click',()=>{leaveDialog.close();send({type:'leave'});clearRoom();});
 document.querySelector('#close-how')!.addEventListener('click',()=>how.close());
 const params=new URLSearchParams(location.search),debug=params.get('debug')==='1';
 declare const __BUILD_VERSION__:string;
@@ -109,7 +112,7 @@ function renderRace(){
   document.querySelector('#race-settings')!.addEventListener('click',()=>{releaseAll();settingsDialog.showModal();});
   syncDebugActions();
   document.querySelector('#rescue')?.addEventListener('click',()=>{if(!session)return;releaseAll();send({type:'rescue',raceId:snapshot?.raceId,seat:room?.players.find(p=>p.id===session?.playerId)?.seat,inputEpoch:session.inputEpoch});});
-  document.querySelector('#race-leave')!.addEventListener('click',()=>{releaseAll();send({type:'leave'});clearRoom();});
+  document.querySelector('#race-leave')!.addEventListener('click',()=>{releaseAll();leaveDialog.showModal();});
   document.querySelector('#pad-toggle')!.addEventListener('click',e=>{const shown=document.querySelector('#pad')?.classList.toggle('show-pad');const button=e.currentTarget as HTMLButtonElement;button.textContent=shown?'Hide controls':'Show controls';button.setAttribute('aria-expanded',String(!!shown));});
   document.querySelectorAll<HTMLButtonElement>('[data-control]').forEach(button=>{
     button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);pointers.set(e.pointerId,button.dataset.control!);if(button.dataset.control==='whack'&&session)session.whackCount++;button.classList.add('held');sendInput();});
@@ -140,6 +143,7 @@ function scorecard(state:Snapshot){
  return `<section class="scorecard"><h3>CREW SCORECARD</h3><div class="score-scroll"><table><thead><tr><th>CREW</th>${columns.map(([key])=>`<th>${key.replace('_',' ').toUpperCase()}</th>`).join('')}</tr></thead><tbody>${state.animals.map(a=>`<tr><th>${a.raft===0?'▲':'●'} ${esc(name(a.seat))}<small>${a.character}</small></th>${columns.map(([key])=>{const value=(a.stats as Record<string,number>)[key];return `<td data-label="${esc(key.replaceAll('_',' ').toUpperCase())}">${value}${value>0&&value===max(key)?' ★':''}</td>`;}).join('')}</tr>`).join('')}</tbody></table></div><div class="awards">${awards}</div></section>`;
 }
 function renderResults(){
+  leaveDialog.close();
   if(raceView){raceView.dispose();raceView=undefined;}held.clear();pointers.clear();document.body.classList.remove('in-race','hud-hidden');
   if(!snapshot||!room)return;
   const state=snapshot,host=room.hostId===session?.playerId,seats=room.mode==='1v1'?config.rooms.seats_1v1:config.rooms.seats_2v2;
@@ -164,7 +168,7 @@ function sendInput(){
   session.seq++;saveSession();send({type:'input',raceId:snapshot?.raceId,seat:player.seat,inputEpoch:session.inputEpoch,seq:session.seq,whackCount:session.whackCount,walk:Number(left)-Number(right),fire:held.has('w')||controls.includes('fire')});
 }
 function releaseAll(){held.clear();pointers.clear();document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'));sendInput();}
-window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(!room||!['countdown','race'].includes(room.phase)||!['a','d','w','s'].includes(key)||settingsDialog.open||how.open||e.repeat)return;e.preventDefault();held.add(key);if(key==='s'&&session)session.whackCount++;sendInput();});
+window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(!room||!['countdown','race'].includes(room.phase)||!['a','d','w','s'].includes(key)||settingsDialog.open||how.open||leaveDialog.open||e.repeat)return;e.preventDefault();held.add(key);if(key==='s'&&session)session.whackCount++;sendInput();});
 window.addEventListener('keyup',e=>{if(held.delete(e.key.toLowerCase()))sendInput();});
 window.addEventListener('blur',releaseAll);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseAll();});
 setInterval(sendInput,1000/config.network.input_resend_hz);
@@ -197,7 +201,7 @@ function animation(now:number){
     raceView.draw(interpolate(a,b,f),ownRaft,dt,room?.players.find(p=>p.id===session?.playerId)?.bigScreen===true);audio.update(snapshot);
   }requestAnimationFrame(animation);
 }requestAnimationFrame(animation);
-function clearRoom(){joinRetry.cancel();pendingJoin=undefined;held.clear();pointers.clear();frames=[];snapshot=undefined;session=undefined;room=undefined;bootId='';saveSession();screen='home';const url=new URL(location.href);url.searchParams.delete(config.rooms.share_link_param);history.replaceState(null,'',url);render();}
+function clearRoom(){leaveDialog.close();joinRetry.cancel();pendingJoin=undefined;held.clear();pointers.clear();frames=[];snapshot=undefined;session=undefined;room=undefined;bootId='';saveSession();screen='home';const url=new URL(location.href);url.searchParams.delete(config.rooms.share_link_param);history.replaceState(null,'',url);render();}
 function connect(){
   const ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws`);socket=ws;
   ws.onmessage=e=>{

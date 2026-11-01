@@ -76,3 +76,5 @@ progress::-webkit-progress-bar{background:#d5dfd6}#red-progress::-webkit-progres
  body.touch-phone .race-screen{background:#cfe4d3}body.touch-phone .key-legend,body.touch-phone #pad-toggle{display:none}body.touch-phone .race-top{padding:8px 10px;gap:6px}body.touch-phone .race-top>b{display:none}body.touch-phone .race-top strong{font-size:28px}
  body.touch-phone #race-progress{top:calc(66px + env(safe-area-inset-top,0px));left:8px;right:8px;font-size:14px;padding:8px}body.touch-phone #race-progress output{font-size:11px}body.touch-phone #countdown{bottom:var(--pad-frac);font-size:75px}body.touch-phone #race-debug{font-size:9px;top:calc(250px + env(safe-area-inset-top,0px))}
 }
+
+#leave-race h2{font-size:30px;letter-spacing:-1px}.leave-actions{display:flex;gap:12px;margin-top:24px}.leave-actions button{flex:1}
