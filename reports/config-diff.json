@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "3.6-big-screen (2026-10-31)"
+    "value": "3.7-shortcut (2026-10-31)"
   },
   {
     "key": "network._assumed",
@@ -622,7 +622,7 @@
   {
     "key": "shortcut.lateral",
     "change": "added",
-    "value": -120
+    "value": 120
   },
   {
     "key": "shortcut.width",
@@ -1503,7 +1503,7 @@
       "turbo": true,
       "awards": true,
       "big_screen": true,
-      "shortcut": false,
+      "shortcut": true,
       "scenery": false,
       "_assumed": [
         "phase",
@@ -1558,7 +1558,7 @@
   {
     "key": "release.shortcut",
     "change": "added",
-    "value": false
+    "value": true
   },
   {
     "key": "release.scenery",

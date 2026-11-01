@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "3.6-big-screen (2026-10-31)",
+  "_version": "3.7-shortcut (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -604,7 +604,7 @@
       "gate_radius"
     ],
     "_note": "Current inside the shortcut uses multipliers.current_shortcut.",
-    "lateral": -120,
+    "lateral": 120,
     "width": 90,
     "gate_radius": 45
   },
@@ -1150,7 +1150,7 @@
     "turbo": true,
     "awards": true,
     "big_screen": true,
-    "shortcut": false,
+    "shortcut": true,
     "scenery": false,
     "_assumed": [
       "phase",

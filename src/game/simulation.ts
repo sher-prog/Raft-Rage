@@ -24,7 +24,7 @@ export class Simulation {
     for(let seat=0;seat<seats;seat++)this.animals.push({character:options.characters?.[seat]??'hippo',heat:0,charge:0,stamina:config.characters.bear.stamina_s,lockout:0,pushing:false,stats:{thrusts:0,hits:0,blocks:0,close_calls:0,overheats:0},seat,raft:Math.floor(seat/(seats/2)),phi:mode==='1v1'?config.walking.initial_phi_1v1_deg:config.walking.initial_phi_2v2_deg[seat%(seats/2)],recharge:0,fire:false,walk:0,seq:-1,whackCount:0,input:{seq:-1,walk:0,fire:false,whackCount:0},seenTick:0,pendingFire:false,whackPhase:'idle',whackWindup:0,whackCooldown:0,whackStartTick:-Infinity,whackUntilTick:0});
     this.difficulty=options.difficulty??'chill';this.systems=new RacingSystems(this);
   }
-  setBots(seats:number[]){this.botSeats=new Set(seats);}
+  setBots(seats:number[]){this.botSeats=new Set(seats);if(this.config.release.shortcut)for(let i=0;i<2;i++)if(!this.systems.shortcutBots.has(i)){const crew=this.animals.filter(a=>a.raft===i);this.systems.shortcutBots.set(i,crew.every(a=>this.botSeats.has(a.seat))&&this.random()<this.config.bots.shortcut_chance);}}
   random(){let x=this.rngState;x^=x<<13;x^=x>>>17;x^=x<<5;this.rngState=x>>>0;return this.rngState/4294967296;}
   get phase():Snapshot['phase']{return this.ended?'results':this.tick<this.countdownTicks?'countdown':'race';}
   currentPhase():Snapshot['phase']{return this.phase;}
@@ -160,6 +160,7 @@ export class Simulation {
         const rockLateral=this.course.project(rock.x,rock.y).lateral,clearance=rock.radius+c.raft.radius+b.obstacle_clearance;
         if(Math.abs(rockLateral-lateral)<=clearance){const lo=-c.course.half_width+c.raft.radius+b.obstacle_clearance,hi=-lo,side=p.lateral>=rockLateral?1:-1,preferred=rockLateral+side*clearance,opposite=rockLateral-side*clearance;lateral=preferred>=lo&&preferred<=hi?preferred:clamp(opposite,lo,hi);}
       }
+      if(c.release.shortcut&&this.systems.shortcutBots.get(a.raft)&&p.progress>c.shortcut.start_frac*c.course.length-b.lookahead*2&&p.progress<c.shortcut.end_frac*c.course.length)lateral=c.shortcut.lateral;
       const aim=this.course.at(Math.min(c.course.length,p.progress+b.lookahead),lateral);
       let dx=aim.x-raft.x,dy=aim.y-raft.y,length=Math.hypot(dx,dy)||1;
       dx=dx/length*level.target_speed-raft.vx;dy=dy/length*level.target_speed-raft.vy;
@@ -211,6 +212,7 @@ export class Simulation {
         const rockLateral=this.course.project(rock.x,rock.y).lateral,clearance=rock.radius+c.raft.radius+b.obstacle_clearance;
         if(Math.abs(rockLateral-lateral)<clearance)lateral=clamp(rockLateral+(p.lateral>=rockLateral?1:-1)*clearance,-c.course.half_width+c.raft.radius+b.obstacle_clearance,c.course.half_width-c.raft.radius-b.obstacle_clearance);
       }
+      if(c.release.shortcut&&this.systems.shortcutBots.get(a.raft)&&p.progress>c.shortcut.start_frac*c.course.length-b.lookahead*2&&p.progress<c.shortcut.end_frac*c.course.length)lateral=c.shortcut.lateral;
       const aim=this.course.at(Math.min(c.course.length,p.progress+b.lookahead),lateral);
       let dx=aim.x-raft.x,dy=aim.y-raft.y,length=Math.hypot(dx,dy)||1;
       dx=dx/length*level.target_speed-raft.vx;dy=dy/length*level.target_speed-raft.vy;

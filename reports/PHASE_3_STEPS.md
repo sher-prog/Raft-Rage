@@ -19,3 +19,7 @@ World assets are original procedural 3D shapes; character models remain modular 
 | 3F / 0.3.6 | Big Screen spectator follows both crews with separated views; world-space water/bank geometry excluded from outline scaling | 58/58, 58.666s; spectator authority and visual bounds regression; browser river alignment verified |
 
 3F: one local tick-budget warning outside the unchanged timing test; strict timing test passed. Render capacity measured on final deployment. No config or physics/rate changes.
+
+| 3G / 0.3.7 | Whack-open shortcut gate, timed give-way, fast current channel, seeded once-per-race all-bot choice | 58/58, 76.327s; gate lifetime/pinned tests and full-course mixed bots |
+
+3G intentional assumed geometry tuning: shortcut.lateral -120→120, avoiding the left-side rock at 78%. Rates and existing bank restitution unchanged. Local tick-budget warnings remain outside the strict timing test; final Render race load check pending.
