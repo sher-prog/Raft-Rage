@@ -11,7 +11,7 @@
     "start": "node dist/server/index.js",
     "dev": "node scripts/dev.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "npm run build && node --test tests/*.test.mjs",
+    "test": "npm run build && node --test --test-concurrency=1 tests/*.test.mjs",
     "check": "npm run typecheck && npm test",
     "bench:skeleton": "npm run build && node scripts/benchmark.mjs"
   },

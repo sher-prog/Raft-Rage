@@ -31,3 +31,7 @@ The direct human instructions in the Work handoff override docs/source/RAFT_RAGE
 - P1-7: disconnect for 5s => bot about 3s, same-code/name reclaim, late spectator.
 - P1-8: debug jump both95%; results within 15s OF FIRST FINISH, identical times/results; rematch retains seats and clears Ready; Dee can sit.
 - Additional automated: host migration, real boot restart, stale release, dedup, independent tabs. Never label pending tests passed.
+
+## Oct 31 serial-test execution approval
+
+The user explicitly approved running all 41 tests serially, preserving every case, assertion and threshold. No test deletion, skip, tolerance/timeout relaxation or tick-overrun threshold change is allowed. Report count, total time and any overruns. Keep real capacity measurement on Render at 4 rooms / 16 clients and rerun it on the deployed build. Preserve 60/20/10 Hz. Push only after the full suite passes, then continue remaining Phase 1 checks.

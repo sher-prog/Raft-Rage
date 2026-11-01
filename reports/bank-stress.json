@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-01T00:30:24.509Z",
+  "timestamp": "2026-11-01T00:45:05.309Z",
   "rates": {
     "sim": 60,
     "snapshots": 20,
@@ -8,8 +8,8 @@
   "environment": "Accelerated fixed-step simulation, independent drawn-bank geometry oracle; no bot controllers",
   "scenarios": 1680,
   "ticks": 302400,
-  "maxDisplacement": 7.166666666667134,
-  "minBankClearance": 33.999999999999474,
+  "maxDisplacement": 6.962115754550092,
+  "minBankClearance": 34.00065015677379,
   "fullCourse": [
     {
       "side": -1,

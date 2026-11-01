@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-11-01T00:46:00Z",
+  "runtime": "v24.22.1",
+  "command": "npm run check (node --test --test-concurrency=1 tests/*.test.mjs)",
+  "tests": 41,
+  "pass": 41,
+  "fail": 0,
+  "skipped": 0,
+  "cancelled": 0,
+  "durationMs": 40408.037459,
+  "testFilesUnchangedDuringSerialRun": true,
+  "testFileHashes": {
+    "tests/clock.test.mjs": "e382b7f143513577d2787e65902ea0a67c468fb2d12d5e8b5a7f3324331e4baf",
+    "tests/results.test.mjs": "a3a0e9c060962f98883b94d22ffb5c224c33ee278cfb1b8d70cc0b07ab3457b0",
+    "tests/hints.test.mjs": "25934ac8bc8aa3bade8bd2d1c42403c46dcc98b36a7de50bdaf20aac678f8a63",
+    "tests/bots.test.mjs": "eff19b9ab8caee33dbde10cff7975284c50db67758cbf1e4962c49a0cd456d4e",
+    "tests/bank-stress.test.mjs": "09d8800809dcdc97a2cd0041c130f912a5f8e193a0f29e422d0c6061cc9ca008",
+    "tests/deploy-command.test.mjs": "cad3c30d69d27b65a2e043249a5dc10a9244ba1d14c5f0056e90c07eba3cf5c4",
+    "tests/skeleton.test.mjs": "a84ece60aa4baac89902ec48450221b9e21b2c5a2bc48eec30f0aa1fa14307fd",
+    "tests/support.mjs": "c0eb2aef7eb89df6662789e8581776ac4a03aac7500b9b92925311e01d6160bd",
+    "tests/physics.test.mjs": "8576ccc7e6ef9ea45b308e262e1364a3b01334d73dff683c12e0c39b715d3ab8",
+    "tests/debug.test.mjs": "0a7d5a490dc90e62379699aed5c4f04100498793f9f32059f5c13cf07eb5e8c0",
+    "tests/combat.test.mjs": "15be56036222c960708bd6fa4cd3207ea76f43aa3419d4800d096755dc0827f0"
+  },
+  "timingTest": {
+    "timestamp": "2026-11-01T00:45:17.102Z",
+    "sampleMs": 1007.45025,
+    "ticks": 61,
+    "snapshots": 20,
+    "tickAverageMs": 0.4508185999999892,
+    "tickWorstMs": 7.749333000000092,
+    "overruns": 0
+  },
+  "overrunWarningLines": 2,
+  "overrunWarningContexts": [
+    "clock test",
+    "results test"
+  ],
+  "warningLimit": "Server warns once per affected room; warning count is not total overrun count. Local timing test measured zero; other local tests had overruns. Render capacity measured separately."
+}

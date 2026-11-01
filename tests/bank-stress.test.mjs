@@ -9,12 +9,17 @@ function outline(sim){
  points.push({x:last.x+last.tx*last.length,y:last.y+last.ty*last.length});points[0].x-=s[0].tx*extension;points[0].y-=s[0].ty*extension;points.at(-1).x+=last.tx*extension;points.at(-1).y+=last.ty*extension;
  const side=sign=>points.map((p,i)=>{const a=s[Math.max(0,i-1)],b=s[Math.min(i,s.length-1)],nx=a.ty+b.ty,ny=-a.tx-b.tx,k=sign*c.course.half_width/(nx*b.ty-ny*b.tx);return{x:p.x+nx*k,y:p.y+ny*k};});
  const left=side(-1),right=side(1),polygon=[...left,...right.toReversed()];
- const edges=polygon.map((a,i)=>({a,b:polygon[(i+1)%polygon.length]}));
+ const edges=polygon.map((a,i)=>{const b=polygon[(i+1)%polygon.length],dx=b.x-a.x,dy=b.y-a.y;return {a,b,dx,dy,inverseLengthSquared:1/(dx*dx+dy*dy),slope:dy===0?0:dx/dy};});
  return {left,right,polygon,edges};
 }
 function clearance(p,shape){
- let inside=false;for(const {a,b}of shape.edges)if((a.y>p.y)!==(b.y>p.y)&&p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)inside=!inside;
- let distance=Infinity;for(const {a,b}of shape.edges){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));distance=Math.min(distance,Math.hypot(p.x-a.x-dx*t,p.y-a.y-dy*t));}return inside?distance:-distance;
+ let inside=false,minSquared=Infinity;
+ for(const {a,b,dx,dy,inverseLengthSquared,slope}of shape.edges){
+  if((a.y>p.y)!==(b.y>p.y)&&p.x<slope*(p.y-a.y)+a.x)inside=!inside;
+  const px=p.x-a.x,py=p.y-a.y,t=Math.max(0,Math.min(1,(px*dx+py*dy)*inverseLengthSquared)),x=px-dx*t,y=py-dy*t;
+  minSquared=Math.min(minSquared,x*x+y*y);
+ }
+ const distance=Math.sqrt(minSquared);return inside?distance:-distance;
 }
 function valid(r,shape,label){const d=clearance(r,shape);assert.ok(d>=c.raft.radius-1e-6,`${label}: clearance ${d} < radius ${c.raft.radius} at ${r.x},${r.y}`);return d;}
 const measurements={scenarios:0,ticks:0,maxDisplacement:0,minBankClearance:Infinity,fullCourse:[]};
@@ -28,16 +33,18 @@ test('swept raft hits both banks and every outer turn at 0.5x, 1x and cap, witho
  for(let i=1;i<sim.course.segments.length;i++){
   const prev=sim.course.segments[i-1],next=sim.course.segments[i],turn=prev.tx*next.ty-prev.ty*next.tx,side=turn>0?1:-1;
   const vertex=(side>0?shape.right:shape.left)[i],dx=vertex.x-next.x,dy=vertex.y-next.y,l=Math.hypot(dx,dy),nx=dx/l,ny=dy/l;
-  targets.push({x:next.x,y:next.y,nx,ny});
+  const projection=Math.min(Math.abs(nx*prev.ty-ny*prev.tx),Math.abs(nx*next.ty-ny*next.tx)),depth=(c.raft.radius+.1)/projection;
+  targets.push({x:vertex.x-nx*depth,y:vertex.y-ny*depth,nx,ny});
  }
  for(const target of targets)for(const speed of speeds)for(const degrees of [-75,-45,-15,0,15,45,75]){
   if(clearance(target,shape)<c.raft.radius)continue;
   const a=degrees*Math.PI/180;Object.assign(r,{x:target.x,y:target.y,vx:speed*(target.nx*Math.cos(a)-target.ny*Math.sin(a)),vy:speed*(target.nx*Math.sin(a)+target.ny*Math.cos(a)),stun:0});sim.spikeLatch.clear();
-  for(let tick=0;tick<180;tick++){
-   const x=r.x,y=r.y,budget=Math.hypot(r.vx,r.vy)*sim.dt;sim.moveRaft(r,sim.dt);const move=Math.hypot(r.x-x,r.y-y);
+  let contacted=false;for(let tick=0;tick<180;tick++){
+   const beforeVX=r.vx,beforeVY=r.vy;const x=r.x,y=r.y,budget=Math.hypot(r.vx,r.vy)*sim.dt;sim.moveRaft(r,sim.dt);const move=Math.hypot(r.x-x,r.y-y);
+   if(Math.hypot(r.vx-beforeVX,r.vy-beforeVY)>1e-6)contacted=true;
    assert.ok(move<=budget+1e-6,`tick displacement ${move} exceeds own velocity budget ${budget}`);
    measurements.maxDisplacement=Math.max(measurements.maxDisplacement,move);measurements.minBankClearance=Math.min(measurements.minBankClearance,valid(r,shape,'impact'));measurements.ticks++;
-  }measurements.scenarios++;
+  }assert.ok(contacted,`must actually hit a bank at speed ${speed}, angle ${degrees}`);measurements.scenarios++;
  }
  assert.ok(measurements.scenarios>=900);
 });

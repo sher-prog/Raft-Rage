@@ -1,3 +1,7 @@
+# Current validation: serial 41/41 PASS
+
+User-approved serial run: 40.408s; all test files unchanged during the run; timing-test overruns 0; two overrun warning lines elsewhere (clock/results). See SERIAL_CHECKPOINT.md. Physical acceptance remains pending.
+
 # Current checkpoint: 0.1.10
 
 The physical 0.1.9 iPhone retest exposed bank defects. See BANK_FIX_0_1_10.md for the fixes, stronger tests and current known issues; physical acceptance is still pending. Historical evidence below retains its measured build/version.
