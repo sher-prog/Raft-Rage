@@ -4,7 +4,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {Simulation} from '../dist/server/index.js';
 const c=JSON.parse(readFileSync('balance_constants.json'));
 // Full Phase 2 stress: release to cool, then resume committed firing.
-c.release.phase=2;
+for(const key of Object.keys(c.release))if(key!=='phase'&&key!=='_assumed')c.release[key]=false;c.release.phase=2;
 // Independent oracle for the renderer's mitered outline, not Course.project or collision normals.
 function outline(sim){
  const s=sim.course.segments,points=s.map(p=>({x:p.x,y:p.y})),last=s.at(-1),extension=c.course.bank_end_extension??600;

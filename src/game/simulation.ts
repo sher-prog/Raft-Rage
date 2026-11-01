@@ -98,7 +98,7 @@ export class Simulation {
       const p=this.course.project(r.x,r.y),relax=1-Math.exp(-c.water.current_relax_rate*dt);
       const current=(r.slipstream?c.multipliers.current_slipstream:1)*(r.turbo>0?c.multipliers.current_turbo:1)*(c.release.shortcut&&r.progress>=c.shortcut.start_frac*c.course.length&&r.progress<=c.shortcut.end_frac*c.course.length&&Math.abs(p.lateral-c.shortcut.lateral)<c.shortcut.width/2?c.multipliers.current_shortcut:1);
       if(r.height===0){r.vx+=(p.tx*c.water.current_speed*current-r.vx)*relax;r.vy+=(p.ty*c.water.current_speed*current-r.vy)*relax;}
-      r.omega*=Math.exp(-(r.stun>0?c.water.angular_damping_stunned:c.water.angular_damping)*dt);
+      if(r.height===0)r.omega*=Math.exp(-(r.stun>0?c.water.angular_damping_stunned:c.water.angular_damping)*dt);
       if(r.stun===0&&r.height===0)r.omega+=c.water.keel_gain*wrap(p.heading-r.heading)*dt;
       r.heading=wrap(r.heading+r.omega*dt);
       const speed=Math.hypot(r.vx,r.vy);if(r.height===0&&speed>c.water.speed_cap){r.vx*=c.water.speed_cap/speed;r.vy*=c.water.speed_cap/speed;}

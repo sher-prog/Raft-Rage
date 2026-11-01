@@ -195,7 +195,7 @@ function connect(){
       if(session){currentName=session.name;send({type:'resume',...session});}
     }else if(m.type==='joined'){
       session={code:m.code,name:currentName||session?.name||'',playerId:m.playerId,token:m.token,bootId:m.bootId,inputEpoch:m.inputEpoch,seq:0,whackCount:0};saveSession();screen='lobby';notice='';
-    }else if(m.type==='room'){room=m.room;if(m.room.simulation)acceptSnapshot(m.room.simulation);if(session){screen='lobby';render();}}
+    }else if(m.type==='room'){if(/^Jumped (red|blue|both) to (5|20|40|50|68|75|95)%$/.test(m.room.banner)){frames=[];if(raceView)raceView.cameraReady=false;}room=m.room;if(m.room.simulation)acceptSnapshot(m.room.simulation);if(session){screen='lobby';render();}}
     else if(m.type==='snapshot'){const now=performance.now();snapshotArrivals.push(now);snapshotArrivals=snapshotArrivals.filter(t=>t>=now-config.visuals.fps_sample_s*1000);acceptSnapshot(m.snapshot);updateClock();}
     else if(m.type==='metrics'){
       serverMetrics=m.metrics;

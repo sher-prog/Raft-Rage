@@ -1,7 +1,7 @@
 import test from'node:test';import assert from'node:assert/strict';import{readFileSync,writeFileSync}from'node:fs';import{Simulation}from'../dist/server/index.js';import{setup}from'./support.mjs';
 const c=JSON.parse(readFileSync('balance_constants.json'));
 // Original Phase 1 deterministic bot regressions retain their original ruleset.
-c.release.phase=1;
+for(const key of Object.keys(c.release))if(key!=='phase'&&key!=='_assumed')c.release[key]=false;c.release.phase=1;
 test('bot takeover while stunned acknowledges neutral input and cannot walk or fire',()=>{
  const sim=new Simulation(c,'2v2');sim.tick=sim.countdownTicks;sim.input(2,{seq:10,walk:1,fire:true,whackCount:0});sim.stun(1,c.combat.hit_stun_s);sim.setBots([2]);
  const phi=sim.animals[2].phi;sim.step();assert.ok(sim.animals[2].seq>10);assert.equal(sim.animals[2].input.fire,false);assert.equal(sim.animals[2].input.walk,0);assert.equal(sim.animals[2].phi,phi);assert.equal(sim.shots.length,0);

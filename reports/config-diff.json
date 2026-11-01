@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "2.0-depth (2026-10-31)"
+    "value": "3.1-crocs-ramp (2026-10-31)"
   },
   {
     "key": "network._assumed",
@@ -1484,9 +1484,9 @@
     "key": "release",
     "change": "added",
     "value": {
-      "phase": 2,
-      "crocodiles": false,
-      "ramp": false,
+      "phase": 3,
+      "crocodiles": true,
+      "ramp": true,
       "visuals": false,
       "turbo": false,
       "awards": false,
@@ -1509,17 +1509,17 @@
   {
     "key": "release.phase",
     "change": "added",
-    "value": 2
+    "value": 3
   },
   {
     "key": "release.crocodiles",
     "change": "added",
-    "value": false
+    "value": true
   },
   {
     "key": "release.ramp",
     "change": "added",
-    "value": false
+    "value": true
   },
   {
     "key": "release.visuals",

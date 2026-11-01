@@ -1,10 +1,11 @@
+import {WorldArt} from './world-art.ts';
 import {makeCharacter} from './characters.ts';
 import {RaceEffects} from './effects.ts';
 import * as THREE from 'three';
 import type {Config,Snapshot,RaftState,GameEvent} from '../shared.ts';
 import {Course,rad,wrap} from '../game/course.ts';
 export class RaceView {
-  effects:RaceEffects;worldMeshes:THREE.Object3D[]=[];crateMeshes:THREE.Group[]=[];whirlMeshes:THREE.Group[]=[];
+  world:WorldArt;effects:RaceEffects;worldMeshes:THREE.Object3D[]=[];crateMeshes:THREE.Group[]=[];whirlMeshes:THREE.Group[]=[];
   renderer:THREE.WebGLRenderer;scene=new THREE.Scene();camera:THREE.PerspectiveCamera;
   cameraDirection=new THREE.Vector2(0,1);
   stunLabels:HTMLDivElement[]=[];
@@ -53,6 +54,7 @@ export class RaceView {
       const label=document.createElement('div');label.className='raft-stun-label';label.textContent=`${i===0?'▲ RED':'● BLUE'} · STUNNED`;label.hidden=true;container.append(label);this.stunLabels.push(label);
       const stars=new THREE.Group();for(let n=0;n<v.stun_stars;n++){const star=new THREE.Mesh(new THREE.OctahedronGeometry(v.star_radius),mat(v.vest_color));star.position.set(Math.sin(n/v.stun_stars*Math.PI*2)*config.raft.rim_radius,v.body_height*2,Math.cos(n/v.stun_stars*Math.PI*2)*config.raft.rim_radius);stars.add(star);}raft.add(stars);this.stars.push(stars);
     }
+    this.world=new WorldArt(this.scene,config,this.course);
     this.resize=new ResizeObserver(()=>{this.renderer.setSize(container.clientWidth,container.clientHeight,false);this.camera.aspect=container.clientWidth/Math.max(1,container.clientHeight);this.camera.updateProjectionMatrix();});this.resize.observe(container);
   }
   ensureAnimals(snapshot:Snapshot){
@@ -75,10 +77,11 @@ export class RaceView {
     const follow=1-Math.exp(-(this.reduceMotion?v.reduced_motion_camera_follow_rate:v.camera_follow_rate)*dt);
     if(!this.cameraReady)this.cameraDirection.set(p.tx,p.ty);else this.cameraDirection.lerp(new THREE.Vector2(p.tx,p.ty),follow).normalize();
     const {x:tx,y:ty}=this.cameraDirection;
-    const target=new THREE.Vector3(raft.x-tx*v.camera_behind,v.camera_height,-raft.y+ty*v.camera_behind);
+    const target=new THREE.Vector3(raft.x-tx*v.camera_behind,v.camera_height+raft.height,-raft.y+ty*v.camera_behind);
     if(!this.cameraReady){this.camera.position.copy(target);this.cameraReady=true;}else this.camera.position.lerp(target,1-Math.exp(-(this.reduceMotion?v.reduced_motion_camera_follow_rate:v.camera_follow_rate)*dt));
-    this.camera.lookAt(raft.x+tx*v.camera_ahead,0,-raft.y-ty*v.camera_ahead);this.renderer.render(this.scene,this.camera);
+    this.camera.lookAt(raft.x+tx*v.camera_ahead,raft.height,-raft.y-ty*v.camera_ahead);this.renderer.render(this.scene,this.camera);
     snapshot.rafts.forEach((r,i)=>{const label=this.stunLabels[i],position=new THREE.Vector3(r.x,v.body_height*2,-r.y).project(this.camera);label.hidden=r.stun<=0||Math.abs(position.z)>1;label.style.left=`${(position.x+1)/2*this.container.clientWidth}px`;label.style.top=`${(1-position.y)/2*this.container.clientHeight}px`;});
+    this.world.update(snapshot,raft.progress,this.lowEffects);
     this.effects.update(dt);this.crateMeshes.forEach((g,i)=>{g.visible=(snapshot.world?.crates[i]??0)<=0;g.rotation.y=snapshot.raceTime;});this.whirlMeshes.forEach(g=>g.rotation.y=-snapshot.raceTime);
     this.frames++;this.sample=(performance.now()-this.fpsSampleStart)/1000;if(this.sample>=v.fps_sample_s){this.fps=this.frames/this.sample;if(this.fps<v.auto_low_effects_below_fps)this.lowSeconds+=this.sample;else this.lowSeconds=0;if(!this.lowEffects&&this.lowSeconds>=v.auto_low_effects_after_s){this.setEffects(true,this.reduceMotion);this.onAutoLow();}this.frames=0;this.sample=0;this.fpsSampleStart=performance.now();}
   }
@@ -86,6 +89,6 @@ export class RaceView {
 }
 export function interpolate(a:Snapshot,b:Snapshot,t:number):Snapshot{
   const lerp=(x:number,y:number)=>x+(y-x)*t;
-  return {...b,raceTime:lerp(a.raceTime,b.raceTime),rafts:b.rafts.map((r,i)=>{const prev=a.rafts[i]??r;return {...r,x:lerp(prev.x,r.x),y:lerp(prev.y,r.y),heading:prev.heading+wrap(r.heading-prev.heading)*t,progress:lerp(prev.progress,r.progress)};}),animals:b.animals.map((state,i)=>({...state,phi:(a.animals[i]?.phi??state.phi)+wrap(rad(state.phi-(a.animals[i]?.phi??state.phi)))*180/Math.PI*t}))};
+  return {...b,raceTime:lerp(a.raceTime,b.raceTime),rafts:b.rafts.map((r,i)=>{const prev=a.rafts[i]??r;return {...r,x:lerp(prev.x,r.x),y:lerp(prev.y,r.y),height:lerp(prev.height,r.height),heading:prev.heading+wrap(r.heading-prev.heading)*t,progress:lerp(prev.progress,r.progress)};}),animals:b.animals.map((state,i)=>({...state,phi:(a.animals[i]?.phi??state.phi)+wrap(rad(state.phi-(a.animals[i]?.phi??state.phi)))*180/Math.PI*t}))};
 }
 
