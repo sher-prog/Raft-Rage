@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "3.3-sync-turbo (2026-10-31)"
+    "value": "3.4-awards (2026-10-31)"
   },
   {
     "key": "network._assumed",
@@ -1501,7 +1501,7 @@
       "ramp": true,
       "visuals": true,
       "turbo": true,
-      "awards": false,
+      "awards": true,
       "big_screen": false,
       "shortcut": false,
       "scenery": false,
@@ -1546,7 +1546,7 @@
   {
     "key": "release.awards",
     "change": "added",
-    "value": false
+    "value": true
   },
   {
     "key": "release.big_screen",

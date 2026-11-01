@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-11-01T02:02:31.131Z",
+  "timestamp": "2026-11-01T02:05:27.042Z",
   "runtime": "v24.22.1",
   "timings": [
     {
       "check": "create_and_second_client_join_and_host_broadcast",
-      "ms": 11.627375000000029
+      "ms": 12.575874999999996
     },
     {
       "check": "disconnect_to_bot_and_host_migration_real_grace",
-      "ms": 3080.074083
+      "ms": 3080.705208
     },
     {
       "check": "unclean_heartbeat_loss_to_bot_and_migration",
-      "ms": 3169.3740420000004
+      "ms": 3188.1665420000004
     }
   ]
 }
