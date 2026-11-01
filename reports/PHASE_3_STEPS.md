@@ -31,3 +31,5 @@ World assets are original procedural 3D shapes; character models remain modular 
 | Performance fix / 0.3.9 | Cache crate/whirlpool/gate positions; calculate crocodile positions once per tick; reuse hazard arrays and bot seat sets; encode broadcast text once into a shared buffer | 62/62, 53.094s; original wire payloads, rules and 60/20/10Hz retained |
 
 Actual Render 0.3.8 4-room/16-client checks: FAIL twice, one overrun each (24.174ms, then 95.371ms), despite ~60/20Hz and 0.0781 / 0.0691 average CPU cores. Raw reports retained as final-render-load-first.json and final-render-load-repeat.json. Do not call either run passed. Repeat on 0.3.9 before judging capacity.
+
+0.3.9 actual Render recheck PASS: 4 test rooms / 16 clients, 5 active rooms reported; 20.194s, zero overruns, worst tick 0.355ms, ~60/20Hz, 0.0671 total CPU cores. Public flow PASS: 3.030s countdown, identical results after 14.991s. Live 390px browser has no overflow/error entries; 33,938 triangles observed. Physical acceptance remains pending. See FINAL_BUILD.md and raw measurements.

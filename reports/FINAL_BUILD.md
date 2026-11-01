@@ -1,21 +1,22 @@
-# Final feature checkpoint — 0.3.9
+# Raft Rage — 0.3.9 feature build
 
-| Check | Status / measured numbers |
+Live: https://raft-rage.onrender.com. Phases 1–3H features deployed; physical acceptance remains pending. Tested source commit: c63aa97a4eae45f2627248f71b42ce626a6d5b70.
+
+| Check | Result / measured numbers |
 |---|---|
-| Typecheck/build + complete serial suite | PASS: 62/62, 53.094s; zero warnings; original thresholds/cases retained |
-| Full Phase 3 bank stress | PASS: 1,680 scenarios / 302,400 impact ticks; minimum bank clearance 34.000650u for radius 34 |
-| Committed human-style full course | PASS: 115.417s / 111.850s; 73 / 184 bank contact ticks; no relocation or escape |
-| Desktop / 390px browser | PASS: shader/error log empty; scenery, clouds, progress/timer and controls; no horizontal overflow |
-| Actual Render 4 rooms / 16 clients | FAIL on 0.3.8 twice (one overrun each); PENDING 0.3.9 recheck |
-| Public multiplayer/results/rematch | PASS on 0.3.8 (3.024s countdown, 14.966s results); PENDING 0.3.9 wire recheck |
-| Physical Safari/LTE, Android, fourth device, audible audio, phone FPS | PENDING user-operated acceptance |
+| Typecheck, build, serial suite | PASS — 62/62, 53.094s, zero overrun warnings; no cases/assertions/thresholds removed or relaxed |
+| Full released-ruleset banks | PASS — 1,680 impact scenarios / 302,400 ticks; minimum bank clearance 34.000650u, raft radius 34 |
+| Committed human-style wall driving | PASS — both full-course runs: 115.417s / 111.850s; 73 / 184 bank-contact ticks; all displacement limits retained |
+| Actual Render load | PASS on 0.3.9 — 4 test rooms / 16 clients (server reported 5 active rooms), 20.194s sample; 59.985–60.017Hz sim, 19.983–20.011Hz snapshots, 0 overruns, worst tick 0.355ms |
+| Render CPU/network | 0.0671 CPU cores total; RSS 89.31MiB; sockets out 1,012,721B/s / in 49,271B/s; event-loop mean 10.26ms, historical max 103.81ms |
+| Public multiplayer/results/rematch | PASS — 3.030s countdown; identical results received 14.991s after first finish; spectator, Ready and retained-seat checks pass |
+| Live browser / 390px width | PASS — no error entries or horizontal overflow; control toggle updates; 33,938 triangles observed; desktop FPS sample 54, not phone evidence |
+| Physical Safari/LTE, Android, fourth device, touch/audio/FPS | PENDING user-operated checks |
 
-All planned build phases through 3H are enabled: four characters/resources, combat, pickups/traps, crocodiles/ramp, SYNC/Turbo, stats/awards, Big Screen, shortcut and original procedural world/audio/effects. Character assets remain modular for separate design references, none received in this chat.
+Includes four characters/resources, combat, pickups, logs/whirlpools, crocodiles/ramp, SYNC/Turbo, stats/awards, Big Screen, shortcut gate, procedural scenery/characters, propulsion clouds/rings/droplets, steam and synthesized music/SFX.
 
-Bank escape root cause: the old nearest-centreline collision did not match the drawn mitered banks at joins. Snap root cause: changing nearest segments could apply a large penetration correction, compounded by abrupt camera direction changes. Shared bank geometry and swept-circle movement replace that behavior; restitution remains 0.4. A later outline-rendering regression scaled world-space river surfaces; 0.3.6 fixed it with a visual-bounds regression test. Central FINISH text is removed; distance stays at the top and the world arch stays at the finish.
+Root causes: old bank collision used nearest-centreline segments instead of the drawn mitered banks, leaving incorrect boundaries at turns. Changing nearest segments could then apply a large penetration correction, compounded by abrupt camera turns. Shared banks and swept movement fix both; restitution stays 0.4. The later world-surface outline scaling bug is also fixed and regression-tested. Central FINISH text is gone; distance stays in the top bars.
 
-Config: 60/20/10Hz unchanged. All added/changed keys and values: CONFIG_CHANGES.md and config-diff.json (178 entries including metadata). Intentional style tuning: lighting 0.8/1.8, camera 190/260/120; assumed shortcut lateral +120 avoids a left-side rock. New geometry fields are declared assumed. No bank restitution or core balance reduction.
+Config: 60/20/10Hz retained. All 178 config diff entries, including metadata and intentional style tuning, are listed in CONFIG_CHANGES.md / config-diff.json. No performance thresholds or core balance values were reduced; 0.3.9 changes only allocation/encoding and version metadata.
 
-Known limits: local interactive browser preview showed tick overruns under machine load; clean final serial suite did not. Initial final-suite failures are recorded in PHASE_3_STEPS.md. Render capacity must come from the deployment, not those local timings. Free sleep/cold wake remains unmeasured; no paid service/pinger was added. Original procedural art/audio is included; physical touch/audio/FPS acceptance is not claimed.
-
-0.3.9 performance fix only: cache static positions/hazards, reuse crocodile positions, avoid repeated bot sets and shared broadcast UTF-8 encoding. No config changes beyond version metadata.
+Known limits: both 0.3.8 Render samples failed with one overrun each (24.17ms / 95.37ms); raw failures are retained. The 0.3.9 pass is a short measured sample, not a long-term capacity guarantee. Socket counters exclude Render edge TLS/TCP overhead; event-loop history includes setup. Physical acceptance and Free cold wake remain unmeasured. Character references from the separate design chat have not been supplied; original modular models are included. No paid service or pinger added.
