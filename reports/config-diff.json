@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "3.9-allocation-cleanup (2026-10-31)"
+    "value": "3.10-reference-readability (2026-10-31)"
   },
   {
     "key": "network._assumed",
@@ -785,23 +785,35 @@
       "sky_bottom_color",
       "effect_ring_tube_ratio",
       "effect_ring_segments",
-      "effect_droplet_stretch"
+      "effect_droplet_stretch",
+      "character_rim_radius",
+      "character_scale",
+      "character_height_scale",
+      "character_segments",
+      "raft_cream_color",
+      "deck_color",
+      "deck_plank_width",
+      "rope_color",
+      "loaded_log_length",
+      "loaded_log_radius",
+      "framing_min_aspect",
+      "framing_max_pullback"
     ]
   },
   {
     "key": "visuals.camera_height",
     "change": "added",
-    "value": 190
+    "value": 110
   },
   {
     "key": "visuals.camera_behind",
     "change": "added",
-    "value": 260
+    "value": 130
   },
   {
     "key": "visuals.camera_ahead",
     "change": "added",
-    "value": 120
+    "value": 80
   },
   {
     "key": "visuals.camera_follow_rate",
@@ -811,7 +823,7 @@
   {
     "key": "visuals.camera_fov_deg",
     "change": "added",
-    "value": 58
+    "value": 55
   },
   {
     "key": "visuals.camera_near",
@@ -1311,6 +1323,66 @@
       1.5,
       0.55
     ]
+  },
+  {
+    "key": "visuals.character_rim_radius",
+    "change": "added",
+    "value": 25.5
+  },
+  {
+    "key": "visuals.character_scale",
+    "change": "added",
+    "value": 1
+  },
+  {
+    "key": "visuals.character_height_scale",
+    "change": "added",
+    "value": 1.55
+  },
+  {
+    "key": "visuals.character_segments",
+    "change": "added",
+    "value": 12
+  },
+  {
+    "key": "visuals.raft_cream_color",
+    "change": "added",
+    "value": "#f4d9a3"
+  },
+  {
+    "key": "visuals.deck_color",
+    "change": "added",
+    "value": "#bed089"
+  },
+  {
+    "key": "visuals.deck_plank_width",
+    "change": "added",
+    "value": 4.5
+  },
+  {
+    "key": "visuals.rope_color",
+    "change": "added",
+    "value": "#e7bc66"
+  },
+  {
+    "key": "visuals.loaded_log_length",
+    "change": "added",
+    "value": 26
+  },
+  {
+    "key": "visuals.loaded_log_radius",
+    "change": "added",
+    "value": 4.5
+  },
+  {
+    "key": "visuals.framing_min_aspect",
+    "change": "added",
+    "value": 0.8
+  },
+  {
+    "key": "visuals.framing_max_pullback",
+    "change": "added",
+    "value": 1.6
   },
   {
     "key": "audio._assumed",

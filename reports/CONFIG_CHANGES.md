@@ -1,6 +1,6 @@
 # Build config changes
 
-Config: `3.9-allocation-cleanup (2026-10-31)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
+Config: `3.10-reference-readability (2026-10-31)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
 
 Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 
@@ -146,6 +146,18 @@ Every changed/added key is listed below; exact values and original values are in
 - `visuals.effect_ring_tube_ratio`: added.
 - `visuals.effect_ring_segments`: added.
 - `visuals.effect_droplet_stretch`: added.
+- `visuals.character_rim_radius`: added.
+- `visuals.character_scale`: added.
+- `visuals.character_height_scale`: added.
+- `visuals.character_segments`: added.
+- `visuals.raft_cream_color`: added.
+- `visuals.deck_color`: added.
+- `visuals.deck_plank_width`: added.
+- `visuals.rope_color`: added.
+- `visuals.loaded_log_length`: added.
+- `visuals.loaded_log_radius`: added.
+- `visuals.framing_min_aspect`: added.
+- `visuals.framing_max_pullback`: added.
 - `audio._assumed`: changed.
 - `audio.enabled_default`: added.
 - `audio.silly_default`: added.

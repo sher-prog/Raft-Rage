@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-11-01T02:53:23.481Z",
+  "base": "https://raft-rage.onrender.com",
+  "scenario": "Actual Render: 4 rooms / 16 clients, all four characters, resource-aware 10Hz inputs, deliberate steering, live jumps through crocodile/ramp/shortcut regions, thrown logs and Turbo; 20-second measured sample",
+  "version": "0.3.9",
+  "bootId": "047fd5ee-1af7-4325-af01-8c9ff0289219",
+  "configVersion": "3.9-allocation-cleanup (2026-10-31)",
+  "rooms": 4,
+  "clients": 16,
+  "activeRaceRooms": 4,
+  "sampleMs": 20059.569572999997,
+  "cpuCores": 0.06777927088874532,
+  "cpuCoresPerUser": 0.004236204430546582,
+  "rssBytes": 87752704,
+  "eventLoopMeanMs": 10.236554559753277,
+  "eventLoopMaxMs": 90.046463,
+  "socketOutBps": 975905.63589906,
+  "socketInBps": 53857.08781379544,
+  "metrics": [
+    {
+      "simHz": 60.021228053695296,
+      "snapshotHz": 19.990458845126092,
+      "tickAverageMs": 0.05139905974683735,
+      "tickWorstMs": 2.0557540000008885,
+      "overruns": 0,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 4.941262000000279,
+      "schedulerLateMaxMs": 70.18724400000087
+    },
+    {
+      "simHz": 59.98827368673541,
+      "snapshotHz": 19.996091228911805,
+      "tickAverageMs": 0.04577523327716765,
+      "tickWorstMs": 3.6605300000010175,
+      "overruns": 0,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 0.9067240000003949,
+      "schedulerLateMaxMs": 76.3603506666651
+    },
+    {
+      "simHz": 59.989250964445134,
+      "snapshotHz": 19.99641698814838,
+      "tickAverageMs": 0.04321085308955228,
+      "tickWorstMs": 0.8504850000026636,
+      "overruns": 0,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 4.633955999997852,
+      "schedulerLateMaxMs": 74.4034483333321
+    },
+    {
+      "simHz": 59.987728691809615,
+      "snapshotHz": 19.995909563936536,
+      "tickAverageMs": 0.06818900288804267,
+      "tickWorstMs": 41.97644500000024,
+      "overruns": 1,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 7.683756999998877,
+      "schedulerLateMaxMs": 77.04702633333127
+    }
+  ],
+  "pass": false
+}
