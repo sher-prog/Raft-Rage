@@ -1,0 +1,358 @@
+{
+  "build": "0.3.12",
+  "codeCommit": "86f2d083cd42b3dbca8dffc6706fd31de93a5835",
+  "bootId": "e34de618-dcf2-4cea-8b0b-6c727b4489aa",
+  "rates": {
+    "sim": 60,
+    "snapshots": 20,
+    "inputResend": 10
+  },
+  "suite": {
+    "tests": 70,
+    "passed": 70,
+    "skipped": 0,
+    "durationMs": 54084.611958,
+    "localOverrunWarnings": 1,
+    "strictTiming": {
+      "timestamp": "2026-11-01T03:59:09.286Z",
+      "sampleMs": 1005.0435,
+      "ticks": 61,
+      "snapshots": 20,
+      "tickAverageMs": 0.3260492769230583,
+      "tickWorstMs": 3.1842909999999733,
+      "overruns": 0
+    }
+  },
+  "bankStress": {
+    "timestamp": "2026-11-01T03:59:17.313Z",
+    "rates": {
+      "sim": 60,
+      "snapshots": 20,
+      "input": 10
+    },
+    "environment": "Accelerated fixed-step simulation, independent drawn-bank geometry oracle; no bot controllers",
+    "scenarios": 1680,
+    "ticks": 302400,
+    "maxDisplacement": 6.962115754550092,
+    "minBankClearance": 34.00065015677379,
+    "fullCourse": [
+      {
+        "side": -1,
+        "steps": 6925,
+        "finishTime": 115.41666666666667,
+        "bankContactTicks": 73,
+        "segmentsWithBankContact": [
+          0,
+          1,
+          2,
+          6
+        ],
+        "maxTickDisplacement": 5.758053711777109,
+        "maxProgress": 18000
+      },
+      {
+        "side": 1,
+        "steps": 6711,
+        "finishTime": 111.85,
+        "bankContactTicks": 184,
+        "segmentsWithBankContact": [
+          0,
+          1,
+          4,
+          5
+        ],
+        "maxTickDisplacement": 5.266060834380837,
+        "maxProgress": 18000
+      }
+    ]
+  },
+  "originalRenderLoad": {
+    "timestamp": "2026-11-01T04:05:41.953Z",
+    "environment": "Actual public Render service",
+    "base": "https://raft-rage.onrender.com",
+    "configVersion": "3.12-snapshot-pacing (2026-10-31)",
+    "runtime": "v24.22.1",
+    "scenario": "Four human WebSocket clients per 2v2 room, all continuously firing, 10Hz input resend, native keepalive plus 2s clock pings, real fixed 60Hz authority and 20Hz snapshots. No-human rooms suspend after clients leave.",
+    "measurementLimits": "Node socket counters include WS framing/control/HTTP handshake. Render edge TLS/TCP/provider billing overhead is not measured. Histograms have 10ms resolution and include setup history. Graphics FPS is not measured. Largest tested passing load is a lower bound, not an unlimited capacity guarantee.",
+    "largestPassingRooms": 0,
+    "stoppedAfterFailure": true,
+    "results": [
+      {
+        "rooms": 4,
+        "clients": 16,
+        "sampleMs": 20029.272436,
+        "cpuMs": 1107.905,
+        "cpuCores": 0.05531429079813631,
+        "cpuCoresPerUser": 0.0034571431748835193,
+        "rssBytes": 95178752,
+        "activeRaceRoomsReported": 5,
+        "payloadOutBytesPerSecond": 748082.4901592047,
+        "payloadInBytesPerSecond": 28190.989053857214,
+        "nodeSocketOutBytesPerSecond": 749431.9151114272,
+        "nodeSocketInBytesPerSecond": 29590.74034734948,
+        "clientReceivedBytesPerSecond": 727947.9594972144,
+        "eventLoopMeanMs": 10.328563616346955,
+        "eventLoopMaxMs": 89.980927,
+        "roomMetrics": [
+          {
+            "simHz": 60.01216488720589,
+            "snapshotHz": 20.020697271022932,
+            "averageTickMs": 0.039121312802781555,
+            "worstTickMs": 0.2519060000195168,
+            "overruns": 0,
+            "snapshotAverageMs": 0.2955033443981073,
+            "snapshotWorstMs": 60.66353499999968,
+            "schedulerLateMaxMs": 77.84970800002358
+          },
+          {
+            "simHz": 59.968213365664084,
+            "snapshotHz": 19.972760488147905,
+            "averageTickMs": 0.0228339383655595,
+            "worstTickMs": 0.11404300000867806,
+            "overruns": 0,
+            "snapshotAverageMs": 0.17477577338888253,
+            "snapshotWorstMs": 0.3791980000096373,
+            "schedulerLateMaxMs": 78.22755600002728
+          },
+          {
+            "simHz": 60.009878236041416,
+            "snapshotHz": 20.0199344198441,
+            "averageTickMs": 0.020981858132079173,
+            "worstTickMs": 0.35537699999986216,
+            "overruns": 0,
+            "snapshotAverageMs": 0.17971643775935078,
+            "snapshotWorstMs": 0.7304259999946225,
+            "schedulerLateMaxMs": 77.53543100002585
+          },
+          {
+            "simHz": 59.96822645087545,
+            "snapshotHz": 20.022696758368905,
+            "averageTickMs": 0.05264129362893329,
+            "worstTickMs": 41.325706000003265,
+            "overruns": 1,
+            "snapshotAverageMs": 0.15141185477189525,
+            "snapshotWorstMs": 3.730982999986736,
+            "schedulerLateMaxMs": 78.9279620000163
+          }
+        ],
+        "pass": false
+      }
+    ]
+  },
+  "realisticRenderLoad": {
+    "timestamp": "2026-11-01T04:04:29.246Z",
+    "base": "https://raft-rage.onrender.com",
+    "scenario": "Actual Render: 4 rooms / 16 clients, all four characters, resource-aware 10Hz resends plus immediate button-state changes (same behavior as game UI), deliberate steering, live jumps through crocodile/ramp/shortcut regions, thrown logs and Turbo; 60-second measured sample",
+    "version": "0.3.12",
+    "bootId": "e34de618-dcf2-4cea-8b0b-6c727b4489aa",
+    "configVersion": "3.12-snapshot-pacing (2026-10-31)",
+    "rooms": 4,
+    "clients": 16,
+    "activeRaceRooms": 4,
+    "sampleMs": 60053.92251599999,
+    "cpuCores": 0.05681767080394986,
+    "cpuCoresPerUser": 0.003551104425246866,
+    "hostingCpu": {
+      "before": {
+        "cgroupPeriods": 892,
+        "cgroupThrottledPeriods": 78,
+        "cgroupThrottledUs": 6646196,
+        "cgroupUsageUs": 2499443,
+        "cgroupQuotaUs": 15000,
+        "cgroupPeriodUs": 100000
+      },
+      "after": {
+        "cgroupPeriods": 1493,
+        "cgroupThrottledPeriods": 100,
+        "cgroupThrottledUs": 8818026,
+        "cgroupUsageUs": 5912080,
+        "cgroupQuotaUs": 15000,
+        "cgroupPeriodUs": 100000
+      }
+    },
+    "rssBytes": 91013120,
+    "eventLoopMeanMs": 10.250153867821714,
+    "eventLoopMaxMs": 91.881471,
+    "socketOutBps": 970498.421389078,
+    "socketInBps": 36811.783600163864,
+    "metrics": [
+      {
+        "simHz": 60.01273270767279,
+        "snapshotHz": 19.998693668677863,
+        "tickAverageMs": 0.047272856979268855,
+        "tickWorstMs": 2.5361659999907715,
+        "lastOverrunWallMs": 0,
+        "lastOverrunCpuMs": 0,
+        "overruns": 0,
+        "overrunsBeforeSample": 0,
+        "snapshotWorstMs": 80.53411100000085,
+        "schedulerLateMaxMs": 82.2075599999956
+      },
+      {
+        "simHz": 59.994631585453334,
+        "snapshotHz": 19.998210528484446,
+        "tickAverageMs": 0.03211526863153639,
+        "tickWorstMs": 1.4662220000027446,
+        "lastOverrunWallMs": 0,
+        "lastOverrunCpuMs": 0,
+        "overruns": 0,
+        "overrunsBeforeSample": 0,
+        "snapshotWorstMs": 3.625099999990198,
+        "schedulerLateMaxMs": 81.08484966666862
+      },
+      {
+        "simHz": 59.99584223118478,
+        "snapshotHz": 19.998614077061593,
+        "tickAverageMs": 0.029291468325736137,
+        "tickWorstMs": 3.0740869999863207,
+        "lastOverrunWallMs": 0,
+        "lastOverrunCpuMs": 0,
+        "overruns": 0,
+        "overrunsBeforeSample": 0,
+        "snapshotWorstMs": 4.0430689999921015,
+        "schedulerLateMaxMs": 80.93375866666146
+      },
+      {
+        "simHz": 59.99640802953833,
+        "snapshotHz": 19.998802676512778,
+        "tickAverageMs": 0.04398020428129856,
+        "tickWorstMs": 1.6710569999995641,
+        "lastOverrunWallMs": 0,
+        "lastOverrunCpuMs": 0,
+        "overruns": 0,
+        "overrunsBeforeSample": 0,
+        "snapshotWorstMs": 2.6924089999956777,
+        "schedulerLateMaxMs": 87.96826266665703
+      }
+    ],
+    "pass": true
+  },
+  "extraTrafficRenderLoad": {
+    "timestamp": "2026-11-01T04:07:32.288Z",
+    "base": "https://raft-rage.onrender.com",
+    "scenario": "Actual Render: 4 rooms / 16 clients, all four characters, resource-aware 10Hz resends PLUS immediate polling updates (~19Hz total), deliberate steering, live jumps through crocodile/ramp/shortcut regions, thrown logs and Turbo; 20-second measured sample",
+    "version": "0.3.12",
+    "bootId": "e34de618-dcf2-4cea-8b0b-6c727b4489aa",
+    "configVersion": "3.12-snapshot-pacing (2026-10-31)",
+    "rooms": 4,
+    "clients": 16,
+    "activeRaceRooms": 5,
+    "sampleMs": 20076.747375999985,
+    "cpuCores": 0.060922268786533396,
+    "cpuCoresPerUser": 0.0038076417991583372,
+    "hostingCpu": {
+      "before": {
+        "cgroupPeriods": 3084,
+        "cgroupThrottledPeriods": 120,
+        "cgroupThrottledUs": 11193865,
+        "cgroupUsageUs": 9768432,
+        "cgroupQuotaUs": 15000,
+        "cgroupPeriodUs": 100000
+      },
+      "after": {
+        "cgroupPeriods": 3285,
+        "cgroupThrottledPeriods": 132,
+        "cgroupThrottledUs": 12502002,
+        "cgroupUsageUs": 10991660,
+        "cgroupQuotaUs": 15000,
+        "cgroupPeriodUs": 100000
+      }
+    },
+    "rssBytes": 96006144,
+    "eventLoopMeanMs": 10.280370221808015,
+    "eventLoopMaxMs": 91.684863,
+    "socketOutBps": 1027159.5599520191,
+    "socketInBps": 55769.392274092475,
+    "metrics": [
+      {
+        "simHz": 60.01968234358884,
+        "snapshotHz": 20.023163736201422,
+        "tickAverageMs": 0.0289310616159734,
+        "tickWorstMs": 0.42125899996608496,
+        "lastOverrunWallMs": 0,
+        "lastOverrunCpuMs": 0,
+        "overruns": 0,
+        "overrunsBeforeSample": 0,
+        "snapshotWorstMs": 0.6385449999943376,
+        "schedulerLateMaxMs": 79.45997366662314
+      },
+      {
+        "simHz": 60.017411993567386,
+        "snapshotHz": 20.02240632482497,
+        "tickAverageMs": 0.02595979730452995,
+        "tickWorstMs": 0.2644760000403039,
+        "lastOverrunWallMs": 0,
+        "lastOverrunCpuMs": 0,
+        "overruns": 0,
+        "overrunsBeforeSample": 0,
+        "snapshotWorstMs": 0.9579119999543764,
+        "schedulerLateMaxMs": 82.85575933331481
+      },
+      {
+        "simHz": 60.020219602614155,
+        "snapshotHz": 20.023342971162563,
+        "tickAverageMs": 0.021504689155278308,
+        "tickWorstMs": 0.15003399999113753,
+        "lastOverrunWallMs": 0,
+        "lastOverrunCpuMs": 0,
+        "overruns": 0,
+        "overrunsBeforeSample": 0,
+        "snapshotWorstMs": 3.09639799996512,
+        "schedulerLateMaxMs": 80.38184733329896
+      },
+      {
+        "simHz": 60.01728545436464,
+        "snapshotHz": 20.02236411008679,
+        "tickAverageMs": 0.02916084271283655,
+        "tickWorstMs": 0.3506179999676533,
+        "lastOverrunWallMs": 0,
+        "lastOverrunCpuMs": 0,
+        "overruns": 0,
+        "overrunsBeforeSample": 0,
+        "snapshotWorstMs": 0.4128989999881014,
+        "schedulerLateMaxMs": 76.53257366663718
+      }
+    ],
+    "pass": true
+  },
+  "publicAcceptance": {
+    "timestamp": "2026-11-01T04:08:32.811Z",
+    "base": "https://raft-rage.onrender.com",
+    "environment": "Real WebSocket clients from developer machine; no physical Safari/cellular claim",
+    "checks": [
+      {
+        "name": "P1-2/3: lowercase join, corrected 2v2 seats, >2 human mode refusal",
+        "status": "PASS"
+      },
+      {
+        "name": "P1-4: authoritative countdown",
+        "status": "PASS",
+        "countdownMs": 3061.1282499999998
+      },
+      {
+        "name": "P1-7: late spectator",
+        "status": "PASS"
+      },
+      {
+        "name": "P1-8: real debug jump, finish, identical results",
+        "status": "PASS",
+        "resultsAfterFirstFinishReceivedMs": 14962.931375,
+        "authoritativeGraceS": 15
+      },
+      {
+        "name": "P1-8: rematch retains seats, clears Ready, Dee sits",
+        "status": "PASS"
+      }
+    ]
+  },
+  "clientObservation": {
+    "build": "0.3.11 (same client code as0.3.12)",
+    "environment": "desktop Chromium preview, not physical phone",
+    "fps": 59,
+    "drawCalls": 203,
+    "triangles": 62690,
+    "errorEntries": 0
+  },
+  "overallCapacity": "INTERMITTENT: original20s failed;60s and extra-traffic passed",
+  "physicalAcceptance": "PENDING"
+}

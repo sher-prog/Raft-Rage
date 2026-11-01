@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-11-01T03:54:40.342Z",
+  "base": "https://raft-rage.onrender.com",
+  "scenario": "Actual Render: 4 rooms / 16 clients, all four characters, resource-aware 10Hz resends plus immediate button-state changes (same behavior as game UI), deliberate steering, live jumps through crocodile/ramp/shortcut regions, thrown logs and Turbo; 60-second measured sample",
+  "version": "0.3.11",
+  "bootId": "beb38618-4872-45e0-9acd-0ad427616d65",
+  "configVersion": "3.11-chase-pose-performance-fixes (2026-10-31)",
+  "rooms": 4,
+  "clients": 16,
+  "activeRaceRooms": 4,
+  "sampleMs": 60060.22849600001,
+  "cpuCores": 0.05663606491651199,
+  "cpuCoresPerUser": 0.0035397540572819994,
+  "hostingCpu": {
+    "before": {
+      "cgroupPeriods": 996,
+      "cgroupThrottledPeriods": 55,
+      "cgroupThrottledUs": 5052932,
+      "cgroupUsageUs": 2130154,
+      "cgroupQuotaUs": 15000,
+      "cgroupPeriodUs": 100000
+    },
+    "after": {
+      "cgroupPeriods": 1597,
+      "cgroupThrottledPeriods": 84,
+      "cgroupThrottledUs": 7650938,
+      "cgroupUsageUs": 5532254,
+      "cgroupQuotaUs": 15000,
+      "cgroupPeriodUs": 100000
+    }
+  },
+  "rssBytes": 92729344,
+  "eventLoopMeanMs": 10.279690927921623,
+  "eventLoopMaxMs": 98.500607,
+  "socketOutBps": 968860.6163707059,
+  "socketInBps": 36677.316339992096,
+  "metrics": [
+    {
+      "simHz": 59.98978176115262,
+      "snapshotHz": 19.996593920384207,
+      "tickAverageMs": 0.039987050466192664,
+      "tickWorstMs": 2.3073650000005728,
+      "lastOverrunWallMs": 0,
+      "lastOverrunCpuMs": 0,
+      "overruns": 0,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 71.6547819999978,
+      "schedulerLateMaxMs": 90.19741466665782
+    },
+    {
+      "simHz": 60.00617519053417,
+      "snapshotHz": 19.99650843613528,
+      "tickAverageMs": 0.033948918377196664,
+      "tickWorstMs": 1.8432259999972302,
+      "lastOverrunWallMs": 0,
+      "lastOverrunCpuMs": 0,
+      "overruns": 0,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 7.795954000001075,
+      "schedulerLateMaxMs": 86.78126299998357
+    },
+    {
+      "simHz": 59.98985478648707,
+      "snapshotHz": 19.996618262162357,
+      "tickAverageMs": 0.03640195765457865,
+      "tickWorstMs": 7.037898999988101,
+      "lastOverrunWallMs": 0,
+      "lastOverrunCpuMs": 0,
+      "overruns": 0,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 80.09516999998596,
+      "schedulerLateMaxMs": 83.1030109999994
+    },
+    {
+      "simHz": 59.98985446786047,
+      "snapshotHz": 19.996618155953488,
+      "tickAverageMs": 0.03836060454052079,
+      "tickWorstMs": 20.581554999997024,
+      "lastOverrunWallMs": 20.581554999997024,
+      "lastOverrunCpuMs": 1.053,
+      "overruns": 1,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 90.83180200000061,
+      "schedulerLateMaxMs": 76.63911833332298
+    }
+  ],
+  "pass": false
+}
