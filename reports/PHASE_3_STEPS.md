@@ -13,3 +13,5 @@ World assets are original procedural 3D shapes; character models remain modular 
 | 3C / 0.3.3 | SYNC, Turbo charge/trigger/decay, pink-ready UI, third first-race hint, Bear bonus window | 56/56, 60.027s; exact meter and multiplier tests |
 
 | 3D / 0.3.4 | Authoritative scorecard, five award categories, ties and zero-score suppression, close calls across solid/water hazards | 56/56, 45.969s; results UI verification |
+
+| 3E / 0.3.5 | Bank foam, flowing water streaks, wakes, shields, continuous propulsion/Turbo trails, comic event bursts and finite banner lifetime | 56/56, 46.513s; particles capped at configured 300 |

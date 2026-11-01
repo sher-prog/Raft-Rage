@@ -19,7 +19,7 @@ let settings={lowEffects:config.views.default_low_effects,reduceMotion:motionPre
 try{const saved=JSON.parse(sessionStorage.getItem('raft-rage-settings')??'null');if(saved){settings={lowEffects:saved.lowEffects===true,reduceMotion:saved.reduceMotion===true};manualMotion=true;}}catch{}
 const settingsDialog=document.querySelector<HTMLDialogElement>('#settings')!,lowBox=document.querySelector<HTMLInputElement>('#low-effects')!,motionBox=document.querySelector<HTMLInputElement>('#reduce-motion')!;
 lowBox.checked=settings.lowEffects;motionBox.checked=settings.reduceMotion;
-const applySettings=()=>{lowBox.checked=settings.lowEffects;motionBox.checked=settings.reduceMotion;raceView?.setEffects(settings.lowEffects,settings.reduceMotion);try{sessionStorage.setItem('raft-rage-settings',JSON.stringify(settings));}catch{}};
+const applySettings=()=>{lowBox.checked=settings.lowEffects;motionBox.checked=settings.reduceMotion;document.body.classList.toggle('reduce-motion',settings.reduceMotion);document.body.classList.toggle('low-effects',settings.lowEffects);raceView?.setEffects(settings.lowEffects,settings.reduceMotion);try{sessionStorage.setItem('raft-rage-settings',JSON.stringify(settings));}catch{}};
 document.querySelector('#close-settings')!.addEventListener('click',()=>settingsDialog.close());
 lowBox.addEventListener('change',()=>{settings.lowEffects=lowBox.checked;applySettings();});motionBox.addEventListener('change',()=>{manualMotion=true;settings.reduceMotion=motionBox.checked;applySettings();});motionPreference.addEventListener('change',e=>{if(!manualMotion){settings.reduceMotion=e.matches;applySettings();}});
 let session:Session|undefined;
@@ -31,6 +31,7 @@ let clockOffset=0,snapshot:Snapshot|undefined;
 let raceView:RaceView|undefined,frames:Snapshot[]=[],lastFrame=performance.now();
 const hints=new FirstRaceHints();
 const eventDeduper=new EventDeduper(config.network.event_seen_max);
+let roomBannerUntil=0;
 let eventRaceId='',comicText='',comicUntil=0,serverCpuPercent=0;
 let previousMetrics:Record<string,number|null>|undefined,serverMetrics:Record<string,number|null>|undefined,snapshotArrivals:number[]=[];
 const held=new Set<string>(),pointers=new Map<number,string>();
@@ -168,7 +169,7 @@ function updateClock(){
   const animal=snapshot.animals.find(a=>a.seat===own?.seat),raft=snapshot.rafts[ownRaft],fireButton=document.querySelector<HTMLElement>('[data-control="fire"]');
   if(animal&&fireButton){const ch=config.characters[animal.character],value=animal.character==='bear'?animal.stamina/config.characters.bear.stamina_s:animal.character==='frog'?animal.charge:animal.heat;if(fireButton.dataset.character!==animal.character){fireButton.innerHTML='<span class="fire-label"></span><small class="resource-label"></small><meter min="0" max="1"></meter>';fireButton.dataset.character=animal.character;}fireButton.querySelector('.fire-label')!.textContent=ch.fire_label;fireButton.querySelector('.resource-label')!.textContent=animal.lockout>0?(animal.character==='bear'?'TIRED':'OVERHEAT'):animal.heat>=config.heat.warn_at?'HOT':animal.character==='bear'?'STAMINA':animal.character==='frog'?'CHARGE':'HEAT';fireButton.querySelector('meter')!.value=value;}
   const resources=document.querySelector('#race-resources');if(resources)resources.textContent=[raft.slipstream?'SLIPSTREAM':'',raft.boost>0?'SPEED BOOST':'',raft.bubble?'BUBBLE SHIELD':'',raft.item==='log'?'LOG · WHACK TO THROW':'',raft.height>0?`BIG AIR ${raft.airTime.toFixed(1)}s`:'',config.release.turbo?`TURBO ${Math.round(raft.turboMeter*100)}%${raft.turbo>0?' · ACTIVE':raft.turboMeter>=1?' · READY':''}`:''].filter(Boolean).join(' · ');
-  const banner=document.querySelector('#race-banner');if(banner)banner.textContent=snapshot.rafts[ownRaft].stun>0?'STUNNED':serverNow<comicUntil?comicText:snapshot.firstFinishTime!==null?`${snapshot.winner===0?'▲ RED':'● BLUE'} FINISHED!`:own?.seat===null?"You'll join next race":room?.banner??'';
+  const banner=document.querySelector('#race-banner');if(banner)banner.textContent=snapshot.rafts[ownRaft].stun>0?'STUNNED':serverNow<comicUntil?comicText:snapshot.firstFinishTime!==null?`${snapshot.winner===0?'▲ RED':'● BLUE'} FINISHED!`:own?.seat===null?"You'll join next race":serverNow<roomBannerUntil?room?.banner??'':'';
   for(const [i,id]of ['red-progress','blue-progress'].entries()){const bar=document.querySelector<HTMLProgressElement>('#'+id);if(bar)bar.value=snapshot.rafts[i].progress/config.course.length;
     const distance=document.querySelector('#'+(i===0?'red':'blue')+'-distance');if(distance)distance.textContent=` ${Math.round(snapshot.rafts[i].progress/config.course.length*100)}% · ${Math.ceil(Math.max(0,config.course.length-snapshot.rafts[i].progress))}u to FINISH`;}
   for(const [id,done,text] of [['walk-hint',hints.walkDone,config.teaching.first_race_hints[0]],['fire-hint',hints.fireDone,config.teaching.first_race_hints[1]],['turbo-hint',hints.turboDone||!config.release.turbo||room?.mode!=='2v2',config.teaching.first_race_hints[2]]] as const){const el=document.querySelector<HTMLElement>('#'+id);if(el){el.textContent=String(text);const dismissed=done||!hints.visible(snapshot.raceId)||own?.seat===null;el.classList.toggle('hint-done',dismissed);el.setAttribute('aria-hidden',String(dismissed));}}
@@ -200,7 +201,7 @@ function connect(){
       if(session){currentName=session.name;send({type:'resume',...session});}
     }else if(m.type==='joined'){
       session={code:m.code,name:currentName||session?.name||'',playerId:m.playerId,token:m.token,bootId:m.bootId,inputEpoch:m.inputEpoch,seq:0,whackCount:0};saveSession();screen='lobby';notice='';
-    }else if(m.type==='room'){if(/^Jumped (red|blue|both) to (5|20|40|50|68|75|95)%$/.test(m.room.banner)){frames=[];if(raceView)raceView.cameraReady=false;}room=m.room;if(m.room.simulation)acceptSnapshot(m.room.simulation);if(session){screen='lobby';render();}}
+    }else if(m.type==='room'){if(m.room.banner!==room?.banner)roomBannerUntil=Date.now()+clockOffset+config.visuals.comic_banner_s*1000;if(/^Jumped (red|blue|both) to (5|20|40|50|68|75|95)%$/.test(m.room.banner)){frames=[];if(raceView)raceView.cameraReady=false;}room=m.room;if(m.room.simulation)acceptSnapshot(m.room.simulation);if(session){screen='lobby';render();}}
     else if(m.type==='snapshot'){const now=performance.now();snapshotArrivals.push(now);snapshotArrivals=snapshotArrivals.filter(t=>t>=now-config.visuals.fps_sample_s*1000);acceptSnapshot(m.snapshot);updateClock();}
     else if(m.type==='metrics'){
       serverMetrics=m.metrics;

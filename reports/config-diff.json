@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "3.4-awards (2026-10-31)"
+    "value": "3.5-water-effects (2026-10-31)"
   },
   {
     "key": "network._assumed",
@@ -1514,8 +1514,10 @@
         "awards",
         "big_screen",
         "shortcut",
-        "scenery"
-      ]
+        "scenery",
+        "foam"
+      ],
+      "foam": true
     }
   },
   {
@@ -1575,7 +1577,13 @@
       "awards",
       "big_screen",
       "shortcut",
-      "scenery"
+      "scenery",
+      "foam"
     ]
+  },
+  {
+    "key": "release.foam",
+    "change": "added",
+    "value": true
   }
 ]
