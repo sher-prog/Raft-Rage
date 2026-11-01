@@ -6,7 +6,7 @@ type Animal=Simulation['animals'][number];
 export class RacingSystems {
   crates:number[];projectiles:{x:number;y:number;vx:number;vy:number;raft:number;seat:number;left:number}[]=[];
   gateOpen=0;gatePinned=[0,0];gateHint=[0,0];ramped=new Set<number>();crocCooldown:number[][]=[];
-  lastShots=new Map<number,{time:number;phi:number}>();bearTime=new Map<number,number>();fullHold=new Map<number,number>();lastHeld=new Map<number,boolean>();hot=new Set<number>();lastThrust=new Map<number,number>();closeSeen=new Set<string>();shortcutBots=new Map<number,boolean>();
+  bearSyncUntil=new Map<number,number>();lastShots=new Map<number,{time:number;phi:number}>();bearTime=new Map<number,number>();fullHold=new Map<number,number>();lastHeld=new Map<number,boolean>();hot=new Set<number>();lastThrust=new Map<number,number>();closeSeen=new Set<string>();shortcutBots=new Map<number,boolean>();
   logs:Wall[]=[];readonly config;readonly course;
   constructor(readonly sim:Simulation){this.config=sim.config;this.course=sim.course;this.crates=this.config.course.crate_positions.map(()=>0);
     const c=this.config;this.logs=c.course.log_positions.map(([f,lat])=>{const p=this.course.at(f*c.course.length,lat),dx=Math.cos(p.heading)*(c.course.floating_log_length-c.course.floating_log_width)/2,dy=-Math.sin(p.heading)*(c.course.floating_log_length-c.course.floating_log_width)/2;return{a:{x:p.x-dx,y:p.y-dy},b:{x:p.x+dx,y:p.y+dy},padding:c.course.floating_log_width/2,side:0};});
@@ -27,14 +27,15 @@ export class RacingSystems {
   shot(a:Animal,dv:number,duration=this.config.firing.impulse_spread_s,record=true){const c=this.config,r=this.sim.rafts[a.raft],time=this.sim.raceTime;let multiplier=this.multiplier(r);const prev=this.lastShots.get(a.raft);
     if(record&&c.release.turbo){
       const pair=prev&&time-prev.time<=c.turbo.trigger_window_s&&Math.sign(a.phi)!==Math.sign(prev.phi);
-      if(r.turboMeter>=1&&(this.sim.mode==='1v1'||pair)){r.turbo=c.turbo.duration_s;r.turboMeter=0;this.sim.emit('turbo_start',a.raft);multiplier*=c.multipliers.thrust_turbo;}
+      if(r.turboMeter>=1&&(this.sim.mode==='1v1'||pair)){const starting=r.turbo<=0;r.turbo=c.turbo.duration_s;r.turboMeter=0;this.sim.emit('turbo_start',a.raft);if(starting)multiplier*=c.multipliers.thrust_turbo;}
       else if(this.sim.mode==='1v1')r.turboMeter=Math.min(1,r.turboMeter+dv/c.turbo.fill_dv_divisor_1v1);
-      else if(pair&&time-prev.time<=c.firing.sync_window_s){multiplier*=1+c.multipliers.thrust_sync_bonus;r.turboMeter=Math.min(1,r.turboMeter+c.turbo.fill_per_sync_pair_2v2);this.sim.emit('sync',a.raft,a.seat);}
+      else if(pair&&time-prev.time<=c.firing.sync_window_s){multiplier*=1+c.multipliers.thrust_sync_bonus;if(a.character==='bear')this.bearSyncUntil.set(a.seat,time+c.firing.bear_sync_bonus_window_s);r.turboMeter=Math.min(1,r.turboMeter+c.turbo.fill_per_sync_pair_2v2);this.sim.emit('sync',a.raft,a.seat);}
       if(r.turboMeter>=1)this.sim.emit('turbo_ready',a.raft);
     }
+    if(!record&&a.character==='bear'&&(this.bearSyncUntil.get(a.seat)??0)>time)multiplier*=1+c.multipliers.thrust_sync_bonus;
     const cant=a.character==='capybara'?(a.phi===-180||a.phi===180?1:Math.sign(a.phi))*(this.sim.mode==='1v1'?c.characters.capybara.cant_deg_1v1:c.characters.capybara.cant_deg_2v2):-c.firing.general_cant_amplitude_deg*Math.sin(2*rad(a.phi));
     this.sim.shots.push({raft:a.raft,phi:rad(a.phi),cant:rad(cant),dv:dv*multiplier,remaining:duration,duration});
-    if(record){a.stats.thrusts++;this.lastThrust.set(a.seat,time);this.lastShots.set(a.raft,{time,phi:a.phi});this.sim.emit('shot',a.raft,a.seat);}
+    if(record){if(a.character!=='bear')a.stats.thrusts++;this.lastThrust.set(a.seat,time);this.lastShots.set(a.raft,{time,phi:a.phi});this.sim.emit('shot',a.raft,a.seat);}
   }
   overheat(a:Animal){a.lockout=this.config.heat.overheat_lockout_s;a.stats.overheats++;this.hot.add(a.seat);this.sim.emit('overheat',a.raft,a.seat);}
   propel(a:Animal,dt:number){const c=this.config;
@@ -50,7 +51,7 @@ export class RacingSystems {
     }
     if(a.character==='bear'){
       const b=c.characters.bear;
-      if(held&&a.lockout===0&&a.stamina>0){const was=this.bearTime.get(a.seat)??0;this.shot(a,(this.sim.mode==='1v1'?b.dv_per_s_1v1*c.multipliers.impulse_1v1:b.dv_per_s_2v2)*dt,dt,was===0);this.bearTime.set(a.seat,was+dt);a.pushing=true;a.stamina=Math.max(0,a.stamina-dt);if(Math.floor((was+dt)/b.thrust_stat_every_s)>Math.floor(was/b.thrust_stat_every_s)&&was>0)a.stats.thrusts++;
+      if(held&&a.lockout===0&&a.stamina>0){const was=this.bearTime.get(a.seat)??0;this.shot(a,(this.sim.mode==='1v1'?b.dv_per_s_1v1*c.multipliers.impulse_1v1:b.dv_per_s_2v2)*dt,dt,was===0);this.bearTime.set(a.seat,was+dt);a.pushing=true;a.stamina=Math.max(0,a.stamina-dt);if(Math.floor((was+dt)/b.thrust_stat_every_s)>Math.floor(was/b.thrust_stat_every_s))a.stats.thrusts++;
         if(a.stamina<=c.simulation.epsilon){a.stamina=0;a.lockout=b.empty_lockout_s;a.stats.overheats++;this.sim.emit('tired',a.raft,a.seat);}}
       else{a.stamina=Math.min(b.stamina_s,a.stamina+b.stamina_refill_per_s*dt);this.bearTime.set(a.seat,0);}return;
     }
