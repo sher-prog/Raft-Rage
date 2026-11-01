@@ -823,7 +823,10 @@
       "confetti_speed",
       "confetti_size",
       "confetti_colors",
-      "croc_turn_softness"
+      "croc_turn_softness",
+      "celebration_pieces",
+      "celebration_duration_s",
+      "celebration_fall_px_s"
     ]
   },
   {
@@ -1594,6 +1597,21 @@
     "key": "visuals.croc_turn_softness",
     "change": "added",
     "value": 0.2
+  },
+  {
+    "key": "visuals.celebration_pieces",
+    "change": "added",
+    "value": 120
+  },
+  {
+    "key": "visuals.celebration_duration_s",
+    "change": "added",
+    "value": 5
+  },
+  {
+    "key": "visuals.celebration_fall_px_s",
+    "change": "added",
+    "value": 90
   },
   {
     "key": "audio._assumed",

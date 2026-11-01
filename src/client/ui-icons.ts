@@ -1,0 +1,1 @@
+export const gearIcon=`<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m9 3 .6-1h4.8l.6 1 .4 2 1.8 1 1.8-.7 2 3.4-1.4 1.4v2.1l1.4 1.4-2 3.4-1.8-.7-1.8 1-.4 2-.6 1h-4.8l-.6-1-.4-2-1.8-1-1.8.7-2-3.4 1.4-1.4v-2.1l-1.4-1.4 2-3.4 1.8.7 1.8-1z"/><circle cx="12" cy="11.9" r="3.2"/></svg>`;

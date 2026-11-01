@@ -192,6 +192,9 @@ Every changed/added key is listed below; exact values and original values are in
 - `visuals.confetti_size`: added.
 - `visuals.confetti_colors`: added.
 - `visuals.croc_turn_softness`: added.
+- `visuals.celebration_pieces`: added.
+- `visuals.celebration_duration_s`: added.
+- `visuals.celebration_fall_px_s`: added.
 - `audio._assumed`: changed.
 - `audio.enabled_default`: added.
 - `audio.silly_default`: added.
