@@ -62,3 +62,10 @@ progress::-webkit-progress-bar{background:#d5dfd6}#red-progress::-webkit-progres
 #race-progress #rescue{grid-column:1/-1;min-height:44px;padding:6px;background:#ffd34e;font-size:13px}#race-progress #rescue[hidden]{display:none}
 
 .capybara-icon{display:block;width:52px;height:45px;max-width:100%}
+
+@media(max-width:780px){
+ .results{margin:20px auto;padding:16px;min-width:0;max-width:100%}.results>h2{font-size:36px}.results .seat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.results .team{padding:10px;min-width:0;box-shadow:none}.results .team h2{font-size:24px;letter-spacing:-1px}.results .team p{overflow-wrap:anywhere;font-size:12px}
+ .score-scroll{overflow:visible}.scorecard table,.scorecard tbody{display:block;width:100%}.scorecard thead{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%)}.scorecard tbody{display:grid;gap:12px}
+ .scorecard tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;border:1px solid #113e4055;border-radius:10px;padding:10px;background:#fffdf5}
+ .scorecard tbody th{grid-column:1/-1;padding:0 0 8px;overflow-wrap:anywhere}.scorecard tbody td{display:flex;justify-content:space-between;gap:6px;min-width:0;padding:7px 0;font-size:12px;border:0;font-variant-numeric:tabular-nums}.scorecard tbody td::before{content:attr(data-label);font-size:9px;font-weight:800;line-height:1.6}.scorecard tbody td:last-child{grid-column:1/-1}.awards{grid-template-columns:1fr}
+}

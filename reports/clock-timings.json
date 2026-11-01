@@ -1,9 +1,9 @@
 {
-  "measuredAt": "2026-11-01T05:24:27.343Z",
-  "countdownMs": 3005.319417,
+  "measuredAt": "2026-11-01T05:26:47.453Z",
+  "countdownMs": 3004.621333,
   "identicalSnapshotTick": 3,
   "snapshotCount": 20,
-  "sampleMs": 1005.664792,
+  "sampleMs": 1008.8682909999998,
   "firstRaceTick": 180,
   "environment": "Local real WebSocket clients; no physical/cellular claim"
 }
