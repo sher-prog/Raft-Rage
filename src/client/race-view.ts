@@ -1,3 +1,4 @@
+import {finishPresentation,makeFinishArch} from './finish-presentation.ts';
 import {batchStatic} from './batch-static.ts';
 import {ChaseCamera} from './chase-camera.ts';
 import {makeRaft,updateRaftItem} from './raft-model.ts';
@@ -45,9 +46,7 @@ export class RaceView {
     for(const [f,lat]of config.course.log_positions){const p=this.course.at(f*config.course.length,lat),log=new THREE.Mesh(new THREE.CylinderGeometry(config.course.floating_log_width/2,config.course.floating_log_width/2,config.course.floating_log_length,v.radial_segments),mat('#76502d'));log.rotation.z=Math.PI/2;log.rotation.y=-p.heading;log.position.set(p.x,config.course.floating_log_width/3,-p.y);this.staticHazards.add(log);}
     for(const [f,lat]of config.course.whirlpool_positions){const p=this.course.at(f*config.course.length,lat),g=new THREE.Group();g.position.set(p.x,1,-p.y);for(let i=1;i<=4;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(config.course.whirlpool_radius*i/4,2,4,24,Math.PI*1.7),mat(i%2?'#c4eee0':'#075457'));ring.rotation.x=-Math.PI/2;ring.rotation.z=i;g.add(ring);}this.scene.add(g);this.whirlMeshes.push(g);}
     for(const [f,lat]of config.course.crate_positions){const p=this.course.at(f*config.course.length,lat),g=new THREE.Group();g.position.set(p.x,config.pickups.crate_radius/2,-p.y);const box=new THREE.Mesh(new THREE.BoxGeometry(config.pickups.crate_radius,config.pickups.crate_radius,config.pickups.crate_radius),mat('#ffd34e'));g.add(box);for(const side of [-1,1]){const band=new THREE.Mesh(new THREE.BoxGeometry(config.pickups.crate_radius+1,3,config.pickups.crate_radius+1),mat('#113e40'));band.position.y=side*config.pickups.crate_radius/3;g.add(band);}this.scene.add(g);this.crateMeshes.push(g);}
-    const finish=this.course.at(config.course.length);const arch=new THREE.Group();arch.position.set(finish.x,0,-finish.y);arch.rotation.y=-finish.heading;
-    for(const sign of [-1,1]){const post=new THREE.Mesh(new THREE.BoxGeometry(v.finish_arch_post,v.finish_arch_height,v.finish_arch_post),mat(v.bank_color));post.position.set(sign*v.finish_arch_width/2,v.finish_arch_height/2,0);arch.add(post);}
-    const beam=new THREE.Mesh(new THREE.BoxGeometry(v.finish_arch_width,v.finish_arch_post*2,v.finish_arch_post),mat(v.vest_color));beam.position.y=v.finish_arch_height;arch.add(beam);this.scene.add(arch);
+    this.scene.add(makeFinishArch(config,this.course));
     for(let i=0;i<2;i++){
       const raft=makeRaft(config,i);const team=i===0?v.red_color:v.blue_color;
       const zones=new THREE.Group();zones.name='zones';
@@ -73,6 +72,7 @@ export class RaceView {
   get triangles(){return this.renderTriangles;}
   setEffects(lowEffects:boolean,reduceMotion:boolean){this.lowEffects=lowEffects;this.reduceMotion=reduceMotion;this.renderer.setPixelRatio(Math.min(devicePixelRatio,lowEffects?this.config.visuals.low_effects_pixel_ratio:this.config.visuals.max_pixel_ratio));}
   draw(snapshot:Snapshot,ownRaft:number,dt:number,bigScreen=false){
+    snapshot=finishPresentation(snapshot,this.config,this.course);
     this.ensureAnimals(snapshot);for(const r of this.rafts)r.getObjectByName('zones')!.visible=snapshot.animals.length===4;const v=this.config.visuals;
     snapshot.rafts.forEach((r,i)=>{this.rafts[i].position.set(r.x,v.raft_height+r.height,-r.y);this.rafts[i].rotation.y=-r.heading;updateRaftItem(this.rafts[i],r.item);this.stars[i].visible=r.stun>0;this.stars[i].rotation.y=-(snapshot.raceTime*v.stun_orbit_speed);});
     snapshot.animals.forEach((a,i)=>{const phi=rad(a.phi);this.animals[i].position.set(Math.sin(phi)*v.character_rim_radius,v.tube_radius,-Math.cos(phi)*v.character_rim_radius);this.animals[i].rotation.y=-phi+Math.PI;animateCharacter(this.animals[i],a,snapshot.rafts[a.raft],snapshot.raceTime,this.reduceMotion,this.config);this.swings[i].visible=a.whackPhase==='windup';this.swings[i].rotation.z=(a.whackWindup/this.config.combat.whack_windup_s)*Math.PI;});

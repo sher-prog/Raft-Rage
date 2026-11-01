@@ -1,3 +1,4 @@
+import {crocodileHeading} from './finish-presentation.ts';
 import {batchStatic} from './batch-static.ts';
 import type {ComicStyle} from './comic-style.ts';
 import * as THREE from 'three';
@@ -38,7 +39,7 @@ export class WorldArt {
  for(let i=0;i<8;i++){const m=new THREE.Mesh(new THREE.CylinderGeometry(c.pickups.projectile_radius,c.pickups.projectile_radius,40,8),mat('#9d6e43'));m.rotation.z=Math.PI/2;m.visible=false;scene.add(m);this.projectiles.push(m);}
  }
  batch(style:ComicStyle){for(const chunk of this.chunks)batchStatic(chunk,style);for(const croc of this.crocs)batchStatic(croc,style);batchStatic(this.foam,style);}
- update(state:Snapshot,progress:number,low:boolean){const c=this.c;this.crocs.forEach((g,i)=>{const lateral=c.crocodiles.sweep_frac_of_half_width*c.course.half_width*Math.sin(2*Math.PI*state.raceTime/c.crocodiles.periods_s[i]),p=this.course.at(c.crocodiles.positions_frac[i]*c.course.length,lateral);g.position.set(p.x,0,-p.y);g.rotation.y=-p.heading+Math.PI/2;const close=state.rafts.some(r=>Math.hypot(r.x-p.x,r.y-p.y)<c.crocodiles.jaw_fast_distance);this.jaws[i].rotation.x=-Math.max(0,Math.sin(state.raceTime*(close?12:3)))*.6;});if(this.gate)this.gate.visible=(state.world?.gateOpen??0)<=0;
+ update(state:Snapshot,progress:number,low:boolean){const c=this.c;this.crocs.forEach((g,i)=>{const lateral=c.crocodiles.sweep_frac_of_half_width*c.course.half_width*Math.sin(2*Math.PI*state.raceTime/c.crocodiles.periods_s[i]),p=this.course.at(c.crocodiles.positions_frac[i]*c.course.length,lateral);g.position.set(p.x,0,-p.y);g.rotation.y=-crocodileHeading(p.heading,state.raceTime,c.crocodiles.periods_s[i],c.visuals.croc_turn_softness);const close=state.rafts.some(r=>Math.hypot(r.x-p.x,r.y-p.y)<c.crocodiles.jaw_fast_distance);this.jaws[i].rotation.x=-Math.max(0,Math.sin(state.raceTime*(close?12:3)))*.6;});if(this.gate)this.gate.visible=(state.world?.gateOpen??0)<=0;
  this.projectiles.forEach((m,i)=>{const p=state.world?.projectiles[i];m.visible=!!p;if(p){m.position.set(p.x,22,-p.y);m.rotation.y=state.raceTime*8;}});
  this.foam.visible=!low;
  if(this.flowBatch&&!low){let count=0;for(const line of this.flow){const f=(line.progress+state.raceTime*c.water.current_speed)%c.course.length;if(Math.abs(f-progress)>=c.visuals.scenery_distance)continue;const p=this.course.at(f,line.lateral),pose=this.flowPose;pose.position.set(p.x,1,-p.y);pose.rotation.set(-Math.PI/2,0,-p.heading);pose.updateMatrix();this.flowBatch.setMatrixAt(count++,pose.matrix);}this.flowBatch.count=count;this.flowBatch.instanceMatrix.needsUpdate=true;}

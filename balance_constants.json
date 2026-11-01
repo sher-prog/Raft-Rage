@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "3.13-character-colors-hud-events (2026-11-01)",
+  "_version": "3.14-finish-celebration-croc-turns (2026-11-01)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -855,7 +855,18 @@
       "pose_walk_lean",
       "phone_race_view_frac",
       "phone_pad_frac",
-      "animal_clothing_colors"
+      "animal_clothing_colors",
+      "finish_line_depth",
+      "finish_line_columns",
+      "finish_runout_u",
+      "finish_runout_s",
+      "confetti_count",
+      "confetti_life_s",
+      "confetti_height",
+      "confetti_speed",
+      "confetti_size",
+      "confetti_colors",
+      "croc_turn_softness"
     ],
     "camera_height": 180,
     "camera_behind": 300,
@@ -908,7 +919,7 @@
     "spike_height": 12,
     "spike_radius": 6,
     "finish_arch_height": 90,
-    "finish_arch_width": 180,
+    "finish_arch_width": 416,
     "finish_arch_post": 8,
     "hippo_parts": [
       [
@@ -1117,7 +1128,23 @@
       "frog": "#149b43",
       "bear": "#2468e8",
       "capybara": "#f6ce25"
-    }
+    },
+    "finish_line_depth": 18,
+    "finish_line_columns": 20,
+    "finish_runout_u": 110,
+    "finish_runout_s": 1.2,
+    "confetti_count": 72,
+    "confetti_life_s": 3,
+    "confetti_height": 80,
+    "confetti_speed": 65,
+    "confetti_size": 3,
+    "confetti_colors": [
+      "#e53935",
+      "#2468e8",
+      "#f6ce25",
+      "#149b43"
+    ],
+    "croc_turn_softness": 0.2
   },
   "audio": {
     "music_tempo_start": 1,

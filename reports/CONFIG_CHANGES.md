@@ -1,6 +1,6 @@
 # Build config changes
 
-Config: `3.13-character-colors-hud-events (2026-11-01)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
+Config: `3.14-finish-celebration-croc-turns (2026-11-01)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
 
 Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 
@@ -181,6 +181,17 @@ Every changed/added key is listed below; exact values and original values are in
 - `visuals.animal_clothing_colors.frog`: added.
 - `visuals.animal_clothing_colors.bear`: added.
 - `visuals.animal_clothing_colors.capybara`: added.
+- `visuals.finish_line_depth`: added.
+- `visuals.finish_line_columns`: added.
+- `visuals.finish_runout_u`: added.
+- `visuals.finish_runout_s`: added.
+- `visuals.confetti_count`: added.
+- `visuals.confetti_life_s`: added.
+- `visuals.confetti_height`: added.
+- `visuals.confetti_speed`: added.
+- `visuals.confetti_size`: added.
+- `visuals.confetti_colors`: added.
+- `visuals.croc_turn_softness`: added.
 - `audio._assumed`: changed.
 - `audio.enabled_default`: added.
 - `audio.silly_default`: added.

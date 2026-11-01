@@ -60,3 +60,5 @@ progress::-webkit-progress-bar{background:#d5dfd6}#red-progress::-webkit-progres
 #race-progress #race-hints{position:static;grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:center;gap:2px 12px;padding:0;pointer-events:none}
 #race-progress #race-hints p{background:none;border:0;padding:0;font-size:11px;line-height:1.2}#race-progress #race-hints .hint-done{display:none}
 #race-progress #rescue{grid-column:1/-1;min-height:44px;padding:6px;background:#ffd34e;font-size:13px}#race-progress #rescue[hidden]{display:none}
+
+.capybara-icon{display:block;width:52px;height:45px;max-width:100%}

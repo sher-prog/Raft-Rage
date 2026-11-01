@@ -1,6 +1,6 @@
 # Raft Rage
 
-Original multiplayer raft racer built in ChatGPT Work for Shernice. Live: https://raft-rage.onrender.com. Current build: **0.3.13**, through Phase 3H; physical mobile acceptance remains pending.
+Original multiplayer raft racer built in ChatGPT Work for Shernice. Live: https://raft-rage.onrender.com. Current build: **0.3.14**, through Phase 3H; physical mobile acceptance remains pending.
 
 ## Run
 

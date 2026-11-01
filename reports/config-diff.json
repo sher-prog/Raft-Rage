@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "3.13-character-colors-hud-events (2026-11-01)"
+    "value": "3.14-finish-celebration-croc-turns (2026-11-01)"
   },
   {
     "key": "network._assumed",
@@ -812,7 +812,18 @@
       "pose_walk_lean",
       "phone_race_view_frac",
       "phone_pad_frac",
-      "animal_clothing_colors"
+      "animal_clothing_colors",
+      "finish_line_depth",
+      "finish_line_columns",
+      "finish_runout_u",
+      "finish_runout_s",
+      "confetti_count",
+      "confetti_life_s",
+      "confetti_height",
+      "confetti_speed",
+      "confetti_size",
+      "confetti_colors",
+      "croc_turn_softness"
     ]
   },
   {
@@ -1057,7 +1068,7 @@
   {
     "key": "visuals.finish_arch_width",
     "change": "added",
-    "value": 180
+    "value": 416
   },
   {
     "key": "visuals.finish_arch_post",
@@ -1523,6 +1534,66 @@
     "key": "visuals.animal_clothing_colors.capybara",
     "change": "added",
     "value": "#f6ce25"
+  },
+  {
+    "key": "visuals.finish_line_depth",
+    "change": "added",
+    "value": 18
+  },
+  {
+    "key": "visuals.finish_line_columns",
+    "change": "added",
+    "value": 20
+  },
+  {
+    "key": "visuals.finish_runout_u",
+    "change": "added",
+    "value": 110
+  },
+  {
+    "key": "visuals.finish_runout_s",
+    "change": "added",
+    "value": 1.2
+  },
+  {
+    "key": "visuals.confetti_count",
+    "change": "added",
+    "value": 72
+  },
+  {
+    "key": "visuals.confetti_life_s",
+    "change": "added",
+    "value": 3
+  },
+  {
+    "key": "visuals.confetti_height",
+    "change": "added",
+    "value": 80
+  },
+  {
+    "key": "visuals.confetti_speed",
+    "change": "added",
+    "value": 65
+  },
+  {
+    "key": "visuals.confetti_size",
+    "change": "added",
+    "value": 3
+  },
+  {
+    "key": "visuals.confetti_colors",
+    "change": "added",
+    "value": [
+      "#e53935",
+      "#2468e8",
+      "#f6ce25",
+      "#149b43"
+    ]
+  },
+  {
+    "key": "visuals.croc_turn_softness",
+    "change": "added",
+    "value": 0.2
   },
   {
     "key": "audio._assumed",
