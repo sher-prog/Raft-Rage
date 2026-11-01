@@ -11,7 +11,7 @@ import type { RawData } from 'ws';
 import type { Config, PlayerView, RoomView, ServerMessage, Character, Difficulty } from '../shared.ts';
 
 type Player = PlayerView & { token: string; socket?: WebSocket; disconnectedAt?: number; order: number; inputEpoch?:string };
-type Room = { difficulty?:Difficulty; code: string; hostId: string; mode: '1v1'|'2v2'; players: Player[]; revision: number; emptySince?: number; banner: string; sim?:Simulation; accumulator:number; lastPump:number; snapshotCount:number;snapshotTotalMs:number;snapshotWorstMs:number;snapshotBytes:number;schedulerLateMaxMs:number;overruns:number;lastOverrunWallMs?:number;lastOverrunCpuMs?:number;pausedSince?:number };
+type Room = { difficulty?:Difficulty; code: string; hostId: string; mode: '1v1'|'2v2'; players: Player[]; revision: number; emptySince?: number; banner: string; sim?:Simulation; accumulator:number; lastPump:number; snapshotPhase:number;snapshotCount:number;snapshotTotalMs:number;snapshotWorstMs:number;snapshotBytes:number;schedulerLateMaxMs:number;overruns:number;lastOverrunWallMs?:number;lastOverrunCpuMs?:number;pausedSince?:number };
 type Connection = { room?: Room; player?: Player; hello: boolean; lastSeen: number; lostAt?:number; budget: number; refillAt: number; debug:boolean; socket:IncomingMessage['socket'] };
 export function loadConfig(): Config { return JSON.parse(readFileSync(new URL('../../balance_constants.json', import.meta.url), 'utf8')); }
 
@@ -124,7 +124,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
             if(!rooms.has(code)&&!config.rooms.code_blocklist.includes(code)&&!config.names.blocklist.some(word=>code.toLowerCase().includes(word)))break;code='';
           }
           if(!code){error(ws,'CAPACITY','The river is busy. Try again shortly.');return;}
-          room={code,hostId:'',mode:(m.solo?config.rooms.default_mode_solo:config.rooms.default_mode_multiplayer) as Room['mode'],players:[],revision:0,banner:'',accumulator:0,lastPump:now,snapshotCount:0,snapshotTotalMs:0,snapshotWorstMs:0,snapshotBytes:0,schedulerLateMaxMs:0,overruns:0};rooms.set(code,room);
+          room={code,hostId:'',mode:(m.solo?config.rooms.default_mode_solo:config.rooms.default_mode_multiplayer) as Room['mode'],players:[],revision:0,banner:'',accumulator:0,lastPump:now,snapshotPhase:rooms.size%Math.round(config.network.sim_hz/config.network.snapshot_hz),snapshotCount:0,snapshotTotalMs:0,snapshotWorstMs:0,snapshotBytes:0,schedulerLateMaxMs:0,overruns:0};rooms.set(code,room);
         }else{room=rooms.get(codeOf(m.code));}
         if(!room){error(ws,'ROOM_MISSING',`No room ${codeOf(m.code)}. Check the code with your host.`);return;}
         const tokenPlayer=typeof m.token==='string'?room.players.find(p=>p.token===m.token):undefined;
@@ -146,7 +146,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
       const {room,player}=c;if(!room||!player){error(ws,'NO_ROOM','Join a room first.');return;}
       if(m.type==='debug_metrics'){
         if(!c.debug||room.hostId!==player.id){error(ws,'HOST_ONLY','Debug metrics are for the host in debug mode.');return;}
-        const cpu=process.cpuUsage();send(ws,{type:'metrics',metrics:{...readCpuCgroup(config.debug),lastOverrunWallMs:room.lastOverrunWallMs??0,lastOverrunCpuMs:room.lastOverrunCpuMs??0,cpuUserUs:cpu.user,cpuSystemUs:cpu.system,wallMs:performance.now(),rssBytes:process.memoryUsage().rss,activeRaceRooms:[...rooms.values()].filter(r=>r.sim&&r.sim.phase!=='results'&&r.players.some(p=>p.socket)).length,roomCount:rooms.size,connections:clients.size,bytesIn,bytesOut,messagesIn,messagesOut,socketBytesRead:[...clients.values()].reduce((n,c)=>n+c.socket.bytesRead,0),socketBytesWritten:[...clients.values()].reduce((n,c)=>n+c.socket.bytesWritten,0),eventLoopMeanMs:loop?loop.mean/1e6:null,eventLoopMaxMs:loop?loop.max/1e6:null,tick:room.sim?.tick??0,tickAverageMs:room.sim?.tickAverageMs??0,tickWorstMs:room.sim?.tickWorstMs??0,snapshotCount:room.snapshotCount,snapshotAverageMs:room.snapshotCount?room.snapshotTotalMs/room.snapshotCount:0,snapshotWorstMs:room.snapshotWorstMs,snapshotBytes:room.snapshotBytes,schedulerLateMaxMs:room.schedulerLateMaxMs,overruns:room.overruns}});return;
+        const cpu=process.cpuUsage();send(ws,{type:'metrics',metrics:{...readCpuCgroup(config.debug),lastOverrunWallMs:room.lastOverrunWallMs??0,lastOverrunCpuMs:room.lastOverrunCpuMs??0,cpuUserUs:cpu.user,cpuSystemUs:cpu.system,wallMs:performance.now(),rssBytes:process.memoryUsage().rss,activeRaceRooms:[...rooms.values()].filter(r=>r.sim&&r.sim.phase!=='results'&&r.players.some(p=>p.socket)).length,roomCount:rooms.size,connections:clients.size,bytesIn,bytesOut,messagesIn,messagesOut,socketBytesRead:[...clients.values()].reduce((n,c)=>n+c.socket.bytesRead,0),socketBytesWritten:[...clients.values()].reduce((n,c)=>n+c.socket.bytesWritten,0),eventLoopMeanMs:loop?loop.mean/1e6:null,eventLoopMaxMs:loop?loop.max/1e6:null,tick:room.sim?.tick??0,tickAverageMs:room.sim?.tickAverageMs??0,tickWorstMs:room.sim?.tickWorstMs??0,snapshotPhase:room.snapshotPhase,snapshotCount:room.snapshotCount,snapshotAverageMs:room.snapshotCount?room.snapshotTotalMs/room.snapshotCount:0,snapshotWorstMs:room.snapshotWorstMs,snapshotBytes:room.snapshotBytes,schedulerLateMaxMs:room.schedulerLateMaxMs,overruns:room.overruns}});return;
       }
       if(m.type==='debug_jump'){
         if(!c.debug||room.hostId!==player.id){error(ws,'HOST_ONLY','Jump is for the host in debug mode.');return;}
@@ -220,7 +220,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
         const cost=performance.now()-start,cpuCost=cpuStart?process.threadCpuUsage(cpuStart):undefined;sim.tickTotalMs+=cost;sim.tickCount++;sim.tickAverageMs=sim.tickTotalMs/sim.tickCount;sim.tickWorstMs=Math.max(sim.tickWorstMs,cost);if(cost>sim.dt*1000){room.overruns++;room.lastOverrunWallMs=cost;room.lastOverrunCpuMs=cpuCost?(cpuCost.user+cpuCost.system)/1000:undefined;if(room.overruns===1)console.warn('Simulation tick exceeded budget; rates unchanged.');}
         room.accumulator-=sim.dt;
         if(phase!==sim.phase)broadcast(room);if(sim.currentPhase()==='results'){room.accumulator=0;break;}
-        if(sim.tick%Math.round(config.network.sim_hz/config.network.snapshot_hz)===0){
+        if((sim.tick+room.snapshotPhase)%Math.round(config.network.sim_hz/config.network.snapshot_hz)===0){
           const start=performance.now(),snapshot=sim.snapshot(),encoded=Buffer.from(JSON.stringify({type:'snapshot',snapshot}));room.snapshotCount++;room.snapshotBytes+=encoded.length;for(const p of room.players)if(p.socket)sendRaw(p.socket,encoded);const snapshotMs=performance.now()-start;room.snapshotTotalMs+=snapshotMs;room.snapshotWorstMs=Math.max(room.snapshotWorstMs,snapshotMs);
         }
       }

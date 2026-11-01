@@ -1,6 +1,6 @@
 # Build config changes
 
-Config: `3.11-chase-pose-performance-fixes (2026-10-31)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
+Config: `3.12-snapshot-pacing (2026-10-31)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
 
 Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 

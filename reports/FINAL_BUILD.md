@@ -1,16 +1,14 @@
-# Raft Rage — 0.3.11 checkpoint
+# Raft Rage — 0.3.12 checkpoint
 
 | Check | Result |
 |---|---|
-| Full serial suite, typecheck/build | PASS:69/69,51.168s; zero overrun warnings; original cases/assertions/thresholds retained |
-| Chase camera | PASS:river banks/nearby rivals fit at phone/desktop ratios, both edges/every bend, moving turns and resize; no authority state changes |
-| Art/effects | PASS:squat distinct animated species, carried log lifecycle, all art inside radius34; batching preserves bounds/colors/animation; instanced puffs retain300 cap/fade/expiry |
-| Browser full effects | PASS:no shader errors; one desktop sample59fps/203calls/62,690triangles; not phone performance evidence |
-| Render/public0.3.11 | PENDING deployed-build checks |
-| Physical Safari/LTE, Android, touch/audio/FPS | PENDING user-operated acceptance |
+| Full serial suite/typecheck/build | PASS:70/70,54.085s; original assertions and thresholds retained |
+| Timing | Strict zero-overrun test PASS; one warning in another local integration scenario |
+| Camera/art/client lag | PASS:viewport/river/rival projection regressions, crouched animated species, preserved art bounds, batched scenery and instanced300-particle effects |
+| Desktop browser | No shader errors; sampled59fps,203draw calls,62,690triangles; not physical-phone evidence |
+| 0.3.12 Render/public checks | PENDING final deployed-build checks |
+| Physical mobile/audio/latency/FPS | PENDING user-operated acceptance |
 
-Cause of zoom defect: a fixed close camera ignored the phone's narrow/short race viewport. The replacement fits river/subject bounds, smoothly follows the route and widens with speed. Upright stretched models are replaced by crouched species-specific rigs with bent limbs, recoil/charge/walk/stun poses. Static components and particles are batched to reduce drawing work.
+All planned Phase1–3H features are enabled. The close fixed zoom is replaced with a constrained route-following chase camera and speed widening; Phase3 phone view68%/pad32%. Animals have distinct crouched rigs/bent limbs/expressions. Carried log appears at the bow and disappears on throw. Original34radius,0.4bank restitution and60/20/10Hz stay intact. All210 config diff entries are documented; original Phase1 layout55/45 retained separately.
 
-Config:60/20/10Hz and radius34/restitution0.4 unchanged. Phase 3 visual phone layout68/32; original Phase 1 layout55/45 retained. All210 diff entries (including metadata and declared assumed keys) are in CONFIG_CHANGES.md / config-diff.json. Current art is original procedural work informed by the user's reference; no copied source-game assets.
-
-Known limits:0.3.10 original20s4-room/16-client Render check passed, but its richer60s run had one45.920ms wall-time overrun. Previous versions also had intermittent stalls; raw failures remain. New debug-only wall/thread-CPU and cgroup evidence will identify throttling on the deployed build. Physical mobile acceptance and Free cold wake remain unmeasured. No rate, timing tolerance or overrun limit was relaxed; no paid service/pinger added.
+0.3.11 original4-room/16-client20s Render check passed. Its richer60s run failed with one20.582ms wall tick using1.053ms actual CPU; measured cgroup quota0.15CPU and29additional throttled periods (2.598s throttle time) support hosting delays as a contributor. 0.3.12 distributes snapshot work across tick phases; remeasurement follows. Raw failures remain. No test/rate relaxation, paid service or pinger. Physical Safari/LTE, Android, touch/audio/FPS and Free cold wake are not claimed passed.

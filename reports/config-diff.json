@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "3.11-chase-pose-performance-fixes (2026-10-31)"
+    "value": "3.12-snapshot-pacing (2026-10-31)"
   },
   {
     "key": "network._assumed",
