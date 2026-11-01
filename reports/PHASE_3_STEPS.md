@@ -27,3 +27,7 @@ World assets are original procedural 3D shapes; character models remain modular 
 | 3H / 0.3.8 | Mixed trees, boulder banks, docks and cheering spectators, closer camera, distinct propulsion rings/droplets/clouds, heat steam/hiss, narrow HUD and control text polish | 62/62, 50.146s, zero local overrun warnings; desktop/390px browser review; full released-ruleset wall tests |
 
 3H: camera_height 240→190, camera_behind 320→260, camera_ahead 140→120; three assumed effect geometry fields added. Geometry placement for scenery follows the shared mitered bank without changing collision. Static collision/award geometry is cached to reduce allocation. Initial 60/62 run failed the unchanged 16.67ms tick budget and 5s production startup timeout; clean rerun after allocation cleanup passed 62/62, then final visual changes passed 62/62 again. All original cases/assertions remain. Physical Safari/Android, audible audio and phone FPS still need user-operated acceptance.
+
+| Performance fix / 0.3.9 | Cache crate/whirlpool/gate positions; calculate crocodile positions once per tick; reuse hazard arrays and bot seat sets; encode broadcast text once into a shared buffer | 62/62, 53.094s; original wire payloads, rules and 60/20/10Hz retained |
+
+Actual Render 0.3.8 4-room/16-client checks: FAIL twice, one overrun each (24.174ms, then 95.371ms), despite ~60/20Hz and 0.0781 / 0.0691 average CPU cores. Raw reports retained as final-render-load-first.json and final-render-load-repeat.json. Do not call either run passed. Repeat on 0.3.9 before judging capacity.

@@ -45,17 +45,17 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
   let bytesOut=0, messagesOut=0, bytesIn=0, messagesIn=0, order=0;
   let loop = options.measure ? monitorEventLoopDelay({resolution:config.debug.event_loop_resolution_ms}) : undefined;
   loop?.enable();
-  const sendRaw=(ws:WebSocket,encoded:string)=>{
+  const sendRaw=(ws:WebSocket,encoded:string|Buffer)=>{
     if(ws.readyState!==WebSocket.OPEN)return;
     if(ws.bufferedAmount>config.network.max_buffered_bytes){ws.terminate();return;}
-    bytesOut+=Buffer.byteLength(encoded);messagesOut++;ws.send(encoded);
+    bytesOut+=typeof encoded==='string'?Buffer.byteLength(encoded):encoded.length;messagesOut++;ws.send(encoded,{binary:false});
   };
   const send=(ws:WebSocket,message:ServerMessage)=>sendRaw(ws,JSON.stringify(message));
   const view = (room:Room):RoomView => ({
     difficulty:room.difficulty??'chill',code:room.code, hostId:room.hostId, mode:room.mode, phase:room.sim?.phase??'lobby', simulation:room.sim?.snapshot(), revision:room.revision, banner:room.banner,
     players:room.players.map(p=>({character:p.character??'hippo',bigScreen:p.bigScreen??false,id:p.id,name:p.name,seat:p.seat,connected:!!p.socket,ready:p.ready,botDriving:!p.socket && p.disconnectedAt!==undefined && performance.now()-p.disconnectedAt>=config.network.disconnect_to_bot_s*1000}))
   });
-  const broadcast = (room:Room) => {room.revision++; const state=view(room); for(const p of room.players) if(p.socket) send(p.socket,{type:'room',room:state});};
+  const broadcast = (room:Room) => {room.revision++; const state=view(room),encoded=Buffer.from(JSON.stringify({type:'room',room:state})); for(const p of room.players) if(p.socket) sendRaw(p.socket,encoded);};
   const promote = (room:Room, departing:Player) => {
     if(room.hostId!==departing.id) return;
     const next=room.players.filter(p=>p.socket && p.id!==departing.id).sort((a,b)=>a.order-b.order)[0];
@@ -220,7 +220,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
         room.accumulator-=sim.dt;
         if(phase!==sim.phase)broadcast(room);if(sim.currentPhase()==='results'){room.accumulator=0;break;}
         if(sim.tick%Math.round(config.network.sim_hz/config.network.snapshot_hz)===0){
-          const start=performance.now(),snapshot=sim.snapshot(),encoded=JSON.stringify({type:'snapshot',snapshot});room.snapshotCount++;room.snapshotBytes+=Buffer.byteLength(encoded);for(const p of room.players)if(p.socket)sendRaw(p.socket,encoded);const snapshotMs=performance.now()-start;room.snapshotTotalMs+=snapshotMs;room.snapshotWorstMs=Math.max(room.snapshotWorstMs,snapshotMs);
+          const start=performance.now(),snapshot=sim.snapshot(),encoded=Buffer.from(JSON.stringify({type:'snapshot',snapshot}));room.snapshotCount++;room.snapshotBytes+=encoded.length;for(const p of room.players)if(p.socket)sendRaw(p.socket,encoded);const snapshotMs=performance.now()-start;room.snapshotTotalMs+=snapshotMs;room.snapshotWorstMs=Math.max(room.snapshotWorstMs,snapshotMs);
         }
       }
     }

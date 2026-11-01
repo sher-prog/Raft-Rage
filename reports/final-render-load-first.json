@@ -1,0 +1,56 @@
+{
+  "timestamp": "2026-11-01T02:40:35.047Z",
+  "base": "https://raft-rage.onrender.com",
+  "scenario": "Actual Render: 4 rooms / 16 clients, all four characters, resource-aware 10Hz inputs, deliberate steering, live jumps through crocodile/ramp/shortcut regions, thrown logs and Turbo; 20-second measured sample",
+  "configVersion": "3.8-final-world (2026-10-31)",
+  "rooms": 4,
+  "clients": 16,
+  "activeRaceRooms": 4,
+  "sampleMs": 20064.711169000002,
+  "cpuCores": 0.07812327756911953,
+  "cpuCoresPerUser": 0.004882704848069971,
+  "rssBytes": 86548480,
+  "eventLoopMeanMs": 10.302287711622126,
+  "eventLoopMaxMs": 90.832895,
+  "socketOutBps": 965709.7895302376,
+  "socketInBps": 53709.91841960862,
+  "metrics": [
+    {
+      "simHz": 60.00584757283629,
+      "snapshotHz": 20.03517502016627,
+      "tickAverageMs": 0.07770641971540211,
+      "tickWorstMs": 24.173619000001054,
+      "overruns": 1,
+      "snapshotWorstMs": 71.36293199999636,
+      "schedulerLateMaxMs": 75.45533200000536
+    },
+    {
+      "simHz": 60.00372873038053,
+      "snapshotHz": 19.9846305821284,
+      "tickAverageMs": 0.05055506651634996,
+      "tickWorstMs": 1.0066440000009607,
+      "overruns": 0,
+      "snapshotWorstMs": 1.4538070000016887,
+      "schedulerLateMaxMs": 72.7129183333359
+    },
+    {
+      "simHz": 60.05200009136935,
+      "snapshotHz": 19.984109573974365,
+      "tickAverageMs": 0.03819546835440426,
+      "tickWorstMs": 0.4157699999996112,
+      "overruns": 0,
+      "snapshotWorstMs": 9.79148599999462,
+      "schedulerLateMaxMs": 72.49346666666936
+    },
+    {
+      "simHz": 59.98705695842191,
+      "snapshotHz": 19.979077940471083,
+      "tickAverageMs": 0.05911396823100899,
+      "tickWorstMs": 0.6691089999949327,
+      "overruns": 0,
+      "snapshotWorstMs": 62.0237879999986,
+      "schedulerLateMaxMs": 79.87417766667112
+    }
+  ],
+  "pass": false
+}
