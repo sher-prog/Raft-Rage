@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-01T00:45:06.931Z",
+  "timestamp": "2026-11-01T01:45:47.009Z",
   "runs": [
     {
       "mode": "1v1",
@@ -82,5 +82,5 @@
       ]
     }
   ],
-  "environment": "Accelerated authoritative fixed-step simulation on developer macOS; race times are simulated seconds, not wall time"
+  "environment": "Accelerated authoritative fixed-step simulation in Work; race times are simulated seconds, not wall time"
 }

@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "1.8-swept-banks (2026-10-31)"
+    "value": "2.0-depth (2026-10-31)"
   },
   {
     "key": "network._assumed",
@@ -344,7 +344,10 @@
       "path_sections",
       "rock_positions",
       "spike_zones",
-      "bank_end_extension"
+      "bank_end_extension",
+      "log_positions",
+      "whirlpool_positions",
+      "crate_positions"
     ]
   },
   {
@@ -494,6 +497,144 @@
     "value": 600
   },
   {
+    "key": "course.log_positions",
+    "change": "added",
+    "value": [
+      [
+        0.18,
+        -75
+      ],
+      [
+        0.36,
+        80
+      ],
+      [
+        0.58,
+        -80
+      ],
+      [
+        0.86,
+        70
+      ]
+    ]
+  },
+  {
+    "key": "course.whirlpool_positions",
+    "change": "added",
+    "value": [
+      [
+        0.22,
+        70
+      ],
+      [
+        0.49,
+        -75
+      ],
+      [
+        0.81,
+        65
+      ]
+    ]
+  },
+  {
+    "key": "course.crate_positions",
+    "change": "added",
+    "value": [
+      [
+        0.090909,
+        90
+      ],
+      [
+        0.181818,
+        -90
+      ],
+      [
+        0.272727,
+        90
+      ],
+      [
+        0.363636,
+        -90
+      ],
+      [
+        0.454545,
+        90
+      ],
+      [
+        0.545455,
+        -90
+      ],
+      [
+        0.636364,
+        90
+      ],
+      [
+        0.727273,
+        -90
+      ],
+      [
+        0.818182,
+        90
+      ],
+      [
+        0.909091,
+        -90
+      ]
+    ]
+  },
+  {
+    "key": "pickups._assumed",
+    "change": "changed",
+    "before": [
+      "crate_radius",
+      "odds_neutral",
+      "log_throw_speed",
+      "log_throw_range"
+    ],
+    "value": [
+      "crate_radius",
+      "odds_neutral",
+      "log_throw_speed",
+      "log_throw_range",
+      "projectile_radius"
+    ]
+  },
+  {
+    "key": "pickups.projectile_radius",
+    "change": "added",
+    "value": 10
+  },
+  {
+    "key": "shortcut._assumed",
+    "change": "changed",
+    "before": [
+      "start_frac",
+      "end_frac"
+    ],
+    "value": [
+      "start_frac",
+      "end_frac",
+      "lateral",
+      "width",
+      "gate_radius"
+    ]
+  },
+  {
+    "key": "shortcut.lateral",
+    "change": "added",
+    "value": -120
+  },
+  {
+    "key": "shortcut.width",
+    "change": "added",
+    "value": 90
+  },
+  {
+    "key": "shortcut.gate_radius",
+    "change": "added",
+    "value": 45
+  },
+  {
     "key": "race.freeze_finished",
     "change": "added",
     "value": true
@@ -630,7 +771,16 @@
       "whack_arc_tube",
       "low_effects_pixel_ratio",
       "reduced_motion_camera_follow_rate",
-      "tick_time_quantum_ms"
+      "tick_time_quantum_ms",
+      "particle_life_s",
+      "particle_speed",
+      "particle_size",
+      "particle_per_shot",
+      "outline_scale",
+      "foam_spacing",
+      "tree_spacing",
+      "scenery_distance",
+      "effect_colors"
     ]
   },
   {
@@ -1059,6 +1209,145 @@
     "value": 0.001
   },
   {
+    "key": "visuals.particle_life_s",
+    "change": "added",
+    "value": 0.65
+  },
+  {
+    "key": "visuals.particle_speed",
+    "change": "added",
+    "value": 60
+  },
+  {
+    "key": "visuals.particle_size",
+    "change": "added",
+    "value": 5
+  },
+  {
+    "key": "visuals.particle_per_shot",
+    "change": "added",
+    "value": 9
+  },
+  {
+    "key": "visuals.outline_scale",
+    "change": "added",
+    "value": 1.06
+  },
+  {
+    "key": "visuals.foam_spacing",
+    "change": "added",
+    "value": 80
+  },
+  {
+    "key": "visuals.tree_spacing",
+    "change": "added",
+    "value": 200
+  },
+  {
+    "key": "visuals.scenery_distance",
+    "change": "added",
+    "value": 2000
+  },
+  {
+    "key": "visuals.effect_colors",
+    "change": "added",
+    "value": {
+      "hippo": "#b6f6ff",
+      "frog": "#b7f07e",
+      "bear": "#c9a372",
+      "capybara": "#e6d9b2"
+    }
+  },
+  {
+    "key": "visuals.effect_colors.hippo",
+    "change": "added",
+    "value": "#b6f6ff"
+  },
+  {
+    "key": "visuals.effect_colors.frog",
+    "change": "added",
+    "value": "#b7f07e"
+  },
+  {
+    "key": "visuals.effect_colors.bear",
+    "change": "added",
+    "value": "#c9a372"
+  },
+  {
+    "key": "visuals.effect_colors.capybara",
+    "change": "added",
+    "value": "#e6d9b2"
+  },
+  {
+    "key": "audio._assumed",
+    "change": "changed",
+    "before": [
+      "music_tempo_start",
+      "music_tempo_end"
+    ],
+    "value": [
+      "music_tempo_start",
+      "music_tempo_end",
+      "enabled_default",
+      "silly_default",
+      "master_gain",
+      "music_gain",
+      "beat_s",
+      "base_frequency",
+      "effect_s",
+      "notes"
+    ]
+  },
+  {
+    "key": "audio.enabled_default",
+    "change": "added",
+    "value": true
+  },
+  {
+    "key": "audio.silly_default",
+    "change": "added",
+    "value": true
+  },
+  {
+    "key": "audio.master_gain",
+    "change": "added",
+    "value": 0.18
+  },
+  {
+    "key": "audio.music_gain",
+    "change": "added",
+    "value": 0.12
+  },
+  {
+    "key": "audio.beat_s",
+    "change": "added",
+    "value": 0.24
+  },
+  {
+    "key": "audio.base_frequency",
+    "change": "added",
+    "value": 110
+  },
+  {
+    "key": "audio.effect_s",
+    "change": "added",
+    "value": 0.18
+  },
+  {
+    "key": "audio.notes",
+    "change": "added",
+    "value": [
+      0,
+      7,
+      12,
+      7,
+      3,
+      10,
+      15,
+      10
+    ]
+  },
+  {
     "key": "simulation",
     "change": "added",
     "value": {
@@ -1125,7 +1414,8 @@
     "change": "added",
     "value": [
       "simulation",
-      "debug"
+      "debug",
+      "release"
     ]
   },
   {
@@ -1189,5 +1479,91 @@
     "key": "debug.event_loop_resolution_ms",
     "change": "added",
     "value": 10
+  },
+  {
+    "key": "release",
+    "change": "added",
+    "value": {
+      "phase": 2,
+      "crocodiles": false,
+      "ramp": false,
+      "visuals": false,
+      "turbo": false,
+      "awards": false,
+      "big_screen": false,
+      "shortcut": false,
+      "scenery": false,
+      "_assumed": [
+        "phase",
+        "crocodiles",
+        "ramp",
+        "visuals",
+        "turbo",
+        "awards",
+        "big_screen",
+        "shortcut",
+        "scenery"
+      ]
+    }
+  },
+  {
+    "key": "release.phase",
+    "change": "added",
+    "value": 2
+  },
+  {
+    "key": "release.crocodiles",
+    "change": "added",
+    "value": false
+  },
+  {
+    "key": "release.ramp",
+    "change": "added",
+    "value": false
+  },
+  {
+    "key": "release.visuals",
+    "change": "added",
+    "value": false
+  },
+  {
+    "key": "release.turbo",
+    "change": "added",
+    "value": false
+  },
+  {
+    "key": "release.awards",
+    "change": "added",
+    "value": false
+  },
+  {
+    "key": "release.big_screen",
+    "change": "added",
+    "value": false
+  },
+  {
+    "key": "release.shortcut",
+    "change": "added",
+    "value": false
+  },
+  {
+    "key": "release.scenery",
+    "change": "added",
+    "value": false
+  },
+  {
+    "key": "release._assumed",
+    "change": "added",
+    "value": [
+      "phase",
+      "crocodiles",
+      "ramp",
+      "visuals",
+      "turbo",
+      "awards",
+      "big_screen",
+      "shortcut",
+      "scenery"
+    ]
   }
 ]

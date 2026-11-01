@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "1.8-swept-banks (2026-10-31)",
+  "_version": "2.0-depth (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -344,7 +344,10 @@
       "path_sections",
       "rock_positions",
       "spike_zones",
-      "bank_end_extension"
+      "bank_end_extension",
+      "log_positions",
+      "whirlpool_positions",
+      "crate_positions"
     ],
     "_tuning_note": "Tune course.length until a 2v2 race of Normal bots finishes in validation.finish_s_min..finish_s_max.",
     "start_progress": 0,
@@ -472,7 +475,81 @@
         -1
       ]
     ],
-    "bank_end_extension": 600
+    "bank_end_extension": 600,
+    "log_positions": [
+      [
+        0.18,
+        -75
+      ],
+      [
+        0.36,
+        80
+      ],
+      [
+        0.58,
+        -80
+      ],
+      [
+        0.86,
+        70
+      ]
+    ],
+    "whirlpool_positions": [
+      [
+        0.22,
+        70
+      ],
+      [
+        0.49,
+        -75
+      ],
+      [
+        0.81,
+        65
+      ]
+    ],
+    "crate_positions": [
+      [
+        0.090909,
+        90
+      ],
+      [
+        0.181818,
+        -90
+      ],
+      [
+        0.272727,
+        90
+      ],
+      [
+        0.363636,
+        -90
+      ],
+      [
+        0.454545,
+        90
+      ],
+      [
+        0.545455,
+        -90
+      ],
+      [
+        0.636364,
+        90
+      ],
+      [
+        0.727273,
+        -90
+      ],
+      [
+        0.818182,
+        90
+      ],
+      [
+        0.909091,
+        -90
+      ]
+    ]
   },
   "pickups": {
     "crates": 10,
@@ -502,8 +579,10 @@
       "crate_radius",
       "odds_neutral",
       "log_throw_speed",
-      "log_throw_range"
-    ]
+      "log_throw_range",
+      "projectile_radius"
+    ],
+    "projectile_radius": 10
   },
   "slipstream": {
     "min_behind": 80,
@@ -519,9 +598,15 @@
     "end_frac": 0.84,
     "_assumed": [
       "start_frac",
-      "end_frac"
+      "end_frac",
+      "lateral",
+      "width",
+      "gate_radius"
     ],
-    "_note": "Current inside the shortcut uses multipliers.current_shortcut."
+    "_note": "Current inside the shortcut uses multipliers.current_shortcut.",
+    "lateral": -120,
+    "width": 90,
+    "gate_radius": 45
   },
   "crocodiles": {
     "count": 3,
@@ -729,7 +814,16 @@
       "whack_arc_tube",
       "low_effects_pixel_ratio",
       "reduced_motion_camera_follow_rate",
-      "tick_time_quantum_ms"
+      "tick_time_quantum_ms",
+      "particle_life_s",
+      "particle_speed",
+      "particle_size",
+      "particle_per_shot",
+      "outline_scale",
+      "foam_spacing",
+      "tree_spacing",
+      "scenery_distance",
+      "effect_colors"
     ],
     "camera_height": 240,
     "camera_behind": 320,
@@ -931,14 +1025,53 @@
     "whack_arc_tube": 0.7,
     "low_effects_pixel_ratio": 1,
     "reduced_motion_camera_follow_rate": 2.5,
-    "tick_time_quantum_ms": 0.001
+    "tick_time_quantum_ms": 0.001,
+    "particle_life_s": 0.65,
+    "particle_speed": 60,
+    "particle_size": 5,
+    "particle_per_shot": 9,
+    "outline_scale": 1.06,
+    "foam_spacing": 80,
+    "tree_spacing": 200,
+    "scenery_distance": 2000,
+    "effect_colors": {
+      "hippo": "#b6f6ff",
+      "frog": "#b7f07e",
+      "bear": "#c9a372",
+      "capybara": "#e6d9b2"
+    }
   },
   "audio": {
     "music_tempo_start": 1,
     "music_tempo_end": 1.25,
     "_assumed": [
       "music_tempo_start",
-      "music_tempo_end"
+      "music_tempo_end",
+      "enabled_default",
+      "silly_default",
+      "master_gain",
+      "music_gain",
+      "beat_s",
+      "base_frequency",
+      "effect_s",
+      "notes"
+    ],
+    "enabled_default": true,
+    "silly_default": true,
+    "master_gain": 0.18,
+    "music_gain": 0.12,
+    "beat_s": 0.24,
+    "base_frequency": 110,
+    "effect_s": 0.18,
+    "notes": [
+      0,
+      7,
+      12,
+      7,
+      3,
+      10,
+      15,
+      10
     ]
   },
   "accessibility": {
@@ -982,7 +1115,8 @@
   },
   "_assumed": [
     "simulation",
-    "debug"
+    "debug",
+    "release"
   ],
   "debug": {
     "jump_percents": [
@@ -1003,5 +1137,27 @@
     "default_jump_percent": 95,
     "jump_speed": 240,
     "event_loop_resolution_ms": 10
+  },
+  "release": {
+    "phase": 2,
+    "crocodiles": false,
+    "ramp": false,
+    "visuals": false,
+    "turbo": false,
+    "awards": false,
+    "big_screen": false,
+    "shortcut": false,
+    "scenery": false,
+    "_assumed": [
+      "phase",
+      "crocodiles",
+      "ramp",
+      "visuals",
+      "turbo",
+      "awards",
+      "big_screen",
+      "shortcut",
+      "scenery"
+    ]
   }
 }

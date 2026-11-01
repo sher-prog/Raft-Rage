@@ -1,6 +1,6 @@
 # Phase 1 config changes
 
-Config: `1.8-swept-banks (2026-10-31)`. Compared with preserved original source JSON. No config changes in 0.1.7 or 0.1.8; 60/20/10 Hz retained.
+Config: `2.0-depth (2026-10-31)`. Compared with preserved original source JSON. No config changes in 0.1.7 or 0.1.8; 60/20/10 Hz retained.
 
 Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 
@@ -53,6 +53,15 @@ Every changed/added key is listed below; exact values and original values are in
 - `course.rock_positions`: added.
 - `course.spike_zones`: added.
 - `course.bank_end_extension`: added.
+- `course.log_positions`: added.
+- `course.whirlpool_positions`: added.
+- `course.crate_positions`: added.
+- `pickups._assumed`: changed.
+- `pickups.projectile_radius`: added.
+- `shortcut._assumed`: changed.
+- `shortcut.lateral`: added.
+- `shortcut.width`: added.
+- `shortcut.gate_radius`: added.
 - `race.freeze_finished`: added.
 - `race._assumed`: added.
 - `race.timeout_tie_label`: added.
@@ -119,6 +128,28 @@ Every changed/added key is listed below; exact values and original values are in
 - `visuals.low_effects_pixel_ratio`: added.
 - `visuals.reduced_motion_camera_follow_rate`: added.
 - `visuals.tick_time_quantum_ms`: added.
+- `visuals.particle_life_s`: added.
+- `visuals.particle_speed`: added.
+- `visuals.particle_size`: added.
+- `visuals.particle_per_shot`: added.
+- `visuals.outline_scale`: added.
+- `visuals.foam_spacing`: added.
+- `visuals.tree_spacing`: added.
+- `visuals.scenery_distance`: added.
+- `visuals.effect_colors`: added.
+- `visuals.effect_colors.hippo`: added.
+- `visuals.effect_colors.frog`: added.
+- `visuals.effect_colors.bear`: added.
+- `visuals.effect_colors.capybara`: added.
+- `audio._assumed`: changed.
+- `audio.enabled_default`: added.
+- `audio.silly_default`: added.
+- `audio.master_gain`: added.
+- `audio.music_gain`: added.
+- `audio.beat_s`: added.
+- `audio.base_frequency`: added.
+- `audio.effect_s`: added.
+- `audio.notes`: added.
 - `simulation`: added.
 - `simulation._assumed`: added.
 - `simulation.epsilon`: added.
@@ -134,3 +165,14 @@ Every changed/added key is listed below; exact values and original values are in
 - `debug.default_jump_percent`: added.
 - `debug.jump_speed`: added.
 - `debug.event_loop_resolution_ms`: added.
+- `release`: added.
+- `release.phase`: added.
+- `release.crocodiles`: added.
+- `release.ramp`: added.
+- `release.visuals`: added.
+- `release.turbo`: added.
+- `release.awards`: added.
+- `release.big_screen`: added.
+- `release.shortcut`: added.
+- `release.scenery`: added.
+- `release._assumed`: added.

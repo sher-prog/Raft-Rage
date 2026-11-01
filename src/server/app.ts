@@ -7,10 +7,10 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { IncomingMessage } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import type { RawData } from 'ws';
-import type { Config, PlayerView, RoomView, ServerMessage } from '../shared.ts';
+import type { Config, PlayerView, RoomView, ServerMessage, Character, Difficulty } from '../shared.ts';
 
 type Player = PlayerView & { token: string; socket?: WebSocket; disconnectedAt?: number; order: number; inputEpoch?:string };
-type Room = { code: string; hostId: string; mode: '1v1'|'2v2'; players: Player[]; revision: number; emptySince?: number; banner: string; sim?:Simulation; accumulator:number; lastPump:number; snapshotCount:number;snapshotTotalMs:number;snapshotWorstMs:number;snapshotBytes:number;schedulerLateMaxMs:number;overruns:number;pausedSince?:number };
+type Room = { difficulty?:Difficulty; code: string; hostId: string; mode: '1v1'|'2v2'; players: Player[]; revision: number; emptySince?: number; banner: string; sim?:Simulation; accumulator:number; lastPump:number; snapshotCount:number;snapshotTotalMs:number;snapshotWorstMs:number;snapshotBytes:number;schedulerLateMaxMs:number;overruns:number;pausedSince?:number };
 type Connection = { room?: Room; player?: Player; hello: boolean; lastSeen: number; lostAt?:number; budget: number; refillAt: number; debug:boolean; socket:IncomingMessage['socket'] };
 export function loadConfig(): Config { return JSON.parse(readFileSync(new URL('../../balance_constants.json', import.meta.url), 'utf8')); }
 
@@ -52,8 +52,8 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
   };
   const send=(ws:WebSocket,message:ServerMessage)=>sendRaw(ws,JSON.stringify(message));
   const view = (room:Room):RoomView => ({
-    code:room.code, hostId:room.hostId, mode:room.mode, phase:room.sim?.phase??'lobby', simulation:room.sim?.snapshot(), revision:room.revision, banner:room.banner,
-    players:room.players.map(p=>({id:p.id,name:p.name,seat:p.seat,connected:!!p.socket,ready:p.ready,botDriving:!p.socket && p.disconnectedAt!==undefined && performance.now()-p.disconnectedAt>=config.network.disconnect_to_bot_s*1000}))
+    difficulty:room.difficulty??'chill',code:room.code, hostId:room.hostId, mode:room.mode, phase:room.sim?.phase??'lobby', simulation:room.sim?.snapshot(), revision:room.revision, banner:room.banner,
+    players:room.players.map(p=>({character:p.character??'hippo',bigScreen:p.bigScreen??false,id:p.id,name:p.name,seat:p.seat,connected:!!p.socket,ready:p.ready,botDriving:!p.socket && p.disconnectedAt!==undefined && performance.now()-p.disconnectedAt>=config.network.disconnect_to_bot_s*1000}))
   });
   const broadcast = (room:Room) => {room.revision++; const state=view(room); for(const p of room.players) if(p.socket) send(p.socket,{type:'room',room:state});};
   const promote = (room:Room, departing:Player) => {
@@ -138,9 +138,9 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
           attach(ws,c,room,candidate);return;
         }
         if(m.type==='resume'){error(ws,'SESSION_MISSING','Your seat is no longer reserved. Join the room again.');return;}
-        const seat=room.sim?null:freeSeat(room);
+        const seat=room.sim||m.bigScreen===true&&config.release.big_screen?null:freeSeat(room);
         if(seat===null && room.players.filter(p=>p.seat===null).length>=config.rooms.max_spectators){error(ws,'FULL','Room is full. Try another room.');return;}
-        const p:Player={id:randomUUID(),token:randomBytes(config.rooms.token_bytes).toString('hex'),name,seat,ready:!!m.solo,connected:true,botDriving:false,order:order++};room.players.push(p);attach(ws,c,room,p);return;
+        const p:Player={character:'hippo',bigScreen:m.bigScreen===true&&config.release.big_screen,id:randomUUID(),token:randomBytes(config.rooms.token_bytes).toString('hex'),name,seat,ready:!!m.solo,connected:true,botDriving:false,order:order++};room.players.push(p);attach(ws,c,room,p);return;
       }
       const {room,player}=c;if(!room||!player){error(ws,'NO_ROOM','Join a room first.');return;}
       if(m.type==='debug_metrics'){
@@ -152,6 +152,14 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
         if(!['red','blue','both'].includes(String(m.raft))||!config.debug.jump_percents.includes(Number(m.percent))){error(ws,'DEBUG','Choose a listed jump.');return;}
         if(!room.sim?.jump(m.raft as 'red'|'blue'|'both',Number(m.percent))){error(ws,'PHASE','Jump during a race before anyone finishes.');return;}
         room.banner=`Jumped ${m.raft} to ${m.percent}%`;broadcast(room);return;
+      }
+      if(m.type==='debug_pickup'||m.type==='debug_turbo'){
+        if(!c.debug||room.hostId!==player.id){error(ws,'HOST_ONLY','Only the debug host can use this.');return;}
+        if(!room.sim||room.sim.phase!=='race'){error(ws,'PHASE','Use during a race.');return;}
+        if(!['red','blue','both'].includes(String(m.raft))){error(ws,'DEBUG','Choose a raft.');return;}
+        if(m.type==='debug_turbo'&&!config.release.turbo){error(ws,'DEBUG','Turbo is not available.');return;}
+        if(m.type==='debug_pickup'&&!['speed','log','bubble'].includes(String(m.item))){error(ws,'DEBUG','Choose a pickup.');return;}
+        room.sim.rafts.forEach((r,i)=>{if(m.raft!=='both'&&i!==(m.raft==='red'?0:1))return;if(m.type==='debug_turbo')r.turboMeter=1;else room.sim!.systems.pickup(i,m.item as 'speed'|'log'|'bubble');});broadcast(room);return;
       }
       if(m.type==='input'){
         if(!room.sim||player.seat===null)return;
@@ -169,9 +177,17 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
         if(room.sim){error(ws,'PHASE','The race has already started.');return;}
         const waiting=room.players.filter(p=>p.seat!==null&&p.socket&&!p.ready);
         if(waiting.length){error(ws,'NOT_READY',`Waiting for ${waiting[0].name} to be Ready`);return;}
-        room.sim=new Simulation(config,room.mode,Date.now(),randomBytes(4).readUInt32LE(0),randomUUID());room.lastPump=performance.now();room.accumulator=0;broadcast(room);return;
+        room.sim=new Simulation(config,room.mode,Date.now(),randomBytes(4).readUInt32LE(0),randomUUID(),{difficulty:room.difficulty??'chill',characters:Array.from({length:seatCount(room)},(_,seat)=>room.players.find(p=>p.seat===seat)?.character??(['hippo','frog','bear','capybara'] as Character[])[seat%4])});room.lastPump=performance.now();room.accumulator=0;broadcast(room);return;
       }
       if(room.sim){error(ws,'PHASE','Wait for the next lobby to change seats or mode.');return;}
+      if(m.type==='character'){
+        if(!['hippo','frog','bear','capybara'].includes(String(m.character))){error(ws,'CHARACTER','Choose an animal.');return;}
+        if(player.seat===null){error(ws,'SEAT','Take a seat first.');return;}player.character=m.character as Character;player.ready=false;broadcast(room);return;
+      }
+      if(m.type==='difficulty'){
+        if(room.hostId!==player.id){error(ws,'HOST_ONLY','Only the host sets difficulty.');return;}
+        if(!['chill','normal','spicy'].includes(String(m.difficulty))){error(ws,'DIFFICULTY','Choose Chill, Normal or Spicy.');return;}room.difficulty=m.difficulty as Difficulty;broadcast(room);return;
+      }
       if(m.type==='ready'){if(player.seat!==null)player.ready=m.ready===true;broadcast(room);return;}
       if(m.type==='seat'){
         if(!Number.isInteger(m.seat)||Number(m.seat)<0||Number(m.seat)>=seatCount(room)){error(ws,'SEAT','Choose a seat.');return;}

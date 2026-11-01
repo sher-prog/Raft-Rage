@@ -35,3 +35,7 @@ The direct human instructions in the Work handoff override docs/source/RAFT_RAGE
 ## Oct 31 serial-test execution approval
 
 The user explicitly approved running all 41 tests serially, preserving every case, assertion and threshold. No test deletion, skip, tolerance/timeout relaxation or tick-overrun threshold change is allowed. Report count, total time and any overruns. Keep real capacity measurement on Render at 4 rooms / 16 clients and rerun it on the deployed build. Preserve 60/20/10 Hz. Push only after the full suite passes, then continue remaining Phase 1 checks.
+
+## Full-build authorization
+
+The user requested completion of all remaining phases, including all characters, original propulsion effects, hazards, pickups, visuals and audio, with tested checkpoints and periodic reports. This authorizes proceeding through Phase 2 and Phase 3 without another phase-review permission gate. The user is using a separate chat for design references; keep character models modular and continue the game build here without waiting. The existing feature cut and deadline remain in force.
