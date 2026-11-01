@@ -1,9 +1,9 @@
 
-> raft-rage@0.3.14 check
+> raft-rage@0.3.15 check
 > npm run typecheck && npm test
 
 
-> raft-rage@0.3.14 typecheck
+> raft-rage@0.3.15 typecheck
 > tsc --noEmit
 
 npm notice
@@ -12,11 +12,11 @@ npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
 npm notice To update run: npm install -g npm@12.2.1
 npm notice
 
-> raft-rage@0.3.14 test
+> raft-rage@0.3.15 test
 > npm run build && node --test --test-concurrency=1 tests/*.test.mjs
 
 
-> raft-rage@0.3.14 build
+> raft-rage@0.3.15 build
 > node scripts/build.mjs
 
 npm notice
@@ -24,86 +24,86 @@ npm notice New major version of npm available! 11.19.1 -> 12.2.1
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
 npm notice To update run: npm install -g npm@12.2.1
 npm notice
-✔ swept raft hits both banks and every outer turn at 0.5x, 1x and cap, without leaving water or teleporting (433.8305ms)
-✔ swept bank contact preserves tangential velocity and exact 0.4 restitution (0.861458ms)
-✔ fully committed non-bot input races deliberately hit walls along the entire course (131.487042ms)
-✔ bot takeover while stunned acknowledges neutral input and cannot walk or fire (3.26475ms)
-✔ seeded Chill bots complete both rafts over full fixed course across ten games (487.711584ms)
-✔ same seeded bot simulation replays deterministically; no hidden propulsion is applied (6.461167ms)
-✔ disconnect becomes bot after real 3s, continues driving, reclaims mid-race by same code/name (4041.838333ms)
-✔ each species has a distinct primary-color vest and matching helmet on either team, retained by batching (168.066666ms)
-✔ chase view fits both banks and a nearby opponent at phone/desktop aspect ratios, both edges and every bend (62.765417ms)
-✔ chase framing remains valid during smooth high-speed turns and viewport changes without moving authoritative rafts (28.9125ms)
-✔ static batching cuts mesh calls while retaining material colors, animated parts and outline world bounds (50.929084ms)
-✔ instanced effects retain the 300-particle cap, per-particle fade and complete expiry with bounded draw groups (20.43075ms)
-✔ fixed-step countdown transitions on exact tick; race time derives only from ticks (10.422041ms)
-✔ Start is host-only and Ready-gated; two real clients receive identical clock snapshots (4129.116041ms)
-✔ whack has visible windup, 1.5s stun, 3s slow, blocks victim walking/fire and starts 2s immunity on recovery (16.587416ms)
-✔ defender starts during windup: BLOCK without stun on either raft, independent of defender facing; dedup counter safe (1.419083ms)
-✔ whack requires reach and arc; all stun sources stack to cap; spikes bypass whack immunity but cannot retrigger during stun (3.103041ms)
-✔ one-shot IDs repeat for configured window, expire and are consumed once per race even across duplicate snapshots (6.741042ms)
-✔ production build exposes version and compressed assets with same executable content (60.29025ms)
-✔ jump is debug-host-only, accepts listed percentages and updates both clients; real CPU/snapshot metrics are available (1145.273083ms)
-✔ rooms with zero connected humans suspend simulation, retain reservations, then resume shared clock on token reclaim (340.493542ms)
-✔ actual npm start honors PORT and two real process boots produce distinct identifiers (1161.431125ms)
-✔ swept raft hits both banks and every outer turn at 0.5x, 1x and cap, without leaving water or teleporting (445.126292ms)
-✔ swept bank contact preserves tangential velocity and exact 0.4 restitution (0.332083ms)
-✔ fully committed non-bot input races deliberately hit walls along the entire course (356.229584ms)
-✔ Hippo heat warns, locks at 3s, cools only on release; regular taps avoid overheat (45.297417ms)
-✔ Frog charges, releases strong recoil, misfires after full-charge hold and loses charge on hit (8.958417ms)
-✔ Bear drains 2.2s stamina, locks 1.2s then recovers; Capybara side recoil spins in opposite directions (5.3375ms)
-✔ pickups use catchup odds; bubble blocks hit, speed modifies thrust, log throws once and can hit (2.723709ms)
-✔ crates respawn and whirlpools impart spin/drag; anchored log is swept solid (3.557083ms)
-✔ character choices allow duplicates and persist through rematch; difficulty and debug pickups remain authorized (199.894125ms)
-✔ mixed-character bots race at every difficulty with valid authoritative state (577.108625ms)
-✔ Big Screen joins as an explicit spectator and cannot drive a seat (145.227584ms)
-✔ full Phase 3: swept raft hits both banks and every outer turn at 0.5x, 1x and cap, without leaving water or teleporting (525.563667ms)
-✔ full Phase 3: swept bank contact preserves tangential velocity and exact 0.4 restitution (0.968708ms)
-✔ full Phase 3: fully committed non-bot input races deliberately hit walls along the entire course (493.404833ms)
-✔ chequered finish covers water edge to edge; arch posts stand outside navigable water (78.08275ms)
-✔ winner visibly crosses the entire finish stripe before stopping; scoring state remains unchanged (3.199917ms)
-✔ only winner emits bounded multicolour confetti; low effects keeps celebration and particles expire (8.942292ms)
-✔ crocodile faces its travel direction on both sweeps and turns continuously at each reversal (0.264833ms)
-✔ Capybara has an original labelled vector icon rather than a placeholder glyph (0.185459ms)
-✔ first playable race teaches own walking and successful fire, ignores rival actions, and stays dismissed on rematch (0.620708ms)
-✔ host quota telemetry parses cgroup v2 and v1 units and safely returns null on unsupported hosts (15.31925ms)
-✔ angled bank impacts at bends correct only penetration and preserve tangential position/velocity (4.595542ms)
-✔ corrected P1-5 directions in ONE 2v2 simulation: Red Left stern=>forward, left=>right; Red Right right=>left (5.636708ms)
-✔ walking uses own-left sign, both zones and 30-degree stern gap; simultaneous walk+fire works (19.77325ms)
-✔ stale held input releases; duplicate and older sequences never replace newer input (0.68425ms)
-✔ keel restores heading; bank bounces, spikes stun once until recovery, rocks exclude overlap, speed capped (6.704417ms)
-✔ real WS input is seat-bound and epoch-bound; reconnect starts a safe fresh sequence stream (335.028625ms)
-✔ a short press/release arriving between ticks still fires exactly one Hippo shot (3.708958ms)
-✔ carried log is visible from authoritative pickup snapshots and disappears immediately on throw (51.073083ms)
-✔ detailed raft, carried log, fittings and larger characters remain inside the existing 34-unit collision radius (1219.165875ms)
-✔ rescue unlocks only after six seconds of recurring stun without progress, rewinds safely and clears trap (2.712834ms)
-✔ healthy idle, moving stunned and recovered rafts never unlock rescue (2.06675ms)
-✔ a one-tick recovery gap cannot reset the repeated-stun rescue clock (0.37425ms)
-✔ rescue server rejects wrong seat, stale epoch, wrong race and spectator; owner can rescue only own raft (154.149084ms)
-✔ finish records authoritative time, freezes winner and ends exactly 15s later; timeout awards progress with DNF (26.576167ms)
-✔ real clients get identical results within 15s of first finish; rematch retains seats, clears Ready, lets spectator sit (15293.058792ms)
-✔ health route and bundled assets use production HTTP server (51.746959ms)
-✔ two independent clients create and join by lowercase spaced code; state and tokens stay separate (49.66075ms)
-✔ name validation gives plain reasons, collapses spaces, and refuses active-name/token takeover (61.362875ms)
-✔ solo uses 1v1 and auto-Ready; mode authority and >2-human refusal are server enforced (75.075875ms)
-✔ explicit host Leave promotes earliest joined connected human and preserves room (70.589959ms)
-✔ real 3s disconnect grace migrates host; old host reclaims seat as ordinary player (3132.865958ms)
-✔ reconnect before grace retains seat and host with matching per-tab token (62.09175ms)
-✔ unclean heartbeat loss becomes bot and migrates host about 3s after last traffic (3214.352291ms)
-✔ same-name reclaim works only after grace, rotates token and keeps player identity (138.825666ms)
-✔ restart boot mismatch has exact message; ordinary missing room has a different error (30.502334ms)
-✔ room survives zero connected humans until configured idle expiry (809.787208ms)
-✔ capacity is 4 seated humans plus 8 spectators; seats reject occupied and invalid indices (228.65875ms)
-✔ WebSocket refuses foreign origins; malformed messages are contained (28.067458ms)
-✔ all config additions are declared assumed and no existing gameplay values changed (4.903042ms)
-✔ multiple rooms retain 20Hz shared snapshots while distributing send work across simulation ticks (1163.149416ms)
-✔ comic outlines never scale world-space river/bank surfaces or enlarge local raft bounds (69.977958ms)
-✔ opposite-side SYNC fills Turbo; a ready meter triggers; slow/current/boost multipliers stack (1.692875ms)
-✔ crocodiles use authoritative sine positions and enforce per-raft chomp cooldown; airborne ignores chomp (1.0445ms)
-✔ ramp launches above minimum, preserves airborne hazard immunity, lands with authoritative air time; slow ramp penalizes (1.976209ms)
-✔ shortcut opens by whack, expires after configured time and gives way after pinned window (6.2345ms)
-✔ stats and repeated world snapshots stay authoritative and isolated from callers (1.226375ms)
-✔ shortcut choice is seeded once per race and never offered to a human-crewed raft (0.379ms)
+✔ swept raft hits both banks and every outer turn at 0.5x, 1x and cap, without leaving water or teleporting (723.700625ms)
+✔ swept bank contact preserves tangential velocity and exact 0.4 restitution (0.928375ms)
+✔ fully committed non-bot input races deliberately hit walls along the entire course (131.978084ms)
+✔ bot takeover while stunned acknowledges neutral input and cannot walk or fire (4.837167ms)
+✔ seeded Chill bots complete both rafts over full fixed course across ten games (478.58275ms)
+✔ same seeded bot simulation replays deterministically; no hidden propulsion is applied (8.519208ms)
+✔ disconnect becomes bot after real 3s, continues driving, reclaims mid-race by same code/name (4042.784042ms)
+✔ each species has a distinct primary-color vest and matching helmet on either team, retained by batching (844.313875ms)
+✔ chase view fits both banks and a nearby opponent at phone/desktop aspect ratios, both edges and every bend (110.583917ms)
+✔ chase framing remains valid during smooth high-speed turns and viewport changes without moving authoritative rafts (60.421958ms)
+✔ static batching cuts mesh calls while retaining material colors, animated parts and outline world bounds (220.715666ms)
+✔ instanced effects retain the 300-particle cap, per-particle fade and complete expiry with bounded draw groups (36.607625ms)
+✔ fixed-step countdown transitions on exact tick; race time derives only from ticks (23.878584ms)
+✔ Start is host-only and Ready-gated; two real clients receive identical clock snapshots (4164.126709ms)
+✔ whack has visible windup, 1.5s stun, 3s slow, blocks victim walking/fire and starts 2s immunity on recovery (31.322334ms)
+✔ defender starts during windup: BLOCK without stun on either raft, independent of defender facing; dedup counter safe (2.350042ms)
+✔ whack requires reach and arc; all stun sources stack to cap; spikes bypass whack immunity but cannot retrigger during stun (5.568958ms)
+✔ one-shot IDs repeat for configured window, expire and are consumed once per race even across duplicate snapshots (13.282791ms)
+✔ production build exposes version and compressed assets with same executable content (101.288917ms)
+✔ jump is debug-host-only, accepts listed percentages and updates both clients; real CPU/snapshot metrics are available (1158.875833ms)
+✔ rooms with zero connected humans suspend simulation, retain reservations, then resume shared clock on token reclaim (330.924792ms)
+✔ actual npm start honors PORT and two real process boots produce distinct identifiers (2038.088667ms)
+✔ swept raft hits both banks and every outer turn at 0.5x, 1x and cap, without leaving water or teleporting (955.304708ms)
+✔ swept bank contact preserves tangential velocity and exact 0.4 restitution (0.696792ms)
+✔ fully committed non-bot input races deliberately hit walls along the entire course (687.772834ms)
+✔ Hippo heat warns, locks at 3s, cools only on release; regular taps avoid overheat (71.846708ms)
+✔ Frog charges, releases strong recoil, misfires after full-charge hold and loses charge on hit (11.15925ms)
+✔ Bear drains 2.2s stamina, locks 1.2s then recovers; Capybara side recoil spins in opposite directions (9.960583ms)
+✔ pickups use catchup odds; bubble blocks hit, speed modifies thrust, log throws once and can hit (2.929917ms)
+✔ crates respawn and whirlpools impart spin/drag; anchored log is swept solid (3.55375ms)
+✔ character choices allow duplicates and persist through rematch; difficulty and debug pickups remain authorized (234.348667ms)
+✔ mixed-character bots race at every difficulty with valid authoritative state (733.55375ms)
+✔ Big Screen joins as an explicit spectator and cannot drive a seat (181.820083ms)
+✔ full Phase 3: swept raft hits both banks and every outer turn at 0.5x, 1x and cap, without leaving water or teleporting (990.437959ms)
+✔ full Phase 3: swept bank contact preserves tangential velocity and exact 0.4 restitution (0.682292ms)
+✔ full Phase 3: fully committed non-bot input races deliberately hit walls along the entire course (987.028333ms)
+✔ chequered finish covers water edge to edge; arch posts stand outside navigable water (145.5085ms)
+✔ winner visibly crosses the entire finish stripe before stopping; scoring state remains unchanged (11.3605ms)
+✔ only winner emits bounded multicolour confetti; low effects keeps celebration and particles expire (29.616708ms)
+✔ crocodile faces its travel direction on both sweeps and turns continuously at each reversal (0.585959ms)
+✔ Capybara has an original labelled vector icon rather than a placeholder glyph (0.628042ms)
+✔ first playable race teaches own walking and successful fire, ignores rival actions, and stays dismissed on rematch (2.665917ms)
+✔ host quota telemetry parses cgroup v2 and v1 units and safely returns null on unsupported hosts (33.269333ms)
+✔ angled bank impacts at bends correct only penetration and preserve tangential position/velocity (12.676625ms)
+✔ corrected P1-5 directions in ONE 2v2 simulation: Red Left stern=>forward, left=>right; Red Right right=>left (12.838083ms)
+✔ walking uses own-left sign, both zones and 30-degree stern gap; simultaneous walk+fire works (38.865625ms)
+✔ stale held input releases; duplicate and older sequences never replace newer input (2.035125ms)
+✔ keel restores heading; bank bounces, spikes stun once until recovery, rocks exclude overlap, speed capped (12.33025ms)
+✔ real WS input is seat-bound and epoch-bound; reconnect starts a safe fresh sequence stream (371.296125ms)
+✔ a short press/release arriving between ticks still fires exactly one Hippo shot (2.311791ms)
+✔ carried log is visible from authoritative pickup snapshots and disappears immediately on throw (90.79225ms)
+✔ detailed raft, carried log, fittings and larger characters remain inside the existing 34-unit collision radius (2092.090708ms)
+✔ rescue unlocks only after six seconds of recurring stun without progress, rewinds safely and clears trap (4.899834ms)
+✔ healthy idle, moving stunned and recovered rafts never unlock rescue (4.08175ms)
+✔ a one-tick recovery gap cannot reset the repeated-stun rescue clock (0.742ms)
+✔ rescue server rejects wrong seat, stale epoch, wrong race and spectator; owner can rescue only own raft (187.783875ms)
+✔ finish records authoritative time, freezes winner and ends exactly 15s later; timeout awards progress with DNF (46.2135ms)
+✔ real clients get identical results within 15s of first finish; rematch retains seats, clears Ready, lets spectator sit (15334.068542ms)
+✔ health route and bundled assets use production HTTP server (80.488083ms)
+✔ two independent clients create and join by lowercase spaced code; state and tokens stay separate (62.364666ms)
+✔ name validation gives plain reasons, collapses spaces, and refuses active-name/token takeover (65.493917ms)
+✔ solo uses 1v1 and auto-Ready; mode authority and >2-human refusal are server enforced (77.984125ms)
+✔ explicit host Leave promotes earliest joined connected human and preserves room (72.031667ms)
+✔ real 3s disconnect grace migrates host; old host reclaims seat as ordinary player (3154.572125ms)
+✔ reconnect before grace retains seat and host with matching per-tab token (58.757375ms)
+✔ unclean heartbeat loss becomes bot and migrates host about 3s after last traffic (3212.051458ms)
+✔ same-name reclaim works only after grace, rotates token and keeps player identity (145.291625ms)
+✔ restart boot mismatch has exact message; ordinary missing room has a different error (32.439833ms)
+✔ room survives zero connected humans until configured idle expiry (806.923125ms)
+✔ capacity is 4 seated humans plus 8 spectators; seats reject occupied and invalid indices (234.5325ms)
+✔ WebSocket refuses foreign origins; malformed messages are contained (29.133959ms)
+✔ all config additions are declared assumed and no existing gameplay values changed (2.017042ms)
+✔ multiple rooms retain 20Hz shared snapshots while distributing send work across simulation ticks (1198.634041ms)
+✔ comic outlines never scale world-space river/bank surfaces or enlarge local raft bounds (108.646ms)
+✔ opposite-side SYNC fills Turbo; a ready meter triggers; slow/current/boost multipliers stack (3.827708ms)
+✔ crocodiles use authoritative sine positions and enforce per-raft chomp cooldown; airborne ignores chomp (2.430791ms)
+✔ ramp launches above minimum, preserves airborne hazard immunity, lands with authoritative air time; slow ramp penalizes (4.204042ms)
+✔ shortcut opens by whack, expires after configured time and gives way after pinned window (12.173791ms)
+✔ stats and repeated world snapshots stay authoritative and isolated from callers (3.029542ms)
+✔ shortcut choice is seeded once per race and never offered to a human-crewed raft (0.801916ms)
 ℹ tests 80
 ℹ suites 0
 ℹ pass 80
@@ -111,7 +111,7 @@ npm notice
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 44331.986875
+ℹ duration_ms 52494.090375
 npm notice
 npm notice New major version of npm available! 11.19.1 -> 12.2.1
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1

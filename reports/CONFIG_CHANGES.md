@@ -1,6 +1,6 @@
 # Build config changes
 
-Config: `3.14-finish-celebration-croc-turns (2026-11-01)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
+Config: `3.15-finish-sign-clearance (2026-11-01)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
 
 Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 

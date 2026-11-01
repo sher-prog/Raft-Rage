@@ -35,7 +35,7 @@ export class WorldArt {
   const b=course.atBank(progress,side*(c.course.half_width+13));part(chunk,new THREE.DodecahedronGeometry(18,0),'#607968',[b.x,9,-b.y],[1.4,.8,1]);
   if(n===0){const dock=course.atBank(progress,side*(c.course.half_width+28));part(chunk,new THREE.BoxGeometry(55,5,55),'#a87942',[dock.x,10,-dock.y]);for(let k=0;k<3;k++){part(chunk,new THREE.SphereGeometry(5,6,5),k%2?'#bd9a6b':'#aaa4bf',[dock.x+(k-1)*15,21,-dock.y]);part(chunk,new THREE.SphereGeometry(3,6,5),'#ffd34e',[dock.x+(k-1)*15,28,-dock.y]);for(const armSide of [-1,1]){const arm=part(chunk,new THREE.CylinderGeometry(1.2,1.2,9,4),'#bd9a6b',[dock.x+(k-1)*15+armSide*5,23,-dock.y]);arm.userData.side=armSide;arm.userData.phase=k;arm.name='cheering-arm';this.cheering.push(arm);}}}
  }scene.add(chunk);this.chunks.push(chunk);}
- if(c.release.visuals){const label=sign('FINISH');const p=course.at(c.course.length);label.scale.set(1.7,1.2,1);label.position.set(p.x,c.visuals.finish_arch_height,-p.y);label.rotation.y=-p.heading;scene.add(label);}
+ if(c.release.visuals){const label=sign('FINISH');const p=course.at(c.course.length);label.scale.set(1.7,1.2,1);label.position.set(p.x,c.visuals.finish_arch_height+c.visuals.finish_arch_post*3,-p.y);label.rotation.y=-p.heading;scene.add(label);}
  for(let i=0;i<8;i++){const m=new THREE.Mesh(new THREE.CylinderGeometry(c.pickups.projectile_radius,c.pickups.projectile_radius,40,8),mat('#9d6e43'));m.rotation.z=Math.PI/2;m.visible=false;scene.add(m);this.projectiles.push(m);}
  }
  batch(style:ComicStyle){for(const chunk of this.chunks)batchStatic(chunk,style);for(const croc of this.crocs)batchStatic(croc,style);batchStatic(this.foam,style);}
