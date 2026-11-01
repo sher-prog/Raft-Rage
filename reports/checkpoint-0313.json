@@ -1,0 +1,117 @@
+{
+  "version": "0.3.13",
+  "commit": "9cbd7a4ab0d7e45cefdef5f6a8e38c8f26c97349",
+  "bootId": "2e34e9a0-3222-400d-ad8b-91a8223f5e72",
+  "tests": 75,
+  "passed": 75,
+  "serialMs": 50929.233625,
+  "overrunWarnings": 0,
+  "rates": [
+    60,
+    20,
+    10
+  ],
+  "render": {
+    "timestamp": "2026-11-01T04:35:35.653Z",
+    "environment": "Actual public Render service",
+    "base": "https://raft-rage.onrender.com",
+    "configVersion": "3.13-character-colors-hud-events (2026-11-01)",
+    "runtime": "v24.22.1",
+    "scenario": "Four human WebSocket clients per 2v2 room, all continuously firing, 10Hz input resend, native keepalive plus 2s clock pings, real fixed 60Hz authority and 20Hz snapshots. No-human rooms suspend after clients leave.",
+    "measurementLimits": "Node socket counters include WS framing/control/HTTP handshake. Render edge TLS/TCP/provider billing overhead is not measured. Histograms have 10ms resolution and include setup history. Graphics FPS is not measured. Largest tested passing load is a lower bound, not an unlimited capacity guarantee.",
+    "largestPassingRooms": 4,
+    "stoppedAfterFailure": false,
+    "results": [
+      {
+        "rooms": 4,
+        "clients": 16,
+        "sampleMs": 20019.678071999995,
+        "cpuMs": 1315.002,
+        "cpuCores": 0.06568547182780095,
+        "cpuCoresPerUser": 0.004105341989237559,
+        "rssBytes": 84307968,
+        "activeRaceRoomsReported": 5,
+        "payloadOutBytesPerSecond": 767819.5895416996,
+        "payloadInBytesPerSecond": 30135.149917509632,
+        "nodeSocketOutBytesPerSecond": 769223.9577787354,
+        "nodeSocketInBytesPerSecond": 31761.399844352112,
+        "clientReceivedBytesPerSecond": 739186.1121232122,
+        "eventLoopMeanMs": 10.317327667074663,
+        "eventLoopMaxMs": 97.452031,
+        "roomMetrics": [
+          {
+            "simHz": 60.040925517236275,
+            "snapshotHz": 20.030292123470673,
+            "averageTickMs": 0.03851784498276559,
+            "worstTickMs": 1.9492559999998775,
+            "overruns": 0,
+            "snapshotAverageMs": 0.18650337344385748,
+            "snapshotWorstMs": 0.6549959999974817,
+            "schedulerLateMaxMs": 89.00754400000025
+          },
+          {
+            "simHz": 59.972311307191546,
+            "snapshotHz": 19.974125331287777,
+            "averageTickMs": 0.03728697647053938,
+            "worstTickMs": 2.7621149999977206,
+            "overruns": 0,
+            "snapshotAverageMs": 0.1834960995850478,
+            "snapshotWorstMs": 0.990523000000394,
+            "schedulerLateMaxMs": 91.69780700000067
+          },
+          {
+            "simHz": 59.97381467846926,
+            "snapshotHz": 19.974626037791595,
+            "averageTickMs": 0.028773101730002082,
+            "worstTickMs": 3.0594419999979436,
+            "overruns": 0,
+            "snapshotAverageMs": 0.18784117671523,
+            "snapshotWorstMs": 1.4039320000010775,
+            "schedulerLateMaxMs": 89.83150300000148
+          },
+          {
+            "simHz": 59.97389524101895,
+            "snapshotHz": 20.02458950178901,
+            "averageTickMs": 0.025085744636697667,
+            "worstTickMs": 0.1788139999989653,
+            "overruns": 0,
+            "snapshotAverageMs": 0.27287645435672137,
+            "snapshotWorstMs": 51.85333499999979,
+            "schedulerLateMaxMs": 90.43624700000169
+          }
+        ],
+        "pass": true
+      }
+    ]
+  },
+  "public": {
+    "timestamp": "2026-11-01T04:36:18.096Z",
+    "base": "https://raft-rage.onrender.com",
+    "environment": "Real WebSocket clients from developer machine; no physical Safari/cellular claim",
+    "checks": [
+      {
+        "name": "P1-2/3: lowercase join, corrected 2v2 seats, >2 human mode refusal",
+        "status": "PASS"
+      },
+      {
+        "name": "P1-4: authoritative countdown",
+        "status": "PASS",
+        "countdownMs": 3025.5047080000004
+      },
+      {
+        "name": "P1-7: late spectator",
+        "status": "PASS"
+      },
+      {
+        "name": "P1-8: real debug jump, finish, identical results",
+        "status": "PASS",
+        "resultsAfterFirstFinishReceivedMs": 14997.482499999998,
+        "authoritativeGraceS": 15
+      },
+      {
+        "name": "P1-8: rematch retains seats, clears Ready, Dee sits",
+        "status": "PASS"
+      }
+    ]
+  }
+}
