@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "1.7-debug-settings (2026-10-31)",
+  "_version": "1.8-swept-banks (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -343,7 +343,8 @@
       "start_progress",
       "path_sections",
       "rock_positions",
-      "spike_zones"
+      "spike_zones",
+      "bank_end_extension"
     ],
     "_tuning_note": "Tune course.length until a 2v2 race of Normal bots finishes in validation.finish_s_min..finish_s_max.",
     "start_progress": 0,
@@ -470,7 +471,8 @@
         190,
         -1
       ]
-    ]
+    ],
+    "bank_end_extension": 600
   },
   "pickups": {
     "crates": 10,
@@ -950,7 +952,7 @@
       "Whack and block"
     ],
     "first_race_hints": [
-      "Walk with ◀ ▶",
+      "Walk with \u25c0 \u25b6",
       "Fire pushes you away from where you stand",
       "Fire together for TURBO"
     ]
@@ -968,13 +970,15 @@
       "default_seed",
       "initial_speed",
       "initial_omega",
-      "collision_push_epsilon"
+      "collision_push_epsilon",
+      "collision_iterations"
     ],
     "epsilon": 1e-08,
     "default_seed": 19551,
     "initial_speed": 0,
     "initial_omega": 0,
-    "collision_push_epsilon": 0.01
+    "collision_push_epsilon": 0.01,
+    "collision_iterations": 8
   },
   "_assumed": [
     "simulation",

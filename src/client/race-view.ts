@@ -3,6 +3,7 @@ import type {Config,Snapshot,RaftState} from '../shared.ts';
 import {Course,rad,wrap} from '../game/course.ts';
 export class RaceView {
   renderer:THREE.WebGLRenderer;scene=new THREE.Scene();camera:THREE.PerspectiveCamera;
+  cameraDirection=new THREE.Vector2(0,1);
   stunLabels:HTMLDivElement[]=[];
   rafts:THREE.Group[]=[];animals:THREE.Group[]=[];stars:THREE.Group[]=[];swings:THREE.Mesh[]=[];
   course:Course;resize:ResizeObserver;cameraReady=false;fps=0;frames=0;sample=0;fpsSampleStart=performance.now();lowSeconds=0;lowEffects=false;reduceMotion=false;
@@ -17,16 +18,10 @@ export class RaceView {
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(v.ground_half_size*2,v.ground_half_size*2),mat(v.ground_color));ground.rotation.x=-Math.PI/2;ground.position.y=-v.river_depth;this.scene.add(ground);
     // A continuous mitered river ribbon and matching bank strips.
     const sections=this.course.segments;
-    const points=sections.map(s=>({x:s.x,y:s.y}));const last=sections.at(-1)!;points.push({x:last.x+last.tx*last.length,y:last.y+last.ty*last.length});
-    const offset=(i:number,width:number)=>{
-      const a=sections[Math.max(0,i-1)],b=sections[Math.min(i,sections.length-1)];
-      const nx=a.ty+b.ty,ny=-a.tx-b.tx,length=Math.hypot(nx,ny),ux=nx/length,uy=ny/length;
-      const distance=width/(ux*b.ty-uy*b.tx);return {x:points[i].x+ux*distance,y:points[i].y+uy*distance};
-    };
     const strip=(inner:number,outer:number,color:string,height:number)=>{
-      const vertices:number[]=[];
+      const vertices:number[]=[],inside=this.course.bankPoints(inner),outside=this.course.bankPoints(outer);
       for(let i=0;i<sections.length;i++){
-        const a=offset(i,inner),b=offset(i,outer),d=offset(i+1,inner),e=offset(i+1,outer);
+        const a=inside[i],b=outside[i],d=inside[i+1],e=outside[i+1];
         for(const p of [a,b,d,b,e,d])vertices.push(p.x,height,-p.y);
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.computeVertexNormals();const m=mat(color);m.side=THREE.DoubleSide;this.scene.add(new THREE.Mesh(geometry,m));
@@ -76,9 +71,12 @@ export class RaceView {
     snapshot.rafts.forEach((r,i)=>{this.rafts[i].position.set(r.x,v.raft_height,-r.y);this.rafts[i].rotation.y=-r.heading;this.stars[i].visible=r.stun>0;this.stars[i].rotation.y=-(snapshot.raceTime*v.stun_orbit_speed);});
     snapshot.animals.forEach((a,i)=>{const phi=rad(a.phi);this.animals[i].position.set(Math.sin(phi)*this.config.raft.rim_radius,0,-Math.cos(phi)*this.config.raft.rim_radius);this.animals[i].rotation.y=-phi+Math.PI;this.swings[i].visible=a.whackPhase==='windup';this.swings[i].rotation.z=(a.whackWindup/this.config.combat.whack_windup_s)*Math.PI;});
     const raft=snapshot.rafts[ownRaft]??snapshot.rafts[0],p=this.course.project(raft.x,raft.y);
-    const target=new THREE.Vector3(raft.x-p.tx*v.camera_behind,v.camera_height,-raft.y+p.ty*v.camera_behind);
+    const follow=1-Math.exp(-(this.reduceMotion?v.reduced_motion_camera_follow_rate:v.camera_follow_rate)*dt);
+    if(!this.cameraReady)this.cameraDirection.set(p.tx,p.ty);else this.cameraDirection.lerp(new THREE.Vector2(p.tx,p.ty),follow).normalize();
+    const {x:tx,y:ty}=this.cameraDirection;
+    const target=new THREE.Vector3(raft.x-tx*v.camera_behind,v.camera_height,-raft.y+ty*v.camera_behind);
     if(!this.cameraReady){this.camera.position.copy(target);this.cameraReady=true;}else this.camera.position.lerp(target,1-Math.exp(-(this.reduceMotion?v.reduced_motion_camera_follow_rate:v.camera_follow_rate)*dt));
-    this.camera.lookAt(raft.x+p.tx*v.camera_ahead,0,-raft.y-p.ty*v.camera_ahead);this.renderer.render(this.scene,this.camera);
+    this.camera.lookAt(raft.x+tx*v.camera_ahead,0,-raft.y-ty*v.camera_ahead);this.renderer.render(this.scene,this.camera);
     snapshot.rafts.forEach((r,i)=>{const label=this.stunLabels[i],position=new THREE.Vector3(r.x,v.body_height*2,-r.y).project(this.camera);label.hidden=r.stun<=0||Math.abs(position.z)>1;label.style.left=`${(position.x+1)/2*this.container.clientWidth}px`;label.style.top=`${(1-position.y)/2*this.container.clientHeight}px`;});
     this.frames++;this.sample=(performance.now()-this.fpsSampleStart)/1000;if(this.sample>=v.fps_sample_s){this.fps=this.frames/this.sample;if(this.fps<v.auto_low_effects_below_fps)this.lowSeconds+=this.sample;else this.lowSeconds=0;if(!this.lowEffects&&this.lowSeconds>=v.auto_low_effects_after_s){this.setEffects(true,this.reduceMotion);this.onAutoLow();}this.frames=0;this.sample=0;this.fpsSampleStart=performance.now();}
   }

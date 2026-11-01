@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "1.7-debug-settings (2026-10-31)"
+    "value": "1.8-swept-banks (2026-10-31)"
   },
   {
     "key": "network._assumed",
@@ -343,7 +343,8 @@
       "start_progress",
       "path_sections",
       "rock_positions",
-      "spike_zones"
+      "spike_zones",
+      "bank_end_extension"
     ]
   },
   {
@@ -486,6 +487,11 @@
         -1
       ]
     ]
+  },
+  {
+    "key": "course.bank_end_extension",
+    "change": "added",
+    "value": 600
   },
   {
     "key": "race.freeze_finished",
@@ -1061,13 +1067,15 @@
         "default_seed",
         "initial_speed",
         "initial_omega",
-        "collision_push_epsilon"
+        "collision_push_epsilon",
+        "collision_iterations"
       ],
       "epsilon": 1e-08,
       "default_seed": 19551,
       "initial_speed": 0,
       "initial_omega": 0,
-      "collision_push_epsilon": 0.01
+      "collision_push_epsilon": 0.01,
+      "collision_iterations": 8
     }
   },
   {
@@ -1078,7 +1086,8 @@
       "default_seed",
       "initial_speed",
       "initial_omega",
-      "collision_push_epsilon"
+      "collision_push_epsilon",
+      "collision_iterations"
     ]
   },
   {
@@ -1105,6 +1114,11 @@
     "key": "simulation.collision_push_epsilon",
     "change": "added",
     "value": 0.01
+  },
+  {
+    "key": "simulation.collision_iterations",
+    "change": "added",
+    "value": 8
   },
   {
     "key": "_assumed",

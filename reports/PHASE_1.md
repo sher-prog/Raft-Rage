@@ -1,3 +1,7 @@
+# Current checkpoint: 0.1.10
+
+The physical 0.1.9 iPhone retest exposed bank defects. See BANK_FIX_0_1_10.md for the fixes, stronger tests and current known issues; physical acceptance is still pending. Historical evidence below retains its measured build/version.
+
 # Phase 1 checkpoint 0.1.9 — Oct 31, 2026
 
 Public URL: https://raft-rage.onrender.com. Render Free, main auto-deploy; Node 24.22.1. Bug-fix build 0.1.7 deployed as fd4b564d583a3581e2e5f78f33eb97c844c5a2d6. Final feature build 0.1.9 includes hints, labels for both stunned rafts, and neutral bot inputs during stunned takeover. No Phase 2/3 work.

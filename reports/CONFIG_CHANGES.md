@@ -1,6 +1,6 @@
 # Phase 1 config changes
 
-Config: `1.7-debug-settings (2026-10-31)`. Compared with preserved original source JSON. No config changes in 0.1.7 or 0.1.8; 60/20/10 Hz retained.
+Config: `1.8-swept-banks (2026-10-31)`. Compared with preserved original source JSON. No config changes in 0.1.7 or 0.1.8; 60/20/10 Hz retained.
 
 Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 
@@ -52,6 +52,7 @@ Every changed/added key is listed below; exact values and original values are in
 - `course.path_sections`: added.
 - `course.rock_positions`: added.
 - `course.spike_zones`: added.
+- `course.bank_end_extension`: added.
 - `race.freeze_finished`: added.
 - `race._assumed`: added.
 - `race.timeout_tie_label`: added.
@@ -125,6 +126,7 @@ Every changed/added key is listed below; exact values and original values are in
 - `simulation.initial_speed`: added.
 - `simulation.initial_omega`: added.
 - `simulation.collision_push_epsilon`: added.
+- `simulation.collision_iterations`: added.
 - `_assumed`: added.
 - `debug`: added.
 - `debug.jump_percents`: added.

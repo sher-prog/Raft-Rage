@@ -1,3 +1,4 @@
+import {sweepCircle} from './sweep.ts';
 import type { Config, Mode, Snapshot, AnimalState, RaftState, InputState, GameEvent } from '../shared.ts';
 import { Course,rad,wrap,clamp } from './course.ts';
 type Animal=AnimalState & {input:InputState;seenTick:number;pendingFire:boolean;whackStartTick:number;whackUntilTick:number};
@@ -98,13 +99,13 @@ export class Simulation {
       r.vx+=(p.tx*c.water.current_speed-r.vx)*relax;r.vy+=(p.ty*c.water.current_speed-r.vy)*relax;
       r.omega*=Math.exp(-(r.stun>0?c.water.angular_damping_stunned:c.water.angular_damping)*dt);
       if(r.stun===0)r.omega+=c.water.keel_gain*wrap(p.heading-r.heading)*dt;
-      r.x+=r.vx*dt;r.y+=r.vy*dt;r.heading=wrap(r.heading+r.omega*dt);
+      r.heading=wrap(r.heading+r.omega*dt);
       const speed=Math.hypot(r.vx,r.vy);if(speed>c.water.speed_cap){r.vx*=c.water.speed_cap/speed;r.vy*=c.water.speed_cap/speed;}
-      this.collideBanks(r);this.collideRocks(r);r.progress=this.course.project(r.x,r.y).progress;
+      this.moveRaft(r,dt);r.progress=this.course.project(r.x,r.y).progress;
     }
     const [a,b]=this.rafts,dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),radius=c.raft.radius*2;
     if(a.finishTime===null&&b.finishTime===null&&d<radius&&d>c.simulation.epsilon){
-      const nx=dx/d,ny=dy/d,overlap=(radius-d)/2;a.x-=nx*overlap;a.y-=ny*overlap;b.x+=nx*overlap;b.y+=ny*overlap;
+      const nx=dx/d,ny=dy/d,overlap=(radius-d)/2;this.displaceRaft(a,-nx*overlap,-ny*overlap);this.displaceRaft(b,nx*overlap,ny*overlap);
       const rel=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
       if(rel<0){const impulse=-(1+c.course.raft_raft_restitution)*rel/2;a.vx-=impulse*nx;a.vy-=impulse*ny;b.vx+=impulse*nx;b.vy+=impulse*ny;}
     }
@@ -188,6 +189,33 @@ export class Simulation {
       this.input(seat,{seq:a.seq+1,walk,fire,whackCount});
     }
   }
+  /** Swept movement spends only this tick's travel budget; never reprojects position to a centreline. */
+  moveRaft(r:RaftState,dt:number){
+    const c=this.config;let remaining=dt;
+    for(let i=0;i<c.simulation.collision_iterations&&remaining>c.simulation.epsilon;i++){
+      const dx=r.vx*remaining,dy=r.vy*remaining;
+      const hit=sweepCircle(r,dx,dy,c.raft.radius,this.course.banks,this.course.rocks,c.simulation.epsilon);
+      if(!hit){r.x+=dx;r.y+=dy;break;}
+      r.x+=dx*hit.time;r.y+=dy*hit.time;remaining*=1-hit.time;
+      const into=r.vx*hit.nx+r.vy*hit.ny;
+      r.vx-=(1+c.course.bank_restitution)*into*hit.nx;r.vy-=(1+c.course.bank_restitution)*into*hit.ny;
+      if(hit.side)this.bankSpike(r,hit.side);
+      // If the contact budget is exhausted, stop at the last valid position.
+    }
+  }
+  /** Collision-induced separation is also clipped against walls/rocks. */
+  displaceRaft(r:RaftState,dx:number,dy:number){
+    const c=this.config,hit=sweepCircle(r,dx,dy,c.raft.radius,this.course.banks,this.course.rocks,c.simulation.epsilon),t=hit?.time??1;
+    r.x+=dx*t;r.y+=dy*t;
+  }
+  bankSpike(r:RaftState,side:number){
+    const c=this.config,p=this.course.project(r.x,r.y);
+    if(!this.spikeLatch.has(r)&&c.course.spike_zones.some(([fraction,length,bank])=>bank===side&&Math.abs(p.progress-fraction*c.course.length)<=length/2)){
+      this.spikeLatch.add(r);this.stun(this.rafts.indexOf(r),c.course.spike_stun_s);r.vx*=c.course.spike_speed_factor;r.vy*=c.course.spike_speed_factor;
+    }
+  }
+  // Direct overlap helpers support deliberately invalid test fixtures. Normal
+  // gameplay never calls these: movement and separation are swept above.
   collideBanks(r:RaftState){
     const c=this.config,p=this.course.project(r.x,r.y),limit=c.course.half_width-c.raft.radius;
     if(Math.abs(p.lateral)<=limit)return;
