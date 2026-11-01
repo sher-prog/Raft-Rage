@@ -15,3 +15,7 @@ World assets are original procedural 3D shapes; character models remain modular 
 | 3D / 0.3.4 | Authoritative scorecard, five award categories, ties and zero-score suppression, close calls across solid/water hazards | 56/56, 45.969s; results UI verification |
 
 | 3E / 0.3.5 | Bank foam, flowing water streaks, wakes, shields, continuous propulsion/Turbo trails, comic event bursts and finite banner lifetime | 56/56, 46.513s; particles capped at configured 300 |
+
+| 3F / 0.3.6 | Big Screen spectator follows both crews with separated views; world-space water/bank geometry excluded from outline scaling | 58/58, 58.666s; spectator authority and visual bounds regression; browser river alignment verified |
+
+3F: one local tick-budget warning outside the unchanged timing test; strict timing test passed. Render capacity measured on final deployment. No config or physics/rate changes.

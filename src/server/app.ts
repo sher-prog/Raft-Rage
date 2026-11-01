@@ -192,7 +192,7 @@ export function createGameServer(config: Config, options: { bootId?: string; sta
       if(m.type==='seat'){
         if(!Number.isInteger(m.seat)||Number(m.seat)<0||Number(m.seat)>=seatCount(room)){error(ws,'SEAT','Choose a seat.');return;}
         if(room.players.some(p=>p!==player&&p.seat===m.seat)){error(ws,'SEAT','That seat is taken.');return;}
-        player.seat=Number(m.seat);player.ready=false;broadcast(room);return;
+        player.seat=Number(m.seat);player.bigScreen=false;player.ready=false;broadcast(room);return;
       }
       if(m.type==='mode'){
         if(room.hostId!==player.id){error(ws,'HOST_ONLY','Only the host can change the mode.');return;}

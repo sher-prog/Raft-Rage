@@ -8,6 +8,7 @@ import {Course,rad,wrap} from '../game/course.ts';
 export class RaceView {
   comic:ComicStyle;world:WorldArt;effects:RaceEffects;worldMeshes:THREE.Object3D[]=[];crateMeshes:THREE.Group[]=[];whirlMeshes:THREE.Group[]=[];
   renderer:THREE.WebGLRenderer;scene=new THREE.Scene();camera:THREE.PerspectiveCamera;
+  splitCameras:THREE.PerspectiveCamera[]=[];renderTriangles=0;wasSplit=false;
   cameraDirection=new THREE.Vector2(0,1);
   stunLabels:HTMLDivElement[]=[];
   rafts:THREE.Group[]=[];animals:THREE.Group[]=[];stars:THREE.Group[]=[];swings:THREE.Mesh[]=[];
@@ -18,6 +19,7 @@ export class RaceView {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio,v.max_pixel_ratio));this.renderer.setClearColor(v.sky_color);
     container.append(this.renderer.domElement);this.scene.fog=new THREE.Fog(v.sky_color,v.fog_near,v.fog_far);
     this.camera=new THREE.PerspectiveCamera(v.camera_fov_deg,1,v.camera_near,v.camera_far);
+    this.splitCameras=[this.camera.clone(),this.camera.clone()];
     this.scene.add(new THREE.AmbientLight(0xffffff,v.ambient_light));const sun=new THREE.DirectionalLight(0xffffff,v.sun_light);sun.position.set(...v.sun_position as [number,number,number]);this.scene.add(sun);
     const mat=(color:THREE.ColorRepresentation)=>new THREE.MeshToonMaterial({color});
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(v.ground_half_size*2,v.ground_half_size*2),mat(v.ground_color));ground.rotation.x=-Math.PI/2;ground.position.y=-v.river_depth;this.scene.add(ground);
@@ -68,9 +70,9 @@ export class RaceView {
     }
   }
   event(e:GameEvent,state:Snapshot){this.effects.burst(e,state,this.lowEffects);}
-  get triangles(){return this.renderer.info.render.triangles;}
+  get triangles(){return this.renderTriangles;}
   setEffects(lowEffects:boolean,reduceMotion:boolean){this.lowEffects=lowEffects;this.reduceMotion=reduceMotion;this.renderer.setPixelRatio(Math.min(devicePixelRatio,lowEffects?this.config.visuals.low_effects_pixel_ratio:this.config.visuals.max_pixel_ratio));}
-  draw(snapshot:Snapshot,ownRaft:number,dt:number){
+  draw(snapshot:Snapshot,ownRaft:number,dt:number,bigScreen=false){
     this.ensureAnimals(snapshot);for(const r of this.rafts)r.getObjectByName('zones')!.visible=snapshot.animals.length===4;const v=this.config.visuals;
     snapshot.rafts.forEach((r,i)=>{this.rafts[i].position.set(r.x,v.raft_height+r.height,-r.y);this.rafts[i].rotation.y=-r.heading;this.stars[i].visible=r.stun>0;this.stars[i].rotation.y=-(snapshot.raceTime*v.stun_orbit_speed);});
     snapshot.animals.forEach((a,i)=>{const phi=rad(a.phi);this.animals[i].position.set(Math.sin(phi)*this.config.raft.rim_radius,0,-Math.cos(phi)*this.config.raft.rim_radius);this.animals[i].rotation.y=-phi+Math.PI;this.animals[i].scale.set(1,1+(a.fire?.08:0)+(a.charge||0)*.3,1);this.animals[i].rotation.z=a.walk*.12;this.animals[i].traverse(node=>{if(node.name==='brow')node.rotation.z=(node.position.x<0?-1:1)*(a.whackPhase==='windup'?.5:a.fire?.3:.1);if(node.name==='pupil'){node.rotation.z=snapshot.rafts[a.raft].stun>0?snapshot.raceTime*6:0;node.scale.y=snapshot.rafts[a.raft].height>0?1.6:1;}if(node.name==='mouth')node.scale.y=snapshot.rafts[a.raft].height>0?2:1.5;});this.swings[i].visible=a.whackPhase==='windup';this.swings[i].rotation.z=(a.whackWindup/this.config.combat.whack_windup_s)*Math.PI;});
@@ -81,7 +83,18 @@ export class RaceView {
     const target=new THREE.Vector3(raft.x-tx*v.camera_behind,v.camera_height+raft.height,-raft.y+ty*v.camera_behind);
     if(!this.cameraReady){this.camera.position.copy(target);this.cameraReady=true;}else this.camera.position.lerp(target,1-Math.exp(-(this.reduceMotion?v.reduced_motion_camera_follow_rate:v.camera_follow_rate)*dt));
     this.comic.update(this.camera,this.lowEffects);
-    this.camera.lookAt(raft.x+tx*v.camera_ahead,raft.height,-raft.y-ty*v.camera_ahead);this.renderer.render(this.scene,this.camera);
+    this.camera.lookAt(raft.x+tx*v.camera_ahead,raft.height,-raft.y-ty*v.camera_ahead);
+    const distance=Math.hypot(snapshot.rafts[0].x-snapshot.rafts[1].x,snapshot.rafts[0].y-snapshot.rafts[1].y),width=this.container.clientWidth,height=this.container.clientHeight;
+    const labels=this.container.parentElement?.querySelector<HTMLElement>('#big-screen-labels');if(labels)labels.hidden=!bigScreen||distance<=this.config.views.big_screen_split_distance;
+    const split=bigScreen&&distance>this.config.views.big_screen_split_distance;if(split&&!this.wasSplit)for(const cam of this.splitCameras)cam.userData.ready=false;this.wasSplit=split;
+    if(split){
+      this.renderer.setScissorTest(false);this.renderer.setViewport(0,0,width,height);this.renderer.clear();this.renderer.setScissorTest(true);this.renderTriangles=0;
+      for(let i=0;i<2;i++){const r=snapshot.rafts[i],p=this.course.project(r.x,r.y),cam=this.splitCameras[i],target=new THREE.Vector3(r.x-p.tx*v.camera_behind,v.camera_height+r.height,-r.y+p.ty*v.camera_behind);if(!cam.userData.ready){cam.position.copy(target);cam.userData.ready=true;}else cam.position.lerp(target,1-Math.exp(-v.camera_follow_rate*dt));cam.lookAt(r.x+p.tx*v.camera_ahead,r.height,-r.y-p.ty*v.camera_ahead);cam.aspect=(width/2)/height;cam.updateProjectionMatrix();this.comic.update(cam,this.lowEffects);this.world.update(snapshot,r.progress,this.lowEffects);this.renderer.setViewport(i*width/2,0,width/2,height);this.renderer.setScissor(i*width/2,0,width/2,height);this.renderer.render(this.scene,cam);this.renderTriangles+=this.renderer.info.render.triangles;}
+      this.renderer.setScissorTest(false);this.renderer.setViewport(0,0,width,height);
+    }else{
+      if(bigScreen){const a=snapshot.rafts[0],b=snapshot.rafts[1],x=(a.x+b.x)/2,y=(a.y+b.y)/2;this.camera.position.set(x-p.tx*(v.camera_behind+distance/2),v.camera_height+distance/2,-y+p.ty*(v.camera_behind+distance/2));this.camera.lookAt(x+p.tx*v.camera_ahead,0,-y-p.ty*v.camera_ahead);}
+      this.renderer.render(this.scene,this.camera);this.renderTriangles=this.renderer.info.render.triangles;
+    }
     snapshot.rafts.forEach((r,i)=>{const label=this.stunLabels[i],position=new THREE.Vector3(r.x,v.body_height*2,-r.y).project(this.camera);label.hidden=r.stun<=0||Math.abs(position.z)>1;label.style.left=`${(position.x+1)/2*this.container.clientWidth}px`;label.style.top=`${(1-position.y)/2*this.container.clientHeight}px`;});
     this.world.update(snapshot,raft.progress,this.lowEffects);
     if(this.config.release.foam)this.effects.continuous(snapshot,dt,this.lowEffects);this.effects.update(dt);this.crateMeshes.forEach((g,i)=>{g.visible=(snapshot.world?.crates[i]??0)<=0;g.rotation.y=snapshot.raceTime;});this.whirlMeshes.forEach(g=>g.rotation.y=-snapshot.raceTime);

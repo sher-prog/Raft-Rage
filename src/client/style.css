@@ -36,3 +36,11 @@ progress::-webkit-progress-bar{background:#d5dfd6}#red-progress::-webkit-progres
 .scorecard{margin:28px 0}.score-scroll{overflow-x:auto}.scorecard table{border-collapse:collapse;width:100%;font-size:13px}.scorecard th,.scorecard td{padding:12px 10px;text-align:left;border-bottom:1px solid #113e4044}.scorecard th small{display:block;font-size:10px;font-weight:500}.awards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:20px 0}.awards p{font-size:13px;background:#dbeacf;border:1px solid #113e4044;border-radius:8px;padding:12px;margin:0}
 
 .race-banner:not(:empty){background:#ffd34e;color:#113e40;text-shadow:none;border:3px solid #113e40;padding:13px 18px;transform:rotate(-3deg);clip-path:polygon(0 12%,12% 16%,17% 0,32% 10%,46% 0,58% 9%,78% 0,83% 17%,100% 13%,94% 49%,100% 87%,82% 82%,77% 100%,55% 91%,39% 100%,26% 89%,9% 100%,11% 77%,0 80%,6% 45%);font-style:italic;left:30%;right:30%;top:29%}.reduce-motion .race-banner{transform:none}.reduce-motion .wave,.reduce-motion .bob{animation:none}@media(max-width:780px){.race-banner:not(:empty){left:12%;right:12%;font-size:18px;top:30%}}
+
+#big-screen-labels:not([hidden]){position:absolute;top:190px;left:0;right:0;display:grid;grid-template-columns:1fr 1fr;z-index:4;pointer-events:none}#big-screen-labels span{justify-self:center;background:#fff9e9;border:2px solid #113e40;border-radius:6px;padding:5px 14px;font-size:14px;font-weight:900}.hud-hidden #big-screen-labels{display:none!important}
+
+.spectator-view #game-stage{bottom:0}.spectator-view #race-hints{display:none}
+
+#big-screen-labels small{display:block;font-size:11px;font-weight:600}
+
+.spectator-view #pad-toggle{display:none}

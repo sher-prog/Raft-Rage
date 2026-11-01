@@ -1,6 +1,6 @@
 # Phase 1 config changes
 
-Config: `3.5-water-effects (2026-10-31)`. Compared with preserved original source JSON. No config changes in 0.1.7 or 0.1.8; 60/20/10 Hz retained.
+Config: `3.6-big-screen (2026-10-31)`. Compared with preserved original source JSON. No config changes in 0.1.7 or 0.1.8; 60/20/10 Hz retained.
 
 Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 
