@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "3.1-crocs-ramp (2026-10-31)"
+    "value": "3.2-comic-style (2026-10-31)"
   },
   {
     "key": "network._assumed",
@@ -780,7 +780,9 @@
       "foam_spacing",
       "tree_spacing",
       "scenery_distance",
-      "effect_colors"
+      "effect_colors",
+      "sky_top_color",
+      "sky_bottom_color"
     ]
   },
   {
@@ -911,12 +913,12 @@
   {
     "key": "visuals.ambient_light",
     "change": "added",
-    "value": 2
+    "value": 0.8
   },
   {
     "key": "visuals.sun_light",
     "change": "added",
-    "value": 3
+    "value": 1.8
   },
   {
     "key": "visuals.sun_position",
@@ -1279,6 +1281,16 @@
     "value": "#e6d9b2"
   },
   {
+    "key": "visuals.sky_top_color",
+    "change": "added",
+    "value": "#77bbd0"
+  },
+  {
+    "key": "visuals.sky_bottom_color",
+    "change": "added",
+    "value": "#eff0bc"
+  },
+  {
     "key": "audio._assumed",
     "change": "changed",
     "before": [
@@ -1487,7 +1499,7 @@
       "phase": 3,
       "crocodiles": true,
       "ramp": true,
-      "visuals": false,
+      "visuals": true,
       "turbo": false,
       "awards": false,
       "big_screen": false,
@@ -1524,7 +1536,7 @@
   {
     "key": "release.visuals",
     "change": "added",
-    "value": false
+    "value": true
   },
   {
     "key": "release.turbo",

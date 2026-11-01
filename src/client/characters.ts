@@ -12,7 +12,7 @@ export function makeCharacter(config:Config,kind:Character,team:number){
  mesh('sphere',[5.4,2,4.6],[0,18,0],team===0?v.red_color:v.blue_color);mesh('box',[6.4,.8,3],[0,17.7,-3],team===0?v.red_color:v.blue_color);
  for(const side of [-1,1]){mesh('sphere',[1.65,2,1],[side*2.4,15.2,-4.1],'#fff9e9');mesh('sphere',[.7,1,.5],[side*2.4,15.2,-5],'#113e40','pupil');const brow=mesh('box',[2.7,.55,.65],[side*2.4,17.1,-4.7],'#113e40','brow');brow.rotation.z=side*.12;}
  mesh('box',[3.7,1.5,.7],[0,11.1,-5],'#113e40','mouth');for(const side of [-1,1])mesh('box',[.9,1,.9],[side,11.5,-5.1],'#fff9e9');
- const cannon=mesh('cylinder',[v.cannon_radius,v.cannon_length,v.cannon_radius],[0,v.body_height,v.cannon_length/2],v.red_color,'cannon');cannon.rotation.x=Math.PI/2;
+ const cannon=mesh('cylinder',[v.cannon_radius,v.cannon_length,v.cannon_radius],[0,v.body_height,v.cannon_length/2-v.cannon_radius**2/(2*config.raft.radius)],v.red_color,'cannon');cannon.rotation.x=Math.PI/2;
  const swing=new THREE.Mesh(new THREE.TorusGeometry(v.whack_arc_radius,v.whack_arc_tube,v.radial_segments,v.radial_segments,Math.PI),new THREE.MeshToonMaterial({color:v.vest_color}));swing.rotation.x=Math.PI/2;swing.position.y=v.head_height;swing.name='swing';g.add(swing);
  return g;
 }

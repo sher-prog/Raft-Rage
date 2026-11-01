@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "3.1-crocs-ramp (2026-10-31)",
+  "_version": "3.2-comic-style (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -823,7 +823,9 @@
       "foam_spacing",
       "tree_spacing",
       "scenery_distance",
-      "effect_colors"
+      "effect_colors",
+      "sky_top_color",
+      "sky_bottom_color"
     ],
     "camera_height": 240,
     "camera_behind": 320,
@@ -850,8 +852,8 @@
     "bank_width": 40,
     "rock_height_mult": 0.65,
     "rock_segments": 7,
-    "ambient_light": 2,
-    "sun_light": 3,
+    "ambient_light": 0.8,
+    "sun_light": 1.8,
     "sun_position": [
       200,
       400,
@@ -1039,7 +1041,9 @@
       "frog": "#b7f07e",
       "bear": "#c9a372",
       "capybara": "#e6d9b2"
-    }
+    },
+    "sky_top_color": "#77bbd0",
+    "sky_bottom_color": "#eff0bc"
   },
   "audio": {
     "music_tempo_start": 1,
@@ -1142,7 +1146,7 @@
     "phase": 3,
     "crocodiles": true,
     "ramp": true,
-    "visuals": false,
+    "visuals": true,
     "turbo": false,
     "awards": false,
     "big_screen": false,
