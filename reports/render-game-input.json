@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-11-01T03:14:56.636Z",
+  "base": "https://raft-rage.onrender.com",
+  "scenario": "Actual Render: 4 rooms / 16 clients, all four characters, resource-aware 10Hz resends plus immediate button-state changes (same behavior as game UI), deliberate steering, live jumps through crocodile/ramp/shortcut regions, thrown logs and Turbo; 60-second measured sample",
+  "version": "0.3.10",
+  "bootId": "bbd74259-c18c-4d5a-ab4a-75d86843b5a9",
+  "configVersion": "3.10-reference-readability (2026-10-31)",
+  "rooms": 4,
+  "clients": 16,
+  "activeRaceRooms": 4,
+  "sampleMs": 60136.575106000004,
+  "cpuCores": 0.05768559306687032,
+  "cpuCoresPerUser": 0.003605349566679395,
+  "rssBytes": 95342592,
+  "eventLoopMeanMs": 10.297835012255248,
+  "eventLoopMaxMs": 147.062783,
+  "socketOutBps": 986638.1132516502,
+  "socketInBps": 36676.864223016564,
+  "metrics": [
+    {
+      "simHz": 60.01339440496204,
+      "snapshotHz": 20.004464801654013,
+      "tickAverageMs": 0.04133689041097224,
+      "tickWorstMs": 2.090793000010308,
+      "overruns": 0,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 1.5617939999938244,
+      "schedulerLateMaxMs": 95.7413380000079
+    },
+    {
+      "simHz": 59.99754467132399,
+      "snapshotHz": 20.004724567517396,
+      "tickAverageMs": 0.05271723338134234,
+      "tickWorstMs": 0.6627079999889247,
+      "overruns": 0,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 48.86477400001604,
+      "schedulerLateMaxMs": 84.72217233334082
+    },
+    {
+      "simHz": 59.995842887048646,
+      "snapshotHz": 19.987528589310553,
+      "tickAverageMs": 0.03363588443200176,
+      "tickWorstMs": 1.3114950000017416,
+      "overruns": 0,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 79.67689799997606,
+      "schedulerLateMaxMs": 85.32726399999315
+    },
+    {
+      "simHz": 59.996733721943386,
+      "snapshotHz": 19.987825369671825,
+      "tickAverageMs": 0.04891723872317049,
+      "tickWorstMs": 45.9199999999837,
+      "overruns": 1,
+      "overrunsBeforeSample": 0,
+      "snapshotWorstMs": 95.04877199998009,
+      "schedulerLateMaxMs": 98.6633916666719
+    }
+  ],
+  "pass": false
+}

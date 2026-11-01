@@ -1,6 +1,6 @@
 {
   "_about": "Raft Rage balance constants. Load this file as config at startup and read every gameplay number from it; never hard-code these values. Keys starting with '_' are documentation only. Each group's '_assumed' array lists keys that were NOT part of the tested single-device prototype: they are starting values chosen for this spec, so tune them freely. Everything else was tested in the prototype; change it only on purpose.",
-  "_version": "3.10-reference-readability (2026-10-31)",
+  "_version": "3.11-chase-pose-performance-fixes (2026-10-31)",
   "_units": {
     "distance": "game units (u). The prototype used 1 u = 1 px, so 'px' in the spec means u.",
     "time": "seconds (s) unless the key ends in _ms or _min",
@@ -840,13 +840,27 @@
       "loaded_log_length",
       "loaded_log_radius",
       "framing_min_aspect",
-      "framing_max_pullback"
+      "framing_max_pullback",
+      "camera_speed_fov_deg",
+      "camera_safe_margin",
+      "camera_hud_fraction",
+      "camera_opponent_range",
+      "camera_subject_height",
+      "camera_fit_iterations",
+      "animal_skin_colors",
+      "pose_walk_swing",
+      "pose_walk_speed",
+      "pose_idle_speed",
+      "pose_breath_amplitude",
+      "pose_walk_lean",
+      "phone_race_view_frac",
+      "phone_pad_frac"
     ],
-    "camera_height": 110,
-    "camera_behind": 130,
-    "camera_ahead": 80,
+    "camera_height": 180,
+    "camera_behind": 300,
+    "camera_ahead": 180,
     "camera_follow_rate": 5,
-    "camera_fov_deg": 55,
+    "camera_fov_deg": 60,
     "camera_near": 1,
     "camera_far": 2400,
     "fog_near": 850,
@@ -1068,7 +1082,7 @@
     ],
     "character_rim_radius": 25.5,
     "character_scale": 1,
-    "character_height_scale": 1.55,
+    "character_height_scale": 1,
     "character_segments": 12,
     "raft_cream_color": "#f4d9a3",
     "deck_color": "#bed089",
@@ -1077,7 +1091,26 @@
     "loaded_log_length": 26,
     "loaded_log_radius": 4.5,
     "framing_min_aspect": 0.8,
-    "framing_max_pullback": 1.6
+    "framing_max_pullback": 1.6,
+    "camera_speed_fov_deg": 8,
+    "camera_safe_margin": 0.08,
+    "camera_hud_fraction": 0.24,
+    "camera_opponent_range": 500,
+    "camera_subject_height": 45,
+    "camera_fit_iterations": 18,
+    "animal_skin_colors": {
+      "hippo": "#a89ac2",
+      "frog": "#7ebd42",
+      "bear": "#96714d",
+      "capybara": "#b98b61"
+    },
+    "pose_walk_swing": 0.28,
+    "pose_walk_speed": 9,
+    "pose_idle_speed": 2.4,
+    "pose_breath_amplitude": 0.12,
+    "pose_walk_lean": 0.04,
+    "phone_race_view_frac": 0.68,
+    "phone_pad_frac": 0.32
   },
   "audio": {
     "music_tempo_start": 1,
@@ -1170,11 +1203,21 @@
       "jump_percents",
       "default_jump_percent",
       "jump_speed",
-      "event_loop_resolution_ms"
+      "event_loop_resolution_ms",
+      "cgroup_stat_paths",
+      "cgroup_max_paths"
     ],
     "default_jump_percent": 95,
     "jump_speed": 240,
-    "event_loop_resolution_ms": 10
+    "event_loop_resolution_ms": 10,
+    "cgroup_stat_paths": [
+      "/sys/fs/cgroup/cpu.stat",
+      "/sys/fs/cgroup/cpu/cpu.stat",
+      "/sys/fs/cgroup/cpu,cpuacct/cpu.stat"
+    ],
+    "cgroup_max_paths": [
+      "/sys/fs/cgroup/cpu.max"
+    ]
   },
   "release": {
     "phase": 3,

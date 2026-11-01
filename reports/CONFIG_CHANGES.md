@@ -1,6 +1,6 @@
 # Build config changes
 
-Config: `3.10-reference-readability (2026-10-31)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
+Config: `3.11-chase-pose-performance-fixes (2026-10-31)`. Compared with preserved original source JSON. 60/20/10 Hz retained.
 
 Every changed/added key is listed below; exact values and original values are in `config-diff.json`. New object entries include all descendant keys in that JSON.
 
@@ -158,6 +158,24 @@ Every changed/added key is listed below; exact values and original values are in
 - `visuals.loaded_log_radius`: added.
 - `visuals.framing_min_aspect`: added.
 - `visuals.framing_max_pullback`: added.
+- `visuals.camera_speed_fov_deg`: added.
+- `visuals.camera_safe_margin`: added.
+- `visuals.camera_hud_fraction`: added.
+- `visuals.camera_opponent_range`: added.
+- `visuals.camera_subject_height`: added.
+- `visuals.camera_fit_iterations`: added.
+- `visuals.animal_skin_colors`: added.
+- `visuals.animal_skin_colors.hippo`: added.
+- `visuals.animal_skin_colors.frog`: added.
+- `visuals.animal_skin_colors.bear`: added.
+- `visuals.animal_skin_colors.capybara`: added.
+- `visuals.pose_walk_swing`: added.
+- `visuals.pose_walk_speed`: added.
+- `visuals.pose_idle_speed`: added.
+- `visuals.pose_breath_amplitude`: added.
+- `visuals.pose_walk_lean`: added.
+- `visuals.phone_race_view_frac`: added.
+- `visuals.phone_pad_frac`: added.
 - `audio._assumed`: changed.
 - `audio.enabled_default`: added.
 - `audio.silly_default`: added.
@@ -182,6 +200,8 @@ Every changed/added key is listed below; exact values and original values are in
 - `debug.default_jump_percent`: added.
 - `debug.jump_speed`: added.
 - `debug.event_loop_resolution_ms`: added.
+- `debug.cgroup_stat_paths`: added.
+- `debug.cgroup_max_paths`: added.
 - `release`: added.
 - `release.phase`: added.
 - `release.crocodiles`: added.

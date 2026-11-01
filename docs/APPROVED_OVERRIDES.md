@@ -39,3 +39,7 @@ The user explicitly approved running all 41 tests serially, preserving every cas
 ## Full-build authorization
 
 The user requested completion of all remaining phases, including all characters, original propulsion effects, hazards, pickups, visuals and audio, with tested checkpoints and periodic reports. This authorizes proceeding through Phase 2 and Phase 3 without another phase-review permission gate. The user is using a separate chat for design references; keep character models modular and continue the game build here without waiting. The existing feature cut and deadline remain in force.
+
+## Camera, lag and animal-art corrections
+
+The user supplied a raft reference image, requested a visible carried log and larger readable art, then reported that the close-up was laggy and hid the river/opponent. The controlling correction is a car-racing-style chase view showing the river width and nearby opponents, plus original animal rigs that do not look like upright mannequins. These are corrections to existing features. Keep all prior physics, rate, budget and test-preservation requirements. Implementation choices and visual tunables are recorded in the config report, not treated as changes to the original gameplay rules.

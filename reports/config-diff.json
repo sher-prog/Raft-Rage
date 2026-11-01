@@ -3,7 +3,7 @@
     "key": "_version",
     "change": "changed",
     "before": "1.0 (2026-10-31)",
-    "value": "3.10-reference-readability (2026-10-31)"
+    "value": "3.11-chase-pose-performance-fixes (2026-10-31)"
   },
   {
     "key": "network._assumed",
@@ -797,23 +797,37 @@
       "loaded_log_length",
       "loaded_log_radius",
       "framing_min_aspect",
-      "framing_max_pullback"
+      "framing_max_pullback",
+      "camera_speed_fov_deg",
+      "camera_safe_margin",
+      "camera_hud_fraction",
+      "camera_opponent_range",
+      "camera_subject_height",
+      "camera_fit_iterations",
+      "animal_skin_colors",
+      "pose_walk_swing",
+      "pose_walk_speed",
+      "pose_idle_speed",
+      "pose_breath_amplitude",
+      "pose_walk_lean",
+      "phone_race_view_frac",
+      "phone_pad_frac"
     ]
   },
   {
     "key": "visuals.camera_height",
     "change": "added",
-    "value": 110
+    "value": 180
   },
   {
     "key": "visuals.camera_behind",
     "change": "added",
-    "value": 130
+    "value": 300
   },
   {
     "key": "visuals.camera_ahead",
     "change": "added",
-    "value": 80
+    "value": 180
   },
   {
     "key": "visuals.camera_follow_rate",
@@ -823,7 +837,7 @@
   {
     "key": "visuals.camera_fov_deg",
     "change": "added",
-    "value": 55
+    "value": 60
   },
   {
     "key": "visuals.camera_near",
@@ -1337,7 +1351,7 @@
   {
     "key": "visuals.character_height_scale",
     "change": "added",
-    "value": 1.55
+    "value": 1
   },
   {
     "key": "visuals.character_segments",
@@ -1383,6 +1397,101 @@
     "key": "visuals.framing_max_pullback",
     "change": "added",
     "value": 1.6
+  },
+  {
+    "key": "visuals.camera_speed_fov_deg",
+    "change": "added",
+    "value": 8
+  },
+  {
+    "key": "visuals.camera_safe_margin",
+    "change": "added",
+    "value": 0.08
+  },
+  {
+    "key": "visuals.camera_hud_fraction",
+    "change": "added",
+    "value": 0.24
+  },
+  {
+    "key": "visuals.camera_opponent_range",
+    "change": "added",
+    "value": 500
+  },
+  {
+    "key": "visuals.camera_subject_height",
+    "change": "added",
+    "value": 45
+  },
+  {
+    "key": "visuals.camera_fit_iterations",
+    "change": "added",
+    "value": 18
+  },
+  {
+    "key": "visuals.animal_skin_colors",
+    "change": "added",
+    "value": {
+      "hippo": "#a89ac2",
+      "frog": "#7ebd42",
+      "bear": "#96714d",
+      "capybara": "#b98b61"
+    }
+  },
+  {
+    "key": "visuals.animal_skin_colors.hippo",
+    "change": "added",
+    "value": "#a89ac2"
+  },
+  {
+    "key": "visuals.animal_skin_colors.frog",
+    "change": "added",
+    "value": "#7ebd42"
+  },
+  {
+    "key": "visuals.animal_skin_colors.bear",
+    "change": "added",
+    "value": "#96714d"
+  },
+  {
+    "key": "visuals.animal_skin_colors.capybara",
+    "change": "added",
+    "value": "#b98b61"
+  },
+  {
+    "key": "visuals.pose_walk_swing",
+    "change": "added",
+    "value": 0.28
+  },
+  {
+    "key": "visuals.pose_walk_speed",
+    "change": "added",
+    "value": 9
+  },
+  {
+    "key": "visuals.pose_idle_speed",
+    "change": "added",
+    "value": 2.4
+  },
+  {
+    "key": "visuals.pose_breath_amplitude",
+    "change": "added",
+    "value": 0.12
+  },
+  {
+    "key": "visuals.pose_walk_lean",
+    "change": "added",
+    "value": 0.04
+  },
+  {
+    "key": "visuals.phone_race_view_frac",
+    "change": "added",
+    "value": 0.68
+  },
+  {
+    "key": "visuals.phone_pad_frac",
+    "change": "added",
+    "value": 0.32
   },
   {
     "key": "audio._assumed",
@@ -1541,11 +1650,21 @@
         "jump_percents",
         "default_jump_percent",
         "jump_speed",
-        "event_loop_resolution_ms"
+        "event_loop_resolution_ms",
+        "cgroup_stat_paths",
+        "cgroup_max_paths"
       ],
       "default_jump_percent": 95,
       "jump_speed": 240,
-      "event_loop_resolution_ms": 10
+      "event_loop_resolution_ms": 10,
+      "cgroup_stat_paths": [
+        "/sys/fs/cgroup/cpu.stat",
+        "/sys/fs/cgroup/cpu/cpu.stat",
+        "/sys/fs/cgroup/cpu,cpuacct/cpu.stat"
+      ],
+      "cgroup_max_paths": [
+        "/sys/fs/cgroup/cpu.max"
+      ]
     }
   },
   {
@@ -1568,7 +1687,9 @@
       "jump_percents",
       "default_jump_percent",
       "jump_speed",
-      "event_loop_resolution_ms"
+      "event_loop_resolution_ms",
+      "cgroup_stat_paths",
+      "cgroup_max_paths"
     ]
   },
   {
@@ -1585,6 +1706,22 @@
     "key": "debug.event_loop_resolution_ms",
     "change": "added",
     "value": 10
+  },
+  {
+    "key": "debug.cgroup_stat_paths",
+    "change": "added",
+    "value": [
+      "/sys/fs/cgroup/cpu.stat",
+      "/sys/fs/cgroup/cpu/cpu.stat",
+      "/sys/fs/cgroup/cpu,cpuacct/cpu.stat"
+    ]
+  },
+  {
+    "key": "debug.cgroup_max_paths",
+    "change": "added",
+    "value": [
+      "/sys/fs/cgroup/cpu.max"
+    ]
   },
   {
     "key": "release",
